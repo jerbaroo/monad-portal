@@ -209,11 +209,12 @@ class FromSValues a where
 instance (Eot.HasEot a, EotFromSValues (Eot.Eot a)) => FromSValues a where
   fromSValues = Eot.fromEot . eotFromSValues
 
--- * Encode/decode storable representation.
+-- * Encode/decode to/from bytestring.
 
 -- ** Encode (to bytestring).
 
 -- | Convert an 'SDataType' to flattened 'Row's.
+-- TODO: make this take an 'a' not 'SDataType'.
 toRows :: SDataType -> Map.Map Table.TableKey Table.Table
 toRows a = Map.fromList [(tableKey, table)]
   where table                  = Map.fromList [(rowKey, sFieldsToRow fields)]

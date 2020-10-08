@@ -1,8 +1,10 @@
-{-# LANGUAGE TypeFamilies   #-}
+{-# LANGUAGE LambdaCase   #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- * Operations on entities in a data source.
 module Telescope.Ops where
 
+import           Control.Monad    ( when )
 import qualified Data.Map        as Map
 import           Telescope.Class  ( Entity, PKey, Telescope )
 import qualified Telescope.Class as Class
@@ -12,24 +14,25 @@ import qualified Telescope.Store as Store
 -- * View entities in a data source.
 
 -- | View an entity in a table in a data source.
--- TODO: decode 'Row' using Generics e.g. Row -> a.
 --
 -- Table key and row key are derived from the value.
+-- TODO: make 'PKey' a constraint on 'Entity' and use 'viewR' here.
 view :: (Entity a, Telescope m) => a -> m (Maybe a)
-view a = do
-  ma <- Class.view (Table.tableKey a) (Table.rowKey a)
-  pure $ Store.fromRow <$> ma
+view a =
+  Class.view (Table.tableKey a) (Table.rowKey a) >>=
+    pure . fmap Store.fromRow
 
 -- | Infix version of 'view'.
 (^.) :: (Entity a, Telescope m) => a -> m (Maybe a)
 (^.) = view
 
 -- | View an entity in a table in a data source, passing row key separately.
--- TODO: decode 'Row' using Generics e.g. Row -> a.
 --
 -- Example usage: viewR Person{} "john"
-viewR :: (Entity a, PKey a k, Telescope m) => a -> k -> m (Maybe Table.Row)
-viewR a pk = Class.view (Table.tableKey a) (Table.RowKey $ Table.toKey pk)
+viewK :: (Entity a, PKey a k, Telescope m) => a -> k -> m (Maybe a)
+viewK a pk =
+  Class.view (Table.tableKey a) (Table.RowKey $ Table.toKey pk) >>=
+    pure . fmap Store.fromRow
 
 -- | View all entities in a table in a data source.
 viewTable :: (Entity a, Telescope m) => a -> m Table.Table
@@ -62,9 +65,18 @@ setTable as = Class.setMany tableMap
 
 -- * Modify entities in a data source.
 
--- | Modify an entity in a data source.
--- TODO: this first requires decoding to work.
--- over :: (Entity a, Telescope m) => a -> (a -> a) ->
+over :: (Entity a, PKey a k, Telescope m) => a -> (a -> a) -> m (Maybe a)
+over a f = overK a (Table.pKey a) f
+
+-- | Modify an entity in a data source, passing primary key separately.
+overK :: (Entity a, PKey a k, Telescope m) => a -> k -> (a -> a) -> m (Maybe a)
+overK aType pKey f = viewK aType pKey >>= \case
+  Nothing -> pure Nothing
+  Just a  -> do
+    -- Remove the old value if the primary key has changed.
+    when (pKey /= Table.pKey (f a)) $ rmK aType pKey
+    set $ f a
+    pure $ Just $ f a
 
 -- * Remove entities in a data source.
 

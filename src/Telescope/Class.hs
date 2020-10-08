@@ -55,11 +55,8 @@ class (Functor m, Applicative m, Monad m) => Telescope m where
   rmTable :: Table.TableKey -> m ()
   rmTable tk = setTable tk Map.empty
 
-  -- ^ Modify a row in a data source.
-  -- TODO: this requires decoding to work.
-
 -- | User-facing class for storable data types.
 --
 -- Serialization and deserialization under one typeclass.
 class    (Store.ToSDataType a, Store.FromSValues a) => Entity a where
-instance (Store.ToSDataType a, Store.FromSValues a ) => Entity a where
+instance (Store.ToSDataType a, Store.FromSValues a) => Entity a where
