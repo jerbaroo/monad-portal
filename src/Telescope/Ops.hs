@@ -13,7 +13,7 @@ import qualified Telescope.Store as Store
 
 -- * View entities in a data source.
 
--- | View an entity in a table in a data source.
+-- | View an entity in a data source.
 --
 -- Table key and row key are derived from the value.
 -- TODO: make 'PKey' a constraint on 'Entity' and use 'viewR' here.
@@ -26,7 +26,7 @@ view a =
 (^.) :: (Entity a, Telescope m) => a -> m (Maybe a)
 (^.) = view
 
--- | View an entity in a table in a data source, passing row key separately.
+-- | View an entity in a data source, passing row key separately.
 --
 -- Example usage: viewR Person{} "john"
 viewK :: (Entity a, PKey a k, Telescope m) => a -> k -> m (Maybe a)
@@ -65,6 +65,7 @@ setTable as = Class.setMany tableMap
 
 -- * Modify entities in a data source.
 
+-- | Modify an entity in a data source.
 over :: (Entity a, PKey a k, Telescope m) => a -> (a -> a) -> m (Maybe a)
 over a f = overK a (Table.pKey a) f
 
@@ -80,11 +81,11 @@ overK aType pKey f = viewK aType pKey >>= \case
 
 -- * Remove entities in a data source.
 
--- | Remove an entity in a table in a data source.
+-- | Remove an entity in a data source.
 rm :: (Entity a, Telescope m) => a -> m ()
 rm a = Class.rm (Table.tableKey a) (Table.rowKey a)
 
--- | Remove an entity in a table in a data source.
+-- | Remove an entity in a data source.
 rmK :: (Entity a, PKey a k, Telescope m) => a -> k -> m ()
 rmK a pk = Class.rm (Table.tableKey a) (Table.RowKey $ Table.toKey pk)
 
