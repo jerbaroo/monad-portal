@@ -1,14 +1,14 @@
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE MonoLocalBinds             #-}
-{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE MonoLocalBinds       #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Telescope.Store where
 
 import           Control.Exception              ( Exception, throw )
 import           Data.ByteString                ( ByteString )
 import qualified Data.Foldable                 as Foldable
-import           Data.Map                       ( Map )
 import qualified Data.Map                      as Map
 import           Data.Proxy                     ( Proxy(Proxy) )
 import qualified Data.Serialize                as Serialize
@@ -18,14 +18,20 @@ import qualified Telescope.Table               as Table
 
 -- | An error that occurs when serializing a data type.
 -- TODO: move to Errors module.
-data SerializeError =
+data TelescopeError =
+    -- ^ A data type must have exactly one constructor.
     MultipleConstructorsError
+    -- ^ A data type must have exactly one constructor.
   | NoConstructorsError
+    -- ^ A data type must have fields to serialize.
   | NoFieldsError
+    -- ^ A data type must have fields with selectors (names).
   | NoSelectorsError
+    -- ^ Could not deserialize a primitive.
+  | DeserializeError String
   deriving Show
 
-instance Exception SerializeError
+instance Exception TelescopeError
 
 -- * A storable representation of a data type and fields.
 --
@@ -49,7 +55,7 @@ data SValue =
   deriving (Generic, Show)
 
 -- | A storable representation of ALL fields of a data type.
-newtype SFields = SFields (Map Table.ColumnKey SValue)
+newtype SFields = SFields [(Table.ColumnKey, SValue)]
   deriving (Generic, Show)
 
 -- | A storable representation of a data type (type and fields).
@@ -62,13 +68,8 @@ data SDataType = SDataType Table.Ref SFields
 class ToSValue a where
   toSValue :: a -> SValue
 
--- | Convert 'Int' primitive to storable representation.
-instance ToSValue Int where
-  toSValue a = SValue $ Table.PInt a
-
--- | Convert 'String' primitive to storable representation.
-instance ToSValue String where
-  toSValue a = SValue $ Table.PString a
+instance ToSValue Int where    toSValue a = SValue $ Table.PInt a
+instance ToSValue String where toSValue a = SValue $ Table.PString a
 
 -- | Convert 'Maybe' to storable representation.
 instance Table.ToPrim a => ToSValue (Maybe a) where
@@ -104,8 +105,7 @@ instance {-# OVERLAPPABLE #-} (Eot.HasEot a, EotSValues (Eot.Eot a))
   toSFields a =
     let names  = fieldNames a
         values = toSValues a
-    in  SFields $ Map.fromList $
-          zipWith (\n v -> (Table.ColumnKey n, v)) names values
+    in  SFields $ zipWith (\n v -> (Table.ColumnKey n, v)) names values
 
 -- | Convert a data type to a storable representation.
 --
@@ -118,7 +118,8 @@ class (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
 
 -- | If a data type has a table key, row key, and fields with a storable
 -- representation, then it also has a storable representation.
-instance {-# OVERLAPPABLE #-} (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
+instance {-# OVERLAPPABLE #-}
+  (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
   => ToSDataType a where
 
 -- * Generics-Eot implementations of 'EotSValues' and 'fieldNames'.
@@ -133,9 +134,9 @@ instance (EotSValues a, EotSValues b) => EotSValues (Either a b) where
 
 -- | Turn the fields of an 'Eot' into 'SValue's.
 instance (ToSValue f, EotSValues fs) => EotSValues (f, fs) where
-  eotSValues (f, fs) = do
+  eotSValues (f, fs) =
     let encodedFs = eotSValues fs
-    toSValue f : encodedFs
+    in toSValue f : encodedFs
 
 instance EotSValues Eot.Void where
   eotSValues = Eot.absurd
@@ -157,20 +158,94 @@ fieldNames a = do
 proxyByExample :: a -> Proxy a
 proxyByExample _ = Proxy
 
--- * Convert from storable representation to bytestring.
+-- * Reconstruct a data type from 'SValue's.
+
+class EotFromSValues eot where
+  eotFromSValues :: [SValue] -> eot
+
+-- | Construct 'Either's from 'SValue's.
+--
+-- Only data types with a single constructor are supported. So we will never
+-- construct a 'Right' which represents additional constructors. Only a single
+-- 'Left' will be returned.
+instance (EotFromSValues l, EotFromSValues r)
+  => EotFromSValues (Either l r) where
+  eotFromSValues [] = throw NoConstructorsError
+  eotFromSValues as = Left $ eotFromSValues as
+
+-- | Construction of right-nested tuples from each ordered 'SValue'.
+instance (FromSValue a, EotFromSValues as) => EotFromSValues (a, as) where
+  eotFromSValues (a:as) = (fromSValue a, eotFromSValues as)
+  eotFromSValues [] = throw NoFieldsError
+
+instance EotFromSValues Eot.Void where
+  eotFromSValues _ = throw $ DeserializeError "Eot error constructing Void"
+
+instance EotFromSValues () where
+  eotFromSValues [] = ()
+  eotFromSValues (_:_) = throw $ DeserializeError "Eot error constructing ()"
+
+class FromSValue a where
+  fromSValue :: SValue -> a
+
+instance FromSValue Int where
+  fromSValue (SValue (Table.PInt a)) = a
+  fromSValue s = throw $ DeserializeError $
+    "Can't deserialize the following into 'Int':\n  " ++ show s
+
+instance FromSValue String where
+  fromSValue (SValue (Table.PString a)) = a
+  fromSValue s = throw $ DeserializeError $
+    "Can't deserialize the following into 'String':\n  " ++ show s
+
+instance FromSValue () where
+  fromSValue _ = ()
+
+-- | A data type that can be reconstructed from 'SValue's.
+class FromSValues a where
+  fromSValues :: [SValue] -> a
+
+-- | Derive an instance of 'FromSValues' via Generics.
+instance (Eot.HasEot a, EotFromSValues (Eot.Eot a)) => FromSValues a where
+  fromSValues = Eot.fromEot . eotFromSValues
+
+-- * Encode/decode storable representation.
+
+-- ** Encode (to bytestring).
 
 -- | Convert an 'SDataType' to flattened 'Row's.
 toRows :: SDataType -> Map.Map Table.TableKey Table.Table
 toRows a = Map.fromList [(tableKey, table)]
-  where table                  = Map.fromList [(rowKey, toRow fields)]
+  where table                  = Map.fromList [(rowKey, sFieldsToRow fields)]
         (tableKey, rowKey)     = ref
         (SDataType ref fields) = a
 
 -- | Convert 'SFields' to a table row.
-toRow :: SFields -> Table.Row
-toRow (SFields fieldsMap) = fmap encodeSValue fieldsMap
+sFieldsToRow :: SFields -> Table.Row
+sFieldsToRow (SFields fieldsMap) =
+  [ (columnKey, encodeSValue sValue)
+  | (columnKey, sValue) <- fieldsMap
+  ]
 
 -- | Convert 'SValue' to a bytestring.
 -- TODO: handle case of nested 'SDataType'.
 encodeSValue :: SValue -> ByteString
 encodeSValue (SValue prim) = Serialize.encode prim
+
+-- ** Decode (from bytestring).
+
+-- | 'SValue's reconstructed from a row.
+rowToSValues :: Table.Row -> [SValue]
+rowToSValues row = [decodeSValue bs | (_, bs) <- row]
+
+-- | An 'SValue' from a bytestring.
+decodeSValue :: ByteString -> SValue
+decodeSValue prim =
+  case Serialize.decode prim of
+    Left  _ -> throw $ DeserializeError $
+      "Could not deserialize the following into 'SValue':\n  " ++ show prim
+    Right r -> SValue r
+
+-- | A data type reconstructed from a row.
+fromRow :: FromSValues a => Table.Row -> a
+fromRow = fromSValues . rowToSValues

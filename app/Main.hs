@@ -22,5 +22,6 @@ main = do
   let john = Person "John" 69
   x <- runTFile $ do
     T.set john
-    T.viewR Person{} "John"
+    -- T.viewR Person{} "John"
+    T.view john
   print x

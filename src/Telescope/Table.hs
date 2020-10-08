@@ -17,8 +17,9 @@ import           GHC.Generics                   ( Generic )
 
 -- | A storable primitive, a cell in a table.
 data Prim =
-    PString String
+    PBool   Bool
   | PInt    Int
+  | PString String
   | PNull
   deriving (Eq, Ord, Read, Show, Generic, Serialize)
 
@@ -28,6 +29,9 @@ class ToPrim a where
 
 instance ToPrim Int    where toPrim = PInt
 instance ToPrim String where toPrim = PString
+instance ToPrim a => ToPrim (Maybe a) where
+  toPrim Nothing  = PNull
+  toPrim (Just a) = toPrim a
 
 -- | A key consists of one or more storable primitives.
 --
@@ -76,9 +80,7 @@ newtype ColumnKey = ColumnKey String deriving (Eq, Ord, Read, Show, Generic, Ser
 type Ref = (TableKey, RowKey)
 
 -- | A row consists of a serialized value per column.
---
--- TODO: move to Data.HashMap.Strict.
-type Row = Map ColumnKey ByteString
+type Row = [(ColumnKey, ByteString)]
 
 -- | A table consists of a number of rows, each with a key.
 type Table = Map RowKey Row
