@@ -24,9 +24,9 @@ import qualified Telescope.Table        as Table
 newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
 
 instance Telescope TFile where
-  viewTable (Table.TableKey tkName) = do
+  viewTableRows (Table.TableKey tkName) = do
     liftIO $ readOrDefault Map.empty (tkName ++ ".table")
-  setTable (Table.TableKey tkName) table = do
+  setTableRows (Table.TableKey tkName) table = do
     liftIO $ writeFile (tkName ++ ".table") $ unpack $ encode table
 
 -- | Decode a value of type 'a' from a file, or return a default value.

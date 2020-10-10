@@ -6,7 +6,7 @@
 
 module Telescope.Store where
 
-import           Control.Exception              ( Exception, throw )
+import           Control.Exception              ( throw )
 import           Data.ByteString                ( ByteString )
 import qualified Data.Foldable                 as Foldable
 import qualified Data.Map                      as Map
@@ -14,24 +14,8 @@ import           Data.Proxy                     ( Proxy(Proxy) )
 import qualified Data.Serialize                as Serialize
 import qualified Generics.Eot                  as Eot
 import           GHC.Generics                   ( Generic )
+import qualified Telescope.Exception           as T
 import qualified Telescope.Table               as Table
-
--- | An error that occurs when serializing a data type.
--- TODO: move to Errors module.
-data TelescopeError =
-    -- ^ A data type must have exactly one constructor.
-    MultipleConstructorsError
-    -- ^ A data type must have exactly one constructor.
-  | NoConstructorsError
-    -- ^ A data type must have fields to serialize.
-  | NoFieldsError
-    -- ^ A data type must have fields with selectors (names).
-  | NoSelectorsError
-    -- ^ Could not deserialize a primitive.
-  | DeserializeError String
-  deriving Show
-
-instance Exception TelescopeError
 
 -- * A storable representation of a data type and fields.
 --
@@ -130,7 +114,7 @@ class EotSValues eot where
 -- | Error in case of a 'Right', only operate on the first constructor.
 instance (EotSValues a, EotSValues b) => EotSValues (Either a b) where
   eotSValues (Left  fields) = eotSValues fields
-  eotSValues (Right _     ) = throw MultipleConstructorsError
+  eotSValues (Right _     ) = throw T.MultipleConstructorsException
 
 -- | Turn the fields of an 'Eot' into 'SValue's.
 instance (ToSValue f, EotSValues fs) => EotSValues (f, fs) where
@@ -148,12 +132,12 @@ instance EotSValues () where
 fieldNames :: Eot.HasEot a => a -> [String]
 fieldNames a = do
   case Eot.constructors $ Eot.datatype $ proxyByExample a of
-    []  -> throw NoConstructorsError
+    []  -> throw T.NoConstructorsException
     [c] -> case Eot.fields c of
       Eot.Selectors   fns -> fns
-      Eot.NoSelectors _   -> throw NoSelectorsError
-      Eot.NoFields        -> throw NoFieldsError
-    _ -> throw MultipleConstructorsError
+      Eot.NoSelectors _   -> throw T.NoSelectorsException
+      Eot.NoFields        -> throw T.NoFieldsException
+    _ -> throw T.MultipleConstructorsException
 
 proxyByExample :: a -> Proxy a
 proxyByExample _ = Proxy
@@ -170,32 +154,32 @@ class EotFromSValues eot where
 -- 'Left' will be returned.
 instance (EotFromSValues l, EotFromSValues r)
   => EotFromSValues (Either l r) where
-  eotFromSValues [] = throw NoConstructorsError
+  eotFromSValues [] = throw T.NoConstructorsException
   eotFromSValues as = Left $ eotFromSValues as
 
 -- | Construction of right-nested tuples from each ordered 'SValue'.
 instance (FromSValue a, EotFromSValues as) => EotFromSValues (a, as) where
   eotFromSValues (a:as) = (fromSValue a, eotFromSValues as)
-  eotFromSValues [] = throw NoFieldsError
+  eotFromSValues [] = throw T.NoFieldsException
 
 instance EotFromSValues Eot.Void where
-  eotFromSValues _ = throw $ DeserializeError "Eot error constructing Void"
+  eotFromSValues _ = throw $ T.DeserializeException "Eot error constructing Void"
 
 instance EotFromSValues () where
   eotFromSValues [] = ()
-  eotFromSValues (_:_) = throw $ DeserializeError "Eot error constructing ()"
+  eotFromSValues (_:_) = throw $ T.DeserializeException "Eot error constructing ()"
 
 class FromSValue a where
   fromSValue :: SValue -> a
 
 instance FromSValue Int where
   fromSValue (SValue (Table.PInt a)) = a
-  fromSValue s = throw $ DeserializeError $
+  fromSValue s = throw $ T.DeserializeException $
     "Can't deserialize the following into 'Int':\n  " ++ show s
 
 instance FromSValue String where
   fromSValue (SValue (Table.PString a)) = a
-  fromSValue s = throw $ DeserializeError $
+  fromSValue s = throw $ T.DeserializeException $
     "Can't deserialize the following into 'String':\n  " ++ show s
 
 instance FromSValue () where
@@ -243,7 +227,7 @@ rowToSValues row = [decodeSValue bs | (_, bs) <- row]
 decodeSValue :: ByteString -> SValue
 decodeSValue prim =
   case Serialize.decode prim of
-    Left  _ -> throw $ DeserializeError $
+    Left  _ -> throw $ T.DeserializeException $
       "Could not deserialize the following into 'SValue':\n  " ++ show prim
     Right r -> SValue r
 

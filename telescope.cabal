@@ -51,7 +51,7 @@ extra-source-files:  CHANGELOG.md
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Telescope.Class, Telescope.Ops, Telescope.Store, Telescope.Table, Telescope.TFile
+  exposed-modules:     Telescope.Class, Telescope.Exception, Telescope.Ops, Telescope.Store, Telescope.Table, Telescope.TFile
 
   -- Modules included in this library but not exported.
   -- other-modules:

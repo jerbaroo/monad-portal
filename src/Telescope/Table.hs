@@ -98,9 +98,10 @@ class HasRowKey a where
   rowKey :: a -> RowKey
  
 -- | A data type that has a primary key.
-class (Eq k, ToKey k) => PKey a k | a -> k where
-  pKey :: a -> k
+class (Eq k, ToKey k) => PrimaryKey a k | a -> k where
+  primaryKey :: a -> k
 
 -- | A row key can be converted from the primary key of a data type.
-instance PKey a k => HasRowKey a where
-  rowKey a = RowKey $ toKey $ pKey a
+instance PrimaryKey a k => HasRowKey a where
+  rowKey a = RowKey $ toKey $ primaryKey a
+

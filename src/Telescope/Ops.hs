@@ -6,7 +6,7 @@ module Telescope.Ops where
 
 import           Control.Monad    ( when )
 import qualified Data.Map        as Map
-import           Telescope.Class  ( Entity, PKey, Telescope )
+import           Telescope.Class  ( Entity, PrimaryKey, Telescope )
 import qualified Telescope.Class as Class
 import qualified Telescope.Table as Table
 import qualified Telescope.Store as Store
@@ -16,27 +16,26 @@ import qualified Telescope.Store as Store
 -- | View an entity in a data source.
 --
 -- Table key and row key are derived from the value.
--- TODO: make 'PKey' a constraint on 'Entity' and use 'viewR' here.
-view :: (Entity a, Telescope m) => a -> m (Maybe a)
-view a =
-  Class.view (Table.tableKey a) (Table.rowKey a) >>=
-    pure . fmap Store.fromRow
+view :: (Entity a, PrimaryKey a k, Telescope m) => a -> m (Maybe a)
+view a = viewK a $ Table.primaryKey a
 
 -- | Infix version of 'view'.
-(^.) :: (Entity a, Telescope m) => a -> m (Maybe a)
+(^.) :: (Entity a, PrimaryKey a k, Telescope m) => a -> m (Maybe a)
 (^.) = view
 
 -- | View an entity in a data source, passing row key separately.
 --
 -- Example usage: viewR Person{} "john"
-viewK :: (Entity a, PKey a k, Telescope m) => a -> k -> m (Maybe a)
-viewK a pk =
-  Class.view (Table.tableKey a) (Table.RowKey $ Table.toKey pk) >>=
+viewK :: (Entity a, PrimaryKey a k, Telescope m) => a -> k -> m (Maybe a)
+viewK a primaryKey =
+  Class.viewRow (Table.tableKey a) (Table.RowKey $ Table.toKey primaryKey) >>=
     pure . fmap Store.fromRow
 
 -- | View all entities in a table in a data source.
-viewTable :: (Entity a, Telescope m) => a -> m Table.Table
-viewTable a = Class.viewTable $ Table.tableKey a
+viewTable :: (Entity a, Telescope m) => a -> m [a]
+viewTable a = do
+   (Class.viewTableRows $ Table.tableKey a) >>=
+     pure . fmap Store.fromRow . Map.elems
 
 -- * Set entities in a data source.
 
@@ -44,7 +43,7 @@ viewTable a = Class.viewTable $ Table.tableKey a
 --
 -- WARNING: overwrites existing entity with same primary key.
 set :: (Entity a, Telescope m) => a -> m ()
-set a = Class.setMany $ Store.toRows $ Store.toSDataType a
+set a = Class.setManyRows $ Store.toRows $ Store.toSDataType a
 
 -- | Infix version of 'set'.
 (.~) :: (Entity a, Telescope m) => a -> m ()
@@ -57,7 +56,7 @@ set a = Class.setMany $ Store.toRows $ Store.toSDataType a
 -- TODO: use 'setTable' for values of type 'a'.
 -- TODO: use 'setMany' only for values not of type 'a'.
 setTable :: (Entity a, Telescope m) => [a] -> m ()
-setTable as = Class.setMany tableMap
+setTable as = Class.setManyRows tableMap
   where rowsPerA :: [Map.Map Table.TableKey Table.Table]
         rowsPerA = map (Store.toRows . Store.toSDataType) as
         tableMap :: Map.Map Table.TableKey Table.Table
@@ -66,29 +65,31 @@ setTable as = Class.setMany tableMap
 -- * Modify entities in a data source.
 
 -- | Modify an entity in a data source.
-over :: (Entity a, PKey a k, Telescope m) => a -> (a -> a) -> m (Maybe a)
-over a f = overK a (Table.pKey a) f
+over :: (Entity a, PrimaryKey a k, Telescope m) => a -> (a -> a) -> m (Maybe a)
+over a f = overK a (Table.primaryKey a) f
 
 -- | Modify an entity in a data source, passing primary key separately.
-overK :: (Entity a, PKey a k, Telescope m) => a -> k -> (a -> a) -> m (Maybe a)
-overK aType pKey f = viewK aType pKey >>= \case
+overK :: (Entity a, PrimaryKey a k, Telescope m)
+  => a -> k -> (a -> a) -> m (Maybe a)
+overK aType primaryKey f = viewK aType primaryKey >>= \case
   Nothing -> pure Nothing
   Just a  -> do
     -- Remove the old value if the primary key has changed.
-    when (pKey /= Table.pKey (f a)) $ rmK aType pKey
+    when (primaryKey /= Table.primaryKey (f a)) $ rmK aType primaryKey
     set $ f a
     pure $ Just $ f a
 
 -- * Remove entities in a data source.
 
 -- | Remove an entity in a data source.
-rm :: (Entity a, Telescope m) => a -> m ()
-rm a = Class.rm (Table.tableKey a) (Table.rowKey a)
+rm :: (Entity a, PrimaryKey a k, Telescope m) => a -> m ()
+rm a = rmK a $ Table.primaryKey a
 
 -- | Remove an entity in a data source.
-rmK :: (Entity a, PKey a k, Telescope m) => a -> k -> m ()
-rmK a pk = Class.rm (Table.tableKey a) (Table.RowKey $ Table.toKey pk)
+rmK :: (Entity a, PrimaryKey a k, Telescope m) => a -> k -> m ()
+rmK a primaryKey =
+  Class.rmRow (Table.tableKey a) (Table.RowKey $ Table.toKey primaryKey)
 
 -- | Remove a table in a data source.
 rmTable :: (Entity a, Telescope m) => a -> m ()
-rmTable a = Class.rmTable $ Table.tableKey a
+rmTable a = Class.rmTableRows $ Table.tableKey a
