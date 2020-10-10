@@ -18,7 +18,7 @@ class (Functor m, Applicative m, Monad m) => Telescope m where
   --
   -- 'Maybe' to indicate the entry might not be found.
   viewRow :: Table.TableKey -> Table.RowKey -> m (Maybe Table.Row)
-  viewRow tk rk = Map.lookup rk <$> viewTableRows tk
+  viewRow tableKey rowKey = Map.lookup rowKey <$> viewTableRows tableKey
 
   -- ^ View all rows in a table in a data source.
   viewTableRows :: Table.TableKey -> m Table.Table
@@ -40,7 +40,7 @@ class (Functor m, Applicative m, Monad m) => Telescope m where
       Key.forWithKeyM_ table $ \rowKey row ->
         setRow tableKey rowKey row
 
-  -- | Set a table in a data source to the given rows.
+  -- | Set a table in a data source to ONLY the given rows.
   --
   -- All existing rows in the table will be removed.
   setTableRows :: Table.TableKey -> Table.Table -> m ()
@@ -53,7 +53,10 @@ class (Functor m, Applicative m, Monad m) => Telescope m where
 
   -- | Remove a table in a data source.
   rmTableRows :: Table.TableKey -> m ()
-  rmTableRows tk = setTableRows tk Map.empty
+  rmTableRows tableKey = setTableRows tableKey Map.empty
+
+  -- | Run a function when a row in a data source changes.
+  onChangeRow :: Table.TableKey -> Table.RowKey -> (Table.Row -> m ()) -> m ()
 
 -- | User-facing class for storable data types.
 --

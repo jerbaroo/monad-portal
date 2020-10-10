@@ -85,7 +85,7 @@ overK aType primaryKey f = viewK aType primaryKey >>= \case
 rm :: (Entity a, PrimaryKey a k, Telescope m) => a -> m ()
 rm a = rmK a $ Table.primaryKey a
 
--- | Remove an entity in a data source.
+-- | Remove an entity in a data source, passing row key separately.
 rmK :: (Entity a, PrimaryKey a k, Telescope m) => a -> k -> m ()
 rmK a primaryKey =
   Class.rmRow (Table.tableKey a) (Table.RowKey $ Table.toKey primaryKey)
@@ -93,3 +93,11 @@ rmK a primaryKey =
 -- | Remove a table in a data source.
 rmTable :: (Entity a, Telescope m) => a -> m ()
 rmTable a = Class.rmTableRows $ Table.tableKey a
+
+-- * Watch for changes to entities in a data source.
+
+-- | Run a function when an entity in a data source changes.
+onChange :: (Entity a, Telescope m) => a -> (a -> m ()) -> m ()
+onChange a f =
+  Class.onChangeRow (Table.tableKey a) (Table.rowKey a) (f . Store.fromRow)
+  
