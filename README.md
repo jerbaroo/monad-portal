@@ -74,6 +74,8 @@ view is updated. In other words Telescope solves the DRY problem, there is only
 one source of data, and how it is accessed, server-side or client-side, is the
 exact same.
 
+TODO: Add comparison table between popular frameworks.
+
 ## Quick Start
 
 ## Name

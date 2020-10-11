@@ -1,5 +1,5 @@
 { mkDerivation, base, bytestring, cereal, containers, extra
-, generics-eot, keys, stdenv, strict
+, generics-eot, keys, stdenv, strict, zlib
 }:
 mkDerivation {
   pname = "telescope";
