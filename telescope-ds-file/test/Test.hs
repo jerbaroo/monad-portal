@@ -16,7 +16,7 @@ import           GHC.Generics             ( Generic )
 import           Telescope.Exception      ( TelescopeException )
 import qualified Telescope.Ops           as T
 import           Telescope.Table          ( PrimaryKey(..) )
-import           Telescope.TFile          ( runTFile )
+import           Telescope.DS.File        ( runTFile )
 import qualified Test.HUnit              as HUnit
 import qualified System.Exit             as Exit
 

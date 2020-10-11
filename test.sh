@@ -1,1 +1,1 @@
-cabal new-test --test-show-details=streaming    
+cabal new-test all --test-show-details=streaming    

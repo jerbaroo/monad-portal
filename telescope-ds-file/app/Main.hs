@@ -9,7 +9,7 @@ import           Control.Monad.IO.Class ( liftIO )
 import           GHC.Generics           ( Generic )
 import qualified Telescope.Ops          as T
 import           Telescope.Table        ( PrimaryKey(..) )
-import           Telescope.TFile        ( runTFile )
+import           Telescope.DS.File      ( runTFile )
 
 data Person = Person {
     name :: String
@@ -22,12 +22,7 @@ instance PrimaryKey Person String where
 main :: IO ()
 main = do
   let john = Person "John" 69
-  x <- runTFile $ do
-    T.set john
-    T.onChange john $ \a ->
-      liftIO $ print a
-    T.view john
-  print x
+  runTFile $ T.onChange john $ liftIO . print
   runTFile $ T.set $ Person "John" 21
   threadDelay 100000
   runTFile $ T.set $ Person "John" 22

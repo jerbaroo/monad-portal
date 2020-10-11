@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MonoLocalBinds             #-}
 
-module Telescope.TFile where
+module Telescope.DS.File where
 
 import           Control.Concurrent.MVar as MVar
 import           Control.Exception       ( catch, throwIO )
