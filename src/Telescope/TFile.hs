@@ -1,8 +1,11 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MonoLocalBinds             #-}
 
 module Telescope.TFile where
 
+import           Control.Concurrent.MVar as MVar
 import           Control.Exception       ( catch, throwIO )
+import           Control.Monad           ( void, when )
 import           Control.Monad.IO.Class  ( MonadIO, liftIO )
 import           Data.ByteString.Char8   ( pack, unpack )
 import           Data.Either.Extra       ( fromRight' )
@@ -10,6 +13,10 @@ import           Data.List               ( nub )
 import qualified Data.Map               as Map
 import           Data.Maybe              ( catMaybes, fromJust, isJust)
 import           Data.Serialize          ( Serialize, decode, encode )
+import           System.Directory        ( canonicalizePath )
+import           System.FilePath         ( takeDirectory )
+import           System.FSNotify         ( Event (Modified) )
+import qualified System.FSNotify        as FS
 import           System.IO.Error         ( isDoesNotExistError )
 import qualified System.IO.Strict       as Strict
 import           Telescope.Class         ( Telescope(..) )
@@ -41,10 +48,9 @@ instance Telescope TFile where
     tableOnDisk <- readTableOnDisk tableKey
     liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
       newUpdates table tableOnDisk
-  -- onChangeRow tableKey rowKey f = do
-    -- TODO: watch file for changes.
+  onChangeRow = onChangeRow'
 
--- | The previous (if exists) and current values for each row in a table
+-- | The current value (if exists) and update count for each row in a table.
 type TableOnDisk = Map.Map Table.RowKey (Maybe Table.Row, Int)
 
 -- | Combine a table to write to disk with the existing table on disk.
@@ -58,18 +64,40 @@ newUpdates table onDisk = do
   where combine :: Maybe Table.Row -> Maybe (Maybe Table.Row, Int) -> Maybe (Maybe Table.Row, Int)
         -- Row to save, row also on disk.
         combine (Just row) (Just (Just oldRow, ident))
-          | row == oldRow                              = Just (Just row, ident    )
-          | otherwise                                  = Just (Just row, ident + 1)
+          | row == oldRow                          = Just (Just row, ident    )
+          | otherwise                              = Just (Just row, ident + 1)
         -- Row to save, row not on disk anymore.
-        combine (Just row) (Just (Nothing, ident))     = Just (Just row, ident + 1)
+        combine (Just row) (Just (Nothing, ident)) = Just (Just row, ident + 1)
         -- Row to save, row not on disk.
-        combine (Just row) Nothing                     = Just (Just row, 0        )
+        combine (Just row) Nothing                 = Just (Just row, 0        )
         -- Remove the old value!
-        combine Nothing    (Just (Just oldRow, ident)) = Just (Nothing, ident + 1 )
+        combine Nothing    (Just (Just _, ident))  = Just (Nothing, ident + 1 )
         -- No row to save, row not on disk anymore.
-        combine Nothing    (Just (Nothing, ident))     = Just (Nothing, ident     )
+        combine Nothing    (Just (Nothing, ident)) = Just (Nothing, ident     )
         -- No row to save, row not on disk.
-        combine Nothing    Nothing                     = Nothing
+        combine Nothing    Nothing                 = Nothing
+
+-- | Run a function when a value on disk has changed.
+onChangeRow' :: Table.TableKey -> Table.RowKey -> (Maybe Table.Row -> TFile ()) -> TFile ()
+onChangeRow' tableKey rowKey f = liftIO $ do
+  path <- canonicalizePath $ tablePath tableKey
+  let moddedFile (Modified moddedPath _ _) = path == moddedPath
+      moddedFile _                         = False
+  manager     <- FS.startManager
+  tableOnDisk <- runTFile $ readTableOnDisk tableKey
+  let idEntry = Map.lookup rowKey tableOnDisk :: Maybe (Maybe Table.Row, Int)
+  lastIdMVar <- MVar.newMVar $ maybe (-1) snd idEntry
+  void $ FS.watchDir manager (takeDirectory path) moddedFile $ const $
+    runTFile $ do
+      newTableOnDisk <- readTableOnDisk tableKey
+      case Map.lookup rowKey newTableOnDisk of
+        -- Still no entry on disk.
+        Nothing                -> pure ()
+        Just (maybeRow, newId) -> do
+          -- Check ID of last known update..
+          lastId <- liftIO $ MVar.swapMVar lastIdMVar newId
+          -- ..if an update has occured since, run the function.
+          when (newId > lastId) (f maybeRow)
 
 -- | Write updates to disk.
 

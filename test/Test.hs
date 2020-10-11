@@ -6,16 +6,19 @@
 
 module Main ( main ) where
 
-import           Control.Exception       ( try )
-import           Control.Monad           ( void, when )
-import           Data.Either             ( isRight )
-import           GHC.Generics            ( Generic )
-import           Telescope.Exception     ( TelescopeException )
-import qualified Telescope.Ops          as T
-import           Telescope.Table         ( PrimaryKey(..) )
-import           Telescope.TFile         ( runTFile )
-import qualified Test.HUnit             as HUnit
-import qualified System.Exit            as Exit
+import           Control.Concurrent       ( threadDelay )
+import           Control.Concurrent.MVar as MVar
+import           Control.Exception        ( try )
+import           Control.Monad            ( void, when )
+import           Control.Monad.IO.Class   ( liftIO )
+import           Data.Either              ( isRight )
+import           GHC.Generics             ( Generic )
+import           Telescope.Exception      ( TelescopeException )
+import qualified Telescope.Ops           as T
+import           Telescope.Table          ( PrimaryKey(..) )
+import           Telescope.TFile          ( runTFile )
+import qualified Test.HUnit              as HUnit
+import qualified System.Exit             as Exit
 
 main :: IO ()
 main = do
@@ -25,6 +28,7 @@ main = do
     , testSetTableViewTable
     , testRmRmTable
     , testSetTableDuplicateUsers
+    , testOnChange
     ]
   if   HUnit.errors results + HUnit.failures results == 0
   then Exit.exitWith Exit.ExitSuccess
@@ -124,3 +128,40 @@ testSetTableDuplicateUsers = HUnit.TestCase $ do
     -- :: IO (Either TelescopeException ())
   -- when (isRight errored) $ HUnit.assertFailure
     -- "No error thrown setting duplicate users with setTable"
+
+testOnChange :: HUnit.Test
+testOnChange = HUnit.TestCase $ do
+  runTFile $ T.rmTable Person{} -- Test setup.
+  -- MVar to record changes.
+  changesMVar <- MVar.newMVar (Nothing, 0)
+  let delayAndRead = threadDelay 100000 >> MVar.readMVar changesMVar
+  -- Register on change function.
+  runTFile $ T.onChange john1 $ \p -> liftIO $ do
+    (_, lastCount) <- MVar.takeMVar changesMVar
+    MVar.putMVar changesMVar (p, lastCount + 1)
+  -- Assert 'onChange' runs after initial 'set'.
+  runTFile $ T.set $ john1
+  (lastPerson, lastCount) <- delayAndRead
+  HUnit.assertEqual "'onChange' did not record initial 'set'"
+    (Just john1) lastPerson
+  HUnit.assertEqual "'onChange' did not record initial 'set'" 1 lastCount
+  -- Assert 'onChange' runs after setting new value with same key.  
+  runTFile $ T.set john2
+  (lastPerson, lastCount) <- delayAndRead
+  HUnit.assertEqual "'onChange' did not record further 'set'"
+    (Just john2) lastPerson
+  HUnit.assertEqual "'onChange' did not record further 'set'" 2 lastCount
+  -- Assert 'onChange' does NOT run after setting same value again.  
+  runTFile $ T.set john2
+  (lastPerson, lastCount) <- delayAndRead
+  HUnit.assertEqual "'onChange' did record duplicate 'set'" 2 lastCount
+  -- Assert 'onChange' runs after removing value.
+  runTFile $ T.rm john2
+  (lastPerson, lastCount) <- delayAndRead
+  HUnit.assertEqual "'onChange' did not record 'rm'" Nothing lastPerson
+  HUnit.assertEqual "'onChange' did not record 'rm'" 3 lastCount
+  -- Assert 'onChange' does NOT run after removing value again.
+  runTFile $ T.rm john2
+  (lastPerson, lastCount) <- delayAndRead
+  HUnit.assertEqual "'onChange' did record 'rm'" 3 lastCount
+  

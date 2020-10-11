@@ -60,7 +60,7 @@ library
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base ^>=4.13.0.0, bytestring, cereal, containers, extra, generics-eot, keys, strict
+  build-depends:       base ^>=4.13.0.0, bytestring, cereal, containers, directory, extra, filepath, fsnotify, generics-eot, keys, strict
 
   -- Directories containing source files.
   hs-source-dirs:      src

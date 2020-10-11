@@ -34,8 +34,8 @@ viewK a primaryKey =
 -- | View all entities in a table in a data source.
 viewTable :: (Entity a, Telescope m) => a -> m [a]
 viewTable a = do
-   (Class.viewTableRows $ Table.tableKey a) >>=
-     pure . fmap Store.fromRow . Map.elems
+  (Class.viewTableRows $ Table.tableKey a) >>=
+    pure . fmap Store.fromRow . Map.elems
 
 -- * Set entities in a data source.
 
@@ -97,7 +97,9 @@ rmTable a = Class.rmTableRows $ Table.tableKey a
 -- * Watch for changes to entities in a data source.
 
 -- | Run a function when an entity in a data source changes.
-onChange :: (Entity a, Telescope m) => a -> (a -> m ()) -> m ()
+--
+-- The function takes a 'Maybe' to indicate the entity may have been removed.
+onChange :: (Entity a, Telescope m) => a -> (Maybe a -> m ()) -> m ()
 onChange a f =
-  Class.onChangeRow (Table.tableKey a) (Table.rowKey a) (f . Store.fromRow)
+  Class.onChangeRow (Table.tableKey a) (Table.rowKey a) (f . fmap Store.fromRow)
   

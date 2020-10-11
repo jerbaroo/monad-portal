@@ -56,7 +56,7 @@ class (Functor m, Applicative m, Monad m) => Telescope m where
   rmTableRows tableKey = setTableRows tableKey Map.empty
 
   -- | Run a function when a row in a data source changes.
-  onChangeRow :: Table.TableKey -> Table.RowKey -> (Table.Row -> m ()) -> m ()
+  onChangeRow :: Table.TableKey -> Table.RowKey -> (Maybe Table.Row -> m ()) -> m ()
 
 -- | User-facing class for storable data types.
 --
