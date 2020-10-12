@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase   #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- * Operations on entities in a data source.
+-- Operations on entities in a data source.
 module Telescope.Ops where
 
 import           Control.Monad    ( when )
@@ -11,7 +11,7 @@ import qualified Telescope.Class as Class
 import qualified Telescope.Table as Table
 import qualified Telescope.Store as Store
 
--- * View entities in a data source.
+-- View entities in a data source.
 
 -- | View an entity in a data source.
 --
@@ -37,7 +37,7 @@ viewTable a = do
   (Class.viewTableRows $ Table.tableKey a) >>=
     pure . fmap Store.fromRow . Map.elems
 
--- * Set entities in a data source.
+-- Set entities in a data source.
 
 -- | Set an entity in a data source.
 --
@@ -62,7 +62,7 @@ setTable as = Class.setManyRows tableMap
         tableMap :: Map.Map Table.TableKey Table.Table
         tableMap = Map.unionsWith Map.union rowsPerA
 
--- * Modify entities in a data source.
+-- Modify entities in a data source.
 
 -- | Modify an entity in a data source.
 over :: (Entity a, PrimaryKey a k, Telescope m) => a -> (a -> a) -> m (Maybe a)
@@ -79,7 +79,7 @@ overK aType primaryKey f = viewK aType primaryKey >>= \case
     set $ f a
     pure $ Just $ f a
 
--- * Remove entities in a data source.
+-- Remove entities in a data source.
 
 -- | Remove an entity in a data source.
 rm :: (Entity a, PrimaryKey a k, Telescope m) => a -> m ()
@@ -94,7 +94,7 @@ rmK a primaryKey =
 rmTable :: (Entity a, Telescope m) => a -> m ()
 rmTable a = Class.rmTableRows $ Table.tableKey a
 
--- * Watch for changes to entities in a data source.
+-- Watch for changes to entities in a data source.
 
 -- | Run a function when an entity in a data source changes.
 --

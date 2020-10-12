@@ -4,7 +4,7 @@
 {-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
--- * Definitions for tables and keys in a data source.
+-- Definitions for tables and keys in a data source.
 -- Telescope end-users should not need this module.
 
 module Telescope.Table where

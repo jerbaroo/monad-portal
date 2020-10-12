@@ -17,7 +17,7 @@ import           GHC.Generics                   ( Generic )
 import qualified Telescope.Exception           as T
 import qualified Telescope.Table               as Table
 
--- * A storable representation of a data type and fields.
+-- A storable representation of a data type and fields.
 --
 -- data Person { name :: String }
 -- john = Person { name = "John" }
@@ -30,11 +30,11 @@ import qualified Telescope.Table               as Table
 -- | A storable representation of a field's value.
 -- TODO: consider renaming.
 data SValue =
-  -- ^ A primitive storable value.
+  -- A primitive storable value.
   SValue Table.Prim
-  -- ^ One nested storable data type.
+  -- One nested storable data type.
   | SDT SDataType
-  -- ^ A nested list (from any 'Foldable') of storable data types.
+  -- A nested list (from any 'Foldable') of storable data types.
   | SDTs [SDataType]
   deriving (Generic, Show)
 
@@ -46,7 +46,7 @@ newtype SFields = SFields [(Table.ColumnKey, SValue)]
 data SDataType = SDataType Table.Ref SFields
   deriving (Generic, Show)
 
--- * Typeclasses and instances for converting to storable representation.
+-- Typeclasses and instances for converting to storable representation.
 
 -- | Convert a field's value to a storable representation.
 class ToSValue a where
@@ -106,7 +106,7 @@ instance {-# OVERLAPPABLE #-}
   (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
   => ToSDataType a where
 
--- * Generics-Eot implementations of 'EotSValues' and 'fieldNames'.
+-- Generics-Eot implementations of 'EotSValues' and 'fieldNames'.
 
 class EotSValues eot where
   eotSValues :: eot -> [SValue]
@@ -142,7 +142,7 @@ fieldNames a = do
 proxyByExample :: a -> Proxy a
 proxyByExample _ = Proxy
 
--- * Reconstruct a data type from 'SValue's.
+-- Reconstruct a data type from 'SValue's.
 
 class EotFromSValues eot where
   eotFromSValues :: [SValue] -> eot
@@ -193,9 +193,9 @@ class FromSValues a where
 instance (Eot.HasEot a, EotFromSValues (Eot.Eot a)) => FromSValues a where
   fromSValues = Eot.fromEot . eotFromSValues
 
--- * Encode/decode to/from bytestring.
+-- Encode/decode to/from bytestring.
 
--- ** Encode (to bytestring).
+-- Encode (to bytestring).
 
 -- | Convert an 'SDataType' to flattened 'Row's.
 -- TODO: make this take an 'a' not 'SDataType'.
@@ -217,7 +217,7 @@ sFieldsToRow (SFields fieldsMap) =
 encodeSValue :: SValue -> ByteString
 encodeSValue (SValue prim) = Serialize.encode prim
 
--- ** Decode (from bytestring).
+-- Decode (from bytestring).
 
 -- | 'SValue's reconstructed from a row.
 rowToSValues :: Table.Row -> [SValue]
