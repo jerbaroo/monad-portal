@@ -1,4 +1,5 @@
-module Main where
+{-# LANGUAGE OverloadedStrings #-}
 
-main :: IO ()
-main = putStrLn "Hello, Haskell!"
+import Reflex.Dom
+
+main = mainWidget $ el "div" $ text "Welcome to Reflex"

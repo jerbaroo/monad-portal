@@ -87,7 +87,25 @@ git clone --recurse-submodules https://github.com:jerbaroo/telescope
 cd telescope
 ```
 
-Useful commands for developing the Telescope framework:
+Commands to run the demo application:
+
+``` bash
+# Build with Nix & GHC (produce an executable).
+nix-build -o demo-frontend-ghc -A ghc.demo-frontend
+./demo-frontend-ghc/bin/demo-frontend 
+# Now visit localhost:3003 in a browser.
+```
+
+Commands for developing the demo application:
+
+``` bash
+# Build with Nix & GHCJS (produce an index.html).
+nix-build -o demo-frontend-ghcjs -A ghcjs.demo-frontend
+# Build with Cabal & GHC (supports incremental build). 
+nix-shell -A shells.ghc --run "cabal new-build demo-frontend"
+```
+
+Commands for developing the Telescope framework:
 
 ``` bash
 # Enter a shell with dependencies installed.
@@ -98,15 +116,6 @@ nix-shell -A shells.ghc
 (cd telescope && ./ghcid.sh)
 # Run a Telescope server executable.
 ./run-server.sh
-```
-
-Useful commands for developing the demo application:
-
-``` bash
-# Build with Nix & Cabal (supports incremental build). 
-nix-shell -A shells.ghc --run "cabal new-build demo-frontend"
-# Build with Nix & GHCJS.
-nix-build -o demo-frontend-ghcjs -A ghcjs.demo-frontend
 ```
 
 ## Name
