@@ -74,48 +74,50 @@ view is updated. In other words Telescope solves the DRY problem, there is only
 one source of data, and how it is accessed, server-side or client-side, is the
 exact same.
 
-TODO: Add comparison table between popular frameworks.
+<!-- TODO: Add comparison table between popular frameworks. -->
 
 ## Development
 
 Install the [Nix](https://nixos.org/download.html) package manager, clone this
-repository (with submodules) and change in to the `telescope` directory:
+repository (with submodules) and change in to the `telescope` directory. If
+you’ve never built a project with `reflex-platform` before you'll also need to
+run a configuration step.
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh
 git clone --recurse-submodules https://github.com:jerbaroo/telescope
 cd telescope
+./reflex-platform/try-reflex # Configure reflex-platform.
 ```
 
-Commands to run the demo application:
+To run the demo application:
 
 ``` bash
-# Build with Nix & GHC (produce an executable).
-nix-build -o demo-frontend-ghc -A ghc.demo-frontend
-./demo-frontend-ghc/bin/demo-frontend 
-# Now visit localhost:3003 in a browser.
+# Builds the frontend with Nix & GHC and starts a frontend server.
+# Once the server is running visit localhost:3003 in a browser.
+./run-frontend.sh
 ```
 
 Commands for developing the demo application:
 
 ``` bash
-# Build with Nix & GHCJS (produce an index.html).
-nix-build -o demo-frontend-ghcjs -A ghcjs.demo-frontend
-# Build with Cabal & GHC (supports incremental build). 
-nix-shell -A shells.ghc --run "cabal new-build demo-frontend"
+# Builds the backend with Cabal & GHC.
+./scripts/build-backend.sh
+# Builds the frontend with Nix & GHCJS (producing an index.html file).
+./scripts/build-frontend.sh
 ```
 
 Commands for developing the Telescope framework:
 
 ``` bash
-# Enter a shell with dependencies installed.
-nix-shell -A shells.ghc
-# Build and test all Telescope packages.
-./build-test.sh
-# Run GHCID for the telescope package.
-(cd telescope && ./ghcid.sh)
-# Run a Telescope server executable.
-./run-server.sh
+# Builds all Telescope packages.
+./scripts/build-telescope.sh
+# Runs tests for Telescope packages.
+./scripts/test-telescope.sh
+# Runs GHCID for the telescope package.
+./scripts/ghcid.sh telescope
+# Runs a Telescope server executable.
+cabal new-run telescope-server-exe
 ```
 
 ## Name
