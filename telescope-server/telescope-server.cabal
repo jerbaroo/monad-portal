@@ -61,7 +61,7 @@ library
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base ^>=4.13.0.0, containers, servant-server, telescope, telescope-ds-file, telescope-server-api, warp
+  build-depends:       base ^>=4.13.0.0, bytestring, containers, servant-server, telescope, telescope-ds-file, telescope-server-api, warp, websockets
 
   -- Directories containing source files.
   hs-source-dirs:      src

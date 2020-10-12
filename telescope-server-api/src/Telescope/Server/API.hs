@@ -3,14 +3,14 @@
 
 module Telescope.Server.API where
 
-import           Data.Map    ( Map )
-import           Servant.API ( (:<|>), (:>), Capture, DeleteNoContent, Get,
-                              JSON, NoContent, PostNoContent, ReqBody )
+import           Servant.API           ( (:<|>), (:>), Capture, DeleteNoContent,
+                                         Get, JSON, PostNoContent, ReqBody )
+import           Servant.API.WebSocket ( WebSocket )
 
 -- | A list of tuples of: RowKey and Row.
 type TableAsList = [(String, String)]
 
-type API =
+type RestAPI =
   "viewTable"
     :> Capture "tableKey" String
     :> Get '[JSON] TableAsList
@@ -23,3 +23,6 @@ type API =
   "rmTable"
     :> Capture "tableKey" String
     :> DeleteNoContent
+
+type WebSocketAPI = "update" :> WebSocket
+type API = RestAPI :<|> WebSocketAPI

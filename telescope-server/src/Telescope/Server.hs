@@ -7,18 +7,25 @@
 
 module Telescope.Server where
 
-import qualified Data.Map                 as Map
-import           Data.Proxy                ( Proxy(..) )
-import qualified Network.Wai.Handler.Warp as Warp
-import           Servant                   ( (:<|>)(..) )
-import qualified Servant                  as Servant
-import qualified Telescope.Class          as Class
-import qualified Telescope.Table          as Table
-import           Telescope.DS.File         ( runTFile )
-import           Telescope.Server.API     as API
+import           Control.Concurrent             ( forkIO )
+import           Control.Monad                  ( forever, void )
+import           Control.Monad.IO.Class         ( liftIO )
+import           Data.ByteString.Char8          ( ByteString, pack, unpack )
+import qualified Data.Map                      as Map
+import           Data.Proxy                     ( Proxy(..) )
+import qualified Network.Wai.Handler.Warp      as Warp
+import           Network.WebSockets             ( receiveData, sendBinaryData )
+import           Network.WebSockets.Connection  ( Connection)
+import           Servant                        ( (:<|>)(..) )
+import qualified Servant                       as Servant
+import qualified Telescope.Class               as Class
+import qualified Telescope.Table               as Table
+import           Telescope.DS.File              ( runTFile )
+import           Telescope.Server.API          as API
 
 server :: Servant.Server API
-server = viewTableHandler :<|> setTableHandler :<|> rmTableHandler
+server =
+  (viewTableHandler :<|> setTableHandler :<|> rmTableHandler) :<|> watchHandler
 
 viewTableHandler :: String -> Servant.Handler API.TableAsList
 viewTableHandler tableKey = do
@@ -36,6 +43,30 @@ rmTableHandler :: String -> Servant.Handler Servant.NoContent
 rmTableHandler tableKey = do
   runTFile $ Class.rmTableRows $ Table.TableKey tableKey
   pure Servant.NoContent
+
+data Sub = Sub Table.TableKey Table.RowKey deriving (Read, Show)
+
+watchHandler :: Connection -> Servant.Handler ()
+watchHandler conn = do
+  liftIO $ putStrLn "Connected!"
+  liftIO $ void $ forkIO $ forever $ do
+    print "Waiting to receive subscription"
+    sendBinaryData conn $ pack "hello"
+    print "woot"
+    message <- receiveData conn :: IO ByteString
+    print "Received subscription data"
+    print message
+    -- let sub :: Sub
+    --     sub@(Sub tableKey rowKey) = read $ unpack message
+    -- print $ "Subscription: " ++ show sub
+    -- runTFile $ Class.onChangeRow tableKey rowKey $
+    --   \row -> runTFile $ liftIO $ do
+    --     print (
+    --       "tableKey: " ++ show tableKey ++
+    --       "\nrowKey: " ++ show rowKey   ++
+    --       "\nrow: "    ++ show row
+    --       )
+    --     sendBinaryData conn message
 
 -- | Run a Telescope server.
 run :: Int -> IO ()

@@ -27,4 +27,4 @@ main = do
       , Person "Mary" 70
       ]
   print =<< (liftIO $ runTFile $ T.viewTable Person{})
-  Server.run 8080
+  Server.run 3001
