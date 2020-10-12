@@ -1,29 +1,23 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
 
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-
 module Telescope.Server where
 
-import           Control.Concurrent             ( forkIO )
 import           Control.Monad                  ( forever, void )
 import           Control.Monad.IO.Class         ( liftIO )
 import           Data.ByteString.Char8          ( ByteString, pack, unpack )
 import qualified Data.Map                      as Map
 import           Data.Proxy                     ( Proxy(..) )
 import qualified Network.Wai.Handler.Warp      as Warp
-import           Network.WebSockets            as WebSocket
-import           Network.WebSockets.Connection  ( Connection)
+import qualified Network.WebSockets            as WebSocket
 import           Servant                        ( (:<|>)(..) )
 import qualified Servant                       as Servant
 import qualified Telescope.Class               as Class
 import qualified Telescope.Table               as Table
 import           Telescope.DS.File              ( runTFile )
-import           Telescope.Server.API          as API
+import qualified Telescope.Server.API          as API
 
-server :: Servant.Server API
+server :: Servant.Server API.API
 server =
   (viewTableHandler :<|> setTableHandler :<|> rmTableHandler) :<|> watchHandler
 
@@ -44,27 +38,26 @@ rmTableHandler tableKey = do
   runTFile $ Class.rmTableRows $ Table.TableKey tableKey
   pure Servant.NoContent
 
-data Sub = Sub Table.TableKey Table.RowKey deriving (Read, Show)
+type Sub = (Table.TableKey, Table.RowKey)
 
-watchHandler :: Connection -> Servant.Handler ()
+watchHandler :: WebSocket.Connection -> Servant.Handler ()
 watchHandler conn = do
-  liftIO $ putStrLn "Connected!"
+  liftIO $ putStrLn "Websocket: connection opened"
   liftIO $ void $ forever $ do
-    message <- WebSocket.receiveData conn
-    let sub :: Sub
-        sub@(Sub tableKey rowKey) = read $ unpack message
-    print $ "Subscription: " ++ show sub
+    message <- WebSocket.receiveData conn :: IO ByteString
+    let (tableKey, rowKey) = read . unpack $ message :: Sub
+        (Table.TableKey tk, Table.RowKey rk) = (tableKey, rowKey)
+        confirmation = "WebSocket: new subscription for " ++ show (tk, rk)
+    WebSocket.sendTextData conn $ pack confirmation
+    putStrLn $ confirmation
     runTFile $ Class.onChangeRow tableKey rowKey $
       \row -> runTFile $ liftIO $ do
-        print (
-          "tableKey: " ++ show tableKey ++
-          "\nrowKey: " ++ show rowKey   ++
-          "\nrow: "    ++ show row
-          )
-        sendBinaryData conn message
+        putStrLn $ show $ row
+        WebSocket.sendTextData conn $ pack $ show $ row
+        putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
 
 -- | Run a Telescope server.
 run :: Int -> IO ()
 run port = do
   putStrLn $ "Running server on port " ++ show port ++ " ..."
-  Warp.run port $ Servant.serve (Proxy :: Proxy API) server
+  Warp.run port $ Servant.serve (Proxy :: Proxy API.API) server

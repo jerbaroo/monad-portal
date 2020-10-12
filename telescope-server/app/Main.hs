@@ -6,7 +6,7 @@ module Main where
 import           Control.Monad.IO.Class ( liftIO )
 import           GHC.Generics           ( Generic )
 import qualified Telescope.Ops          as T
-import           Telescope.Server       as Server
+import qualified Telescope.Server       as Server
 import           Telescope.Table        ( PrimaryKey(..) )
 import           Telescope.DS.File      ( runTFile )
 
@@ -20,11 +20,6 @@ instance PrimaryKey Person String where
 
 main :: IO ()
 main = do
-  liftIO $ runTFile $ do
-    T.rmTable Person{}
-    mapM T.set $ [
-        Person "John" 69
-      , Person "Mary" 70
-      ]
+  liftIO $ runTFile $ mapM T.set [ Person "John" 3 ]
   print =<< (liftIO $ runTFile $ T.viewTable Person{})
   Server.run 3001
