@@ -93,6 +93,8 @@ cd telescope
 To run the demo application:
 
 ``` bash
+# Runs a server with a database containing some dummy data.
+./scripts/run-server.sh
 # Builds the frontend with Nix & GHC and starts a frontend server.
 # Once the server is running visit localhost:3003 in a browser.
 ./run-frontend.sh
@@ -116,8 +118,6 @@ Commands for developing the Telescope framework:
 ./scripts/test-telescope.sh
 # Runs GHCID for the telescope package.
 ./scripts/ghcid.sh telescope
-# Runs a Telescope server executable.
-cabal new-run telescope-server-exe
 ```
 
 ## Name
