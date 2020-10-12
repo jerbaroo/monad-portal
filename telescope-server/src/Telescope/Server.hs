@@ -14,7 +14,7 @@ import           Data.ByteString.Char8          ( ByteString, pack, unpack )
 import qualified Data.Map                      as Map
 import           Data.Proxy                     ( Proxy(..) )
 import qualified Network.Wai.Handler.Warp      as Warp
-import           Network.WebSockets             ( receiveData, sendBinaryData )
+import           Network.WebSockets            as WebSocket
 import           Network.WebSockets.Connection  ( Connection)
 import           Servant                        ( (:<|>)(..) )
 import qualified Servant                       as Servant
@@ -49,24 +49,19 @@ data Sub = Sub Table.TableKey Table.RowKey deriving (Read, Show)
 watchHandler :: Connection -> Servant.Handler ()
 watchHandler conn = do
   liftIO $ putStrLn "Connected!"
-  liftIO $ void $ forkIO $ forever $ do
-    print "Waiting to receive subscription"
-    sendBinaryData conn $ pack "hello"
-    print "woot"
-    message <- receiveData conn :: IO ByteString
-    print "Received subscription data"
-    print message
-    -- let sub :: Sub
-    --     sub@(Sub tableKey rowKey) = read $ unpack message
-    -- print $ "Subscription: " ++ show sub
-    -- runTFile $ Class.onChangeRow tableKey rowKey $
-    --   \row -> runTFile $ liftIO $ do
-    --     print (
-    --       "tableKey: " ++ show tableKey ++
-    --       "\nrowKey: " ++ show rowKey   ++
-    --       "\nrow: "    ++ show row
-    --       )
-    --     sendBinaryData conn message
+  liftIO $ void $ forever $ do
+    message <- WebSocket.receiveData conn
+    let sub :: Sub
+        sub@(Sub tableKey rowKey) = read $ unpack message
+    print $ "Subscription: " ++ show sub
+    runTFile $ Class.onChangeRow tableKey rowKey $
+      \row -> runTFile $ liftIO $ do
+        print (
+          "tableKey: " ++ show tableKey ++
+          "\nrowKey: " ++ show rowKey   ++
+          "\nrow: "    ++ show row
+          )
+        sendBinaryData conn message
 
 -- | Run a Telescope server.
 run :: Int -> IO ()
