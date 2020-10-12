@@ -8,6 +8,7 @@ mkDerivation {
   libraryHaskellDepends = [
     base bytestring cereal containers extra generics-eot keys strict
   ];
+  librarySystemDepends = [ zlib ];
   homepage = "https://github.com/barischrooneyj/telescope";
   license = stdenv.lib.licenses.bsd3;
 }
