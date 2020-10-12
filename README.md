@@ -76,7 +76,38 @@ exact same.
 
 TODO: Add comparison table between popular frameworks.
 
-## Quick Start
+## Development
+
+Install the [Nix](https://nixos.org/download.html) package manager, clone this
+repository (with submodules) and change in to the `telescope` directory:
+
+``` bash
+curl -L https://nixos.org/nix/install | sh
+git clone --recurse-submodules https://github.com:jerbaroo/telescope
+cd telescope
+```
+
+Useful commands for developing the Telescope framework:
+
+``` bash
+# Enter a shell with dependencies installed.
+nix-shell -A shells.ghc
+# Build and test all Telescope packages.
+./build-test.sh
+# Run GHCID for the telescope package.
+(cd telescope && ./ghcid.sh)
+# Run a Telescope server executable.
+./run-server.sh
+```
+
+Useful commands for developing the demo application:
+
+``` bash
+# Build with Nix & Cabal (supports incremental build). 
+nix-shell -A shells.ghc --run "cabal new-build demo-frontend"
+# Build with Nix & GHCJS.
+nix-build -o demo-frontend-ghcjs -A ghcjs.demo-frontend
+```
 
 ## Name
 

@@ -23,7 +23,7 @@ library
   default-language:    Haskell2010
 
 
-executable telescope-ds-file
+executable telescope-ds-file-exe
   main-is:             Main.hs
   -- other-modules:
   -- other-extensions:

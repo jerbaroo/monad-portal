@@ -1,2 +1,5 @@
+backend-result/
+frontend-result/
+dist/
 dist-newstyle/
 *.table

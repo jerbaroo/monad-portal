@@ -1,4 +1,7 @@
  packages:
+   demo-backend/
+   demo-common/
+   demo-frontend/
    telescope/
    telescope-ds-file/
    telescope-server/
