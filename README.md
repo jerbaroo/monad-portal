@@ -1,6 +1,6 @@
 # Telescope
 
-**Not production ready.**
+**In development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
 achieves this is by abstracting away common tasks when developing a web app,
@@ -44,6 +44,9 @@ set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 **3:** Start a server and check it is serving your data as expected.
 
 **4:** Write the frontend of your reactive web app!
+
+<!-- TODO: For a full tutorial see demo/README.md -->
+<!-- TODO: Links to reflex-platform and other doc in demo/README.md -->
 
 ## Motivation
 
@@ -97,7 +100,7 @@ To run the demo application:
 ./scripts/run-server.sh
 # Builds the frontend with Nix & GHC and starts a frontend server.
 # Once the server is running visit localhost:3003 in a browser.
-./run-frontend.sh
+./scripts/run-frontend.sh
 ```
 
 Commands for developing the demo application:
