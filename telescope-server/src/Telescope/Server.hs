@@ -14,7 +14,7 @@ import           Servant                        ( (:<|>)(..) )
 import qualified Servant                       as Servant
 import qualified Telescope.Class               as Class
 import qualified Telescope.Table               as Table
-import           Telescope.DS.File              ( runTFile )
+import           Telescope.DS.File              ( runT )
 import qualified Telescope.Server.API          as API
 
 server :: Servant.Server API.API
@@ -23,19 +23,19 @@ server =
 
 viewTableHandler :: String -> Servant.Handler API.TableAsList
 viewTableHandler tableKey = do
-  rows <- runTFile $ Class.viewTableRows $ Table.TableKey tableKey
+  rows <- runT $ Class.viewTableRows $ Table.TableKey tableKey
   pure $ map (\(a, b) -> (show a, show b)) $ Map.toList rows
 
 setTableHandler :: String -> API.TableAsList -> Servant.Handler Servant.NoContent
 setTableHandler tableKey rowStrings = do
   let rows :: [(Table.RowKey, Table.Row)]
       rows = map (\(a, b) -> (read a, read b)) rowStrings
-  runTFile $ Class.setTableRows (Table.TableKey tableKey) $ Map.fromList rows
+  runT $ Class.setTableRows (Table.TableKey tableKey) $ Map.fromList rows
   pure Servant.NoContent
 
 rmTableHandler :: String -> Servant.Handler Servant.NoContent
 rmTableHandler tableKey = do
-  runTFile $ Class.rmTableRows $ Table.TableKey tableKey
+  runT $ Class.rmTableRows $ Table.TableKey tableKey
   pure Servant.NoContent
 
 type Sub = (Table.TableKey, Table.RowKey)
@@ -50,8 +50,8 @@ watchHandler conn = do
         confirmation = "WebSocket: new subscription for " ++ show (tk, rk)
     WebSocket.sendTextData conn $ pack confirmation
     putStrLn $ confirmation
-    runTFile $ Class.onChangeRow tableKey rowKey $
-      \row -> runTFile $ liftIO $ do
+    runT $ Class.onChangeRow tableKey rowKey $
+      \row -> runT $ liftIO $ do
         putStrLn $ show $ row
         WebSocket.sendTextData conn $ pack $ show $ row
         putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
