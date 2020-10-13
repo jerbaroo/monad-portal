@@ -3,17 +3,17 @@
 **In development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
-achieves this is by abstracting away common tasks when developing a web app,
+achieves this by abstracting away common tasks when developing a web app,
 **allowing you to focus on your data** and **reducing the time you need to build
-a reactive web app**
+your app**
 
-What can Telescope do for you?
-- You don't need to setup a database, Telescope can handle this for you.
-- You don't need to setup a server, Telescope can handle this for you.
-- You can write the same language (Haskell) server-side and client-side.
-- Server-side and client-side code use the same functions for database access!
-- You don't have to worry about keep client-side and server-side data in sync.
-- Your frontend will automatically react to changes in your database!
+With Telescope..
+- you don't need to setup a database, Telescope can handle this for you.
+- you don't need to setup a server, Telescope can handle this for you.
+- you can write the same language (Haskell) server-side and client-side.
+- server-side and client-side code use the same functions for database access!
+- you don't have to worry about keep client-side and server-side data in sync.
+- your frontend will automatically react to changes in your database!
 
 What is Telescope not?
 - A full featured database access library e.g. SQL.
@@ -38,12 +38,19 @@ instance PrimaryKey TodoList where
 **2:** Populate your database with some dummy data so you can test your app.
 
 ``` haskell
-set $ TodoList "pancakes" ["eggs", "milk", "flour"]
+T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
-**3:** Start a server and check it is serving your data as expected.
+**3:** Start the Telescope server (or integrate it with your existing Server).
+
+``` haskell
+Server.run port
+```
 
 **4:** Write the frontend of your reactive web app!
+
+``` haskell
+```
 
 <!-- TODO: For a full tutorial see demo/README.md -->
 <!-- TODO: Links to reflex-platform and other doc in demo/README.md -->
@@ -54,7 +61,7 @@ There are many different web frameworks out there, and they all have pros and
 cons. They pretty much all allow you to write reuseable components. Some have to
 ship a large filesize to the client, some allow you to write your server-side
 and client-side code in the same language, some can pre-render server-side for
-a speedy TTI (time to interactive) score.
+a speedy TTI (time to interactive).
 
 One idea that has become fairly popular in recent years is that of a reactive
 frontend. Whereby the view is written as a function of the current state, and
