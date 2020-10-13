@@ -32,14 +32,8 @@ main = mainWidget $ el "div" $ do
     el "li" $ text "Higher-order"
     el "li" $ text "Glitch-free"
 
--- search queries = do
---   responses <- performRequestAsync $ toRequest <$> queries
---   return $ view xhrResponse_responseText <$> responses
---   where toRequest query = XhrRequest "GET" (url query) def
-
--- inputSearch = do
---   input <- textInput def
---   let queries = updated $ input ^. textInput_value
---   results <- search queries
---   asText <- holdDyn "No results." $ pack . show <$> results
---   dynText asText
+--------------------------------
+-- DEVELOPMENT CODE BELOW     --
+-- WILL BE REFACTORED INTO A  --
+-- NEW PACKAGE BEFORE RELEASE --
+--------------------------------
