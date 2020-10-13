@@ -84,11 +84,11 @@ onChangeRow' tableKey rowKey f = liftIO $ do
   let moddedFile (Modified moddedPath _ _) = path == moddedPath
       moddedFile _                         = False
   manager     <- FS.startManager
-  tableOnDisk <- runTFile $ readTableOnDisk tableKey
+  tableOnDisk <- runT $ readTableOnDisk tableKey
   let idEntry = Map.lookup rowKey tableOnDisk :: Maybe (Maybe Table.Row, Int)
   lastIdMVar <- MVar.newMVar $ maybe (-1) snd idEntry
   void $ FS.watchDir manager (takeDirectory path) moddedFile $ const $
-    runTFile $ do
+    runT $ do
       newTableOnDisk <- readTableOnDisk tableKey
       case Map.lookup rowKey newTableOnDisk of
         -- Still no entry on disk.
@@ -114,5 +114,5 @@ readOrDefault default' path =
           | isDoesNotExistError e = pure default'
           | otherwise             = throwIO e
 
-runTFile :: MonadIO m => TFile a -> m a
-runTFile (TFile a) = liftIO a
+runT :: MonadIO m => TFile a -> m a
+runT (TFile a) = liftIO a
