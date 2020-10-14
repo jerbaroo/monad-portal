@@ -1,9 +1,13 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecursiveDo       #-}
 
-import           Data.Text    (pack)
+import           Demo.Common         ( Person(..) )
+import           Data.Text.Encoding  ( encodeUtf8, decodeUtf8 )
+import           Data.Text           ( pack, unpack )
 import           Control.Lens
 import           Reflex.Dom
+import           Telescope.Table    as Table
 
 url query = "http://localhost:3001/viewTable/" <> query
 
@@ -15,22 +19,30 @@ search queries = do
   return $ view xhrResponse_responseText <$> responses
 
 main = mainWidget $ el "div" $ do
-  -- A text input element.
-  input <- textInput def
-  -- Text input as an 'Event'.
-  let queries = updated $ input ^. textInput_value
-  el "p" $ text " "
-  -- Results to search query.
-  results <- search queries
-  -- 'Dynamic' from search results.
-  asText <- holdDyn "No results." $ pack . show <$> results
-  -- Display search results.
-  dynText asText
   el "p" $ text "Reflex is"
   el "ul" $ do
     el "li" $ text "Efficient"
     el "li" $ text "Higher-order"
     el "li" $ text "Glitch-free"
+
+  el "h3" $ text "Search database"
+  -- A text input element.
+  input <- textInput def
+  -- Results of search query.
+  results <- search $ updated $ input ^. textInput_value
+  -- Display search results.
+  dynText =<< (holdDyn "No results." $ pack . show <$> results)
+
+  el "p" $ text "Watch database"
+  rec table  <- inputElement def
+      rowKey <- inputElement def
+      watch  <- button "Watch"
+      let newMessage = fmap ((:[]) . encodeUtf8)
+            $ tag (current $ zipDynWith (<>) (value table) (value rowKey))
+            $ watch
+  ws <- webSocket "ws://localhost:3001/watch" $ def
+    & webSocketConfig_send .~ newMessage
+  pure ()
 
 --------------------------------
 -- DEVELOPMENT CODE BELOW     --

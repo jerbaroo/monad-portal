@@ -24,5 +24,5 @@ type RestAPI =
     :> Capture "tableKey" String
     :> DeleteNoContent
 
-type WebSocketAPI = "update" :> WebSocket
+type WebSocketAPI = "watch" :> WebSocket
 type API = RestAPI :<|> WebSocketAPI
