@@ -18,6 +18,8 @@ With Telescope..
 What is Telescope not?
 - A full featured database access library e.g. SQL.
 
+Telescope is intended to be used with the wonderul [Reflex](https://reflex-frp.org/) and [Servant](https://www.servant.dev/) libraries.
+
 ## Typical Workflow
 
 Building a reactive web app with Telescope looks something like this:
@@ -46,7 +48,7 @@ T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 Server.run port
 ```
 
-**4:** Write the frontend of your reactive web app!
+**4:** Write the frontend of your reactive web app with [Reflex](https://reflex-frp.org/).!
 
 ``` haskell
 -- NOTE: work in progress.
@@ -120,7 +122,7 @@ To run the demo application:
 
 ``` bash
 # Runs a server with a database containing some dummy data.
-./scripts/run-server.sh
+./scripts/run-backend.sh
 # Builds the frontend with Nix & GHC and starts a frontend server.
 # Once the server is running visit localhost:3003 in a browser.
 ./scripts/run-frontend.sh
