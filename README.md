@@ -36,27 +36,33 @@ instance PrimaryKey TodoList where
   primaryKey = name
 ```
 
-**2:** Populate your database with some dummy data so you can test your app.
+**2.** Populate your database with some dummy data so you can test your app.
 
 ``` haskell
 T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
-**3:** Start the Telescope server (or integrate it with your existing Server).
+**3.** Start the Telescope server (or integrate it with your existing Server).
 
 ``` haskell
 Server.run port
 ```
 
-**4:** Write the frontend of your reactive web app with [Reflex](https://reflex-frp.org/).!
+**4.** Write the frontend of your reactive web app with [Reflex](https://reflex-frp.org/)!
 
 ``` haskell
 -- NOTE: work in progress.
 main = mainWidget $ el "div" $ do
-  el "h3" $ text "View a table:"
+  el "h3" $ text "View a list:"
   input   <- textInput def
   results <- T.view (constant TodoList{}) $ updated $ input ^. textInput_value
   dynText =<< (holdDyn "No results." $ (pack . show) <$> results)
+```
+
+**5.** Modify data in your database and watch your frontend react! Data in your database can be modified server-side or client-side with the same interface!
+
+``` haskell
+T.over $ TodoList{} "pancakes" (\list -> list ++ ["sugar", "lemon juice"])
 ```
 
 A full tutorial and demo application are available TODO.
