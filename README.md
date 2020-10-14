@@ -3,16 +3,16 @@
 **In development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
-achieves this by abstracting away common tasks when developing a web app,
-**allowing you to focus on your data** and **reducing the time you need to build
-your app**
+achieves this by abstracting away the usual tasks you need to undertake when
+developing a web app, **allowing you to focus on your data** and **reducing the
+time you need to build your app**.
 
 With Telescope..
-- you don't need to setup a database, Telescope can handle this for you.
+- you don't need to setup a database, Telescope can handle this for yoU.
 - you don't need to setup a server, Telescope can handle this for you.
 - you can write the same language (Haskell) server-side and client-side.
 - server-side and client-side code use the same functions for database access!
-- you don't have to worry about keep client-side and server-side data in sync.
+- you don't have to worry about keeping client-side and server-side data in sync.
 - your frontend will automatically react to changes in your database!
 
 What is Telescope not?
@@ -50,10 +50,20 @@ Server.run port
 **4:** Write the frontend of your reactive web app!
 
 ``` haskell
+-- NOTE: work in progress.
 ```
 
-<!-- TODO: For a full tutorial see demo/README.md -->
-<!-- TODO: Links to reflex-platform and other doc in demo/README.md -->
+A full tutorial and demo application are available TODO.
+<!-- TODO: links to reflex-platform and other doc in demo/README.md -->
+
+The following diagram shows the typical setup of a Telescope application. The
+database and server are setup by Telescope with minimal work by a user. The
+server, and a local user using a terminal, are communicating with the database
+via the Telescope interface. Finally a client is communicating with the database
+through the server, note that the client's communication with the server is with
+the same Telescope interface.
+
+![diagram](./diagram/diagram.pdf)
 
 ## Motivation
 
