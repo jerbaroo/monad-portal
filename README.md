@@ -3,7 +3,7 @@
 **In development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
-achieves this by abstracting away the usual tasks you need to undertake when
+achieves this by abstracting away common tasks you need to undertake when
 developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
@@ -22,8 +22,7 @@ What is Telescope not?
 
 Building a reactive web app with Telescope looks something like this:
 
-**1.** Declare the data types used in your application, derive the necessary
-`Generic` instances and define a primary key for your data types.
+**1.** Declare the data types used in your application.
 
 ``` haskell
 data TodoList = TodoList {
@@ -51,6 +50,11 @@ Server.run port
 
 ``` haskell
 -- NOTE: work in progress.
+main = mainWidget $ el "div" $ do
+  el "h3" $ text "View a table:"
+  input   <- textInput def
+  results <- T.view (constant TodoList{}) $ updated $ input ^. textInput_value
+  dynText =<< (holdDyn "No results." $ (pack . show) <$> results)
 ```
 
 A full tutorial and demo application are available TODO.
