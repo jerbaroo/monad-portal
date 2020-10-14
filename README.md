@@ -63,7 +63,7 @@ via the Telescope interface. Finally a client is communicating with the database
 through the server, note that the client's communication with the server is with
 the same Telescope interface.
 
-![diagram](./diagram/diagram.pdf)
+![diagram](diagram/diagram.png)
 
 ## Motivation
 
