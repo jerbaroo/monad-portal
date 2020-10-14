@@ -8,7 +8,7 @@ developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
 With Telescope..
-- you don't need to setup a database, Telescope can handle this for yoU.
+- you don't need to setup a database, Telescope can handle this for you.
 - you don't need to setup a server, Telescope can handle this for you.
 - you can write the same language (Haskell) server-side and client-side.
 - server-side and client-side code use the same functions for database access!
