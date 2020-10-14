@@ -111,7 +111,7 @@ run a configuration step.
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh
-git clone --recurse-submodules https://github.com:jerbaroo/telescope
+git clone --recurse-submodules https://github.com/jerbaroo/telescope
 cd telescope
 ./reflex-platform/try-reflex # Configure reflex-platform.
 ```
