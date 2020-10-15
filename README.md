@@ -8,7 +8,6 @@
 - [Introduction](#introduction)
 - [Typical Workflow](#typical-workflow)
 - [Architecture](#architecture)
-- [Is Telescope for Me?](#is-telescope-for-me)
 - [Why Create Telescope?](#why-create-telescope)
 - [Under the Hood](#under-the-hood)
 - [Contributing](#contributing)
@@ -22,16 +21,28 @@ achieves this by abstracting away common tasks you need to undertake when
 developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
-With Telescope..
-- you can write the same language (Haskell) server-side and client-side.
-- server-side and client-side code use the same functions for database access!
-- you don't have to worry about keeping client-side and server-side data in sync.
-- your frontend will automatically react to changes in your database!
-- you can let Telescope setup a database and server for you.
+An application built with Telescope's is..
+- *Well-typed:* write the same language (Haskell) server-side and client-side.
+  This prevents server/client protocol mismatches and allows code to be shared
+  between engineering teams.
+- *Reactive:* don't worry about keeping client-side and server-side data in
+  sync, with Telescope your frontend can react to changes in your database and
+  your database can react to changes in your frontend!
+- *Consistent:* use the same interface for database access, whether you're
+  writing server-side or client-side code!
+- *Minimal:* let Telescope setup a database and server for you so you can focus
+  on your business logic, or don't! Telescope can do the heavy lifting for you,
+  but if you prefer, you can integrate Telescope with your existing database,
+  server or frontend.
 
 What can't Telescope do?
-- Provide a full featured database query library e.g. SQL.
-- Generate a small file to be sent to browser clients.
+- Provide a full-featured database query language e.g. SQL.
+- Generate a small file to be sent to web clients.
+
+Telescope is particularly well-suited for applications where events are pushed
+by the server e.g. notifications and dashboards. Telescope also handles forms
+and input-validation very well. On the flip-side, applications with heavy
+client-side computation such as animations are not well-suited for Telescope.
 
 ## Typical Workflow
 Building a reactive web app with Telescope looks something like this:
@@ -75,42 +86,37 @@ main = mainWidget $ el "div" $ do
 **5.** Modify data in your database and watch your frontend react!
 
 ``` haskell
-T.over $ TodoList{} "pancakes" (\list -> list ++ ["sugar", "lemon juice"])
+T.over $ TodoList{} "pancakes" (++ ["sugar", "lemon juice"])
 ```
 
 A full tutorial and demo application are available TODO.
 <!-- TODO: links to reflex-platform and other doc in demo/README.md -->
 
 ## Architecture
-The most important component from a user-perspective is the Telescope interface,
-a set of functions that allow you to access external data. The same functions
-that this interface provides can be used server-side and client-side.
+The most important component of Telescope from a developer's perspective is the
+Telescope interface, a set of functions that allow you to access external data.
+This interface is available both for server-side and client-side code.
 
-The following diagram shows the typical setup of a Telescope application. In
-this diagram each telescope icon represents usage of the Telescope interface. A
-server, and a local developer over a terminal, are accessing the database via
-the Telescoper interface. A browser client is accessing the server via the
-Telescope interface, however the server is really just a proxy for the database,
-this means client-code can access the database via the Telescope interface
-the same as the local developer.
+The following diagram shows one possible setup of a Telescope application. In
+this diagram each telescope icon represents usage of the Telescope interface.
+The bottom row of the diagram represents a developer working on their machine
+and interacting with a development server running on the same machine. More
+specifically the developer has opened a GHCI repl and imported the Telescope
+interface and is using that to interact with the database.
+
+The top row of the diagram represents client-code running in a browser
+interacting with a server via the Telescope interface. The server itself is
+interacting with the database via the Telescope interface. In effect the server
+is only a proxy to the database for the client, allowing both server-side and
+client-side access to the database with the same functions.
+
+<!-- Parameterised, data source agnostic, alternate configuration. -->
+
+<!-- Data is DRY. -->
 
 <p align="center">
   <img src="diagram/diagram.png" />
 </p>
-
-## Is Telescope for me?
-Telescope is particularly well-suited for applications where events are pushed
-by the server e.g. notifications and dashboards. Telescope also handles forms
-and input-validation very well. On the flip-side, applications with heavy
-client-side computation such as animations are not well-suited for Telescope.
-
-Telescope applications are intended to be integrated with the wonderul
-[Reflex](https://reflex-frp.org/) and [Servant](https://www.servant.dev/)
-libraries. However this is not a hard requirement, a core part of Telescope's
-design is don't force the user to do everything the Telescope way. You can swap
-out the server provided by Telescope, or use a different frontend library.
-Currently the only component that is required is the Telescope-provided
-database, in the future this requirement will also be removed.
 
 ## Why create Telescope?
 There are many different web frameworks out there, and they all have pros and
@@ -134,10 +140,8 @@ Polymer and Vue provide more powerful solutions for data flow that allow you to
 write your frontend as a function of your application state. However, in both
 cases you still have to manage communication with your server. The primary
 motivation behind the Telescope framework is that a developer should be able to
-write their frontend as a function of data in their database, liberated from
-concerns of *where* data is stored or *when* data is updated.
-
-<!-- TODO: Add comparison table between popular frameworks. -->
+write their frontend as a function of data, liberated from concerns of *where*
+that data is stored or *when* that data is updated.
 
 ## Under the Hood
 TODO talk about how generic programming allows handling of most data types.
@@ -186,9 +190,9 @@ Commands for developing the Telescope framework:
 ```
 
 ## Name
-Before this framework was able to setup a database or a server, it was really
-just a data access library. Providing functions to access remote data i.e. data
-stored in a database, or accessing data over the network. These functions are
-"lens-like", they are similar to the functions `view`, `set` etc. that you may
-know from the `lens` library. So if you squint your eyes a little you could say
-this library provides a lens to look at remote data... like a telescope.
+Before this framework was able to setup a database or a server, it really just
+provided an interface to access remote data i.e. data stored in a database or
+data over the network. This interface is "lens-like", the fucntions are similar
+to the functions `view`, `set` etc. that you may know from the `lens` library.
+So if you squint your eyes a little you could say this library provides a lens
+to look at remote data... like a telescope.
