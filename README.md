@@ -25,21 +25,21 @@ An application built with Telescope's is..
 <a href="http://ultravioletbat.deviantart.com/art/Yay-Evil-111710573">
   <img width="384" height="576" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
 </a>
-- *Well-typed:* write the same language (Haskell) server-side and client-side.
+- **Well-typed:** write the same language (Haskell) server-side and client-side.
   This prevents server/client protocol mismatches and allows code to be shared
   between engineering teams.
-- *Reactive:* don't worry about keeping client-side and server-side data in
+- **Reactive:** don't worry about keeping client-side and server-side data in
   sync, with Telescope your frontend can react to changes in your database and
   your database can react to changes in your frontend!
-- *Consistent:* use the same interface for database access, whether you're
+- **Consistent:** use the same interface for database access, whether you're
   writing server-side or client-side code!
-- *Minimal:* let Telescope setup a database and server for you so you can focus
+- **Minimal:** let Telescope setup a database and server for you so you can focus
   on your business logic, or don't! Telescope can do the heavy lifting for you,
   but if you prefer, you can integrate Telescope with your existing database,
   server or frontend.
 
 What can't Telescope do?
-- Provide a full-featured database query language e.g. SQL.
+- Provide a full-featured database query language.
 - Generate a small file to be sent to web clients.
 
 Telescope is particularly well-suited for applications where events are pushed
