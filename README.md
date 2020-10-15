@@ -18,21 +18,12 @@ What does Telescope not do?
 - Provide a full featured database query library e.g. SQL.
 - Generate a small file to be sent to browser clients.
 
-## Is Telescope for me?
-
-Telescope is particularly well-suited for applications where events are pushed
-by the server e.g. notifications and dashboards. Telescope also handles forms
-and input-validation very well. On the flip-side, applications with heavy
-client-side computation such as animations are not well-suited for Telescope.
-
-Telescope applications are intended to be integrated with the wonderul
-[Reflex](https://reflex-frp.org/) and [Servant](https://www.servant.dev/)
-libraries. However this is not a hard requirement, a core part of Telescope's
-design is to not force the user to commit to the Telescope way. Feel free to
-swap out the server provided by Telescope, or to use a different frontend
-library. Currently the only component that is a requirement is the
-Telescope-provided database, in the future I intend to also remove this
-requirement.
+- [Typical Workflow](#typical-workflow)
+- [Architecture](#architecture)
+- [Is Telescope for me?](#is-telescope-for-me)
+- [Why create Telescope?](#why-create-telescope)
+- [Contributing](#contributing)
+- [Name](#name)
 
 ## Typical Workflow
 
@@ -101,7 +92,22 @@ interface the same as the lcal developer.
   <img src="diagram/diagram.png" />
 </p>
 
-## Motivation
+## Is Telescope for me?
+
+Telescope is particularly well-suited for applications where events are pushed
+by the server e.g. notifications and dashboards. Telescope also handles forms
+and input-validation very well. On the flip-side, applications with heavy
+client-side computation such as animations are not well-suited for Telescope.
+
+Telescope applications are intended to be integrated with the wonderul
+[Reflex](https://reflex-frp.org/) and [Servant](https://www.servant.dev/)
+libraries. However this is not a hard requirement, a core part of Telescope's
+design is: don't force the user to do everything the Telescope way. You can swap
+out the server provided by Telescope, or use a different frontend library.
+Currently the only component that is required is the Telescope-provided
+database, in the future this requirement will also be removed.
+
+## Why create Telescope?
 
 There are many different web frameworks out there, and they all have pros and
 cons. They pretty much all allow you to write reuseable components. Some can
@@ -129,7 +135,7 @@ concerns of where data is stored or when the view is updated.
 
 <!-- TODO: Add comparison table between popular frameworks. -->
 
-## Development
+## Contributing
 
 Install the [Nix](https://nixos.org/download.html) package manager, clone this
 repository (with submodules) and change in to the `telescope` directory. If
@@ -180,4 +186,4 @@ just a data access library. Providing functions to access remote data i.e. data
 stored in a database, or accessing data over the network. These functions are
 "lens-like", they are similar to the functions `view`, `set` etc. that you may
 know from the `lens` library. So if you squint your eyes a little you could say
-the library provides a lens to look at remote data... like a telescope.
+this library provides a lens to look at remote data... like a telescope.
