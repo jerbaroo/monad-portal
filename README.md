@@ -22,6 +22,9 @@ developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
 An application built with Telescope's is..
+<a href="http://ultravioletbat.deviantart.com/art/Yay-Evil-111710573">
+  <img width="384" height="576" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
+</a>
 - *Well-typed:* write the same language (Haskell) server-side and client-side.
   This prevents server/client protocol mismatches and allows code to be shared
   between engineering teams.
