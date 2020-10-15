@@ -8,12 +8,11 @@ developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
 With Telescope..
-- you don't need to setup a database, Telescope can handle this for you.
-- you don't need to setup a server, Telescope can handle this for you.
 - you can write the same language (Haskell) server-side and client-side.
 - server-side and client-side code use the same functions for database access!
 - you don't have to worry about keeping client-side and server-side data in sync.
 - your frontend will automatically react to changes in your database!
+- you can let Telescope setup a database and server for you.
 
 What does Telescope not do?
 - Provide a full featured database query library e.g. SQL.
@@ -22,13 +21,18 @@ What does Telescope not do?
 ## Is Telescope for me?
 
 Telescope is particularly well-suited for applications where events are pushed
-by the server e.g. notifications and dashboards. Telescope also hands forms and
-input very validation. On the flip-side, applications with heavy client-side
-computation such as animations are not well-suited for Telescope.
+by the server e.g. notifications and dashboards. Telescope also handles forms
+and input-validation very well. On the flip-side, applications with heavy
+client-side computation such as animations are not well-suited for Telescope.
 
-Telescope is built to be integrated with the wonderul
+Telescope applications are intended to be integrated with the wonderul
 [Reflex](https://reflex-frp.org/) and [Servant](https://www.servant.dev/)
-libraries.
+libraries. However this is not a hard requirement, a core part of Telescope's
+design is to not force the user to commit to the Telescope way. Feel free to
+swap out the server provided by Telescope, or to use a different frontend
+library. Currently the only component that is a requirement is the
+Telescope-provided database, in the future I intend to also remove this
+requirement.
 
 ## Typical Workflow
 
