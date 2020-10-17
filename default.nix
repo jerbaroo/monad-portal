@@ -13,7 +13,7 @@
   };
 
   shells = {
-    ghc   = ["demo-common" "demo-frontend"];
-    ghcjs = ["demo-common" "demo-frontend"];
+    ghc   = ["demo-backend" "demo-common" "demo-frontend"];
+    ghcjs = [               "demo-common" "demo-frontend"];
   };
 })

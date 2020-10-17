@@ -21,22 +21,20 @@ achieves this by abstracting away common tasks you need to undertake when
 developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
-An application built with Telescope's is..
-<a href="http://ultravioletbat.deviantart.com/art/Yay-Evil-111710573">
-  <img width="384" height="576" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
+An application built with Telescope is..
+<a href="https://unsplash.com/photos/_Sr03VSKIeg">
+  <img width="311" height="466" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
 </a>
-- **Well-typed:** write the same language (Haskell) server-side and client-side.
-  This prevents server/client protocol mismatches and allows code to be shared
-  between engineering teams.
-- **Reactive:** don't worry about keeping client-side and server-side data in
+- **reactive:** don't worry about keeping client-side and server-side data in
   sync, with Telescope your frontend can react to changes in your database and
   your database can react to changes in your frontend!
-- **Consistent:** use the same interface for database access, whether you're
-  writing server-side or client-side code!
-- **Minimal:** let Telescope setup a database and server for you so you can focus
-  on your business logic, or don't! Telescope can do the heavy lifting for you,
-  but if you prefer, you can integrate Telescope with your existing database,
-  server or frontend.
+- **strongly-typed:** writing Haskell across the stack prevents server/client
+  protocol mismatches and gives you confidence in the product you're building.
+- **consistent:** use the same interface for database access, whether you're
+  writing server-side code or client-side code!
+- **minimal:** let Telescope setup a database and server for you, so you can
+  focus on your business logic. Or don't! If you prefer, you can integrate
+  Telescope with your existing database, server or frontend.
 
 What can't Telescope do?
 - Provide a full-featured database query language.
@@ -111,7 +109,7 @@ The top row of the diagram represents client-code running in a browser
 interacting with a server via the Telescope interface. The server itself is
 interacting with the database via the Telescope interface. In effect the server
 is only a proxy to the database for the client, allowing both server-side and
-client-side access to the database with the same functions.
+client-side code to access the database via the same interface.
 
 <!-- Parameterised, data source agnostic, alternate configuration. -->
 
@@ -153,7 +151,7 @@ TODO talk about how generic programming allows handling of most data types.
 Install the [Nix](https://nixos.org/download.html) package manager, clone this
 repository (with submodules) and change in to the `telescope` directory. If
 you’ve never built a project with `reflex-platform` before you'll also need to
-run a configuration step. Initial setup will take a looong time.
+run a configuration step. Note that initial builds will take a looong time.
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh
@@ -162,34 +160,27 @@ cd telescope
 ./reflex-platform/try-reflex # Configure reflex-platform.
 ```
 
-To run the demo application:
+Commands for developing the Telescope framework:
 
 ``` bash
-# Runs a server with a database containing some dummy data.
-./scripts/run-backend.sh
-# Builds the frontend with Nix & GHC and starts a frontend server.
-# Once the server is running visit localhost:3003 in a browser.
-./scripts/run-frontend.sh
+# Build all packages in this repository.
+./scripts/build.sh all
+# Type-check the package passed as first argument.
+./scripts/check.sh telescope
+# Run tests for all Telescope packages.
+./scripts/test.sh
 ```
 
 Commands for developing the demo application:
 
 ``` bash
-# Builds the backend with Cabal & GHC.
-./scripts/build-backend.sh
-# Builds the frontend with Nix & GHCJS (producing an index.html file).
-./scripts/build-frontend.sh
-```
-
-Commands for developing the Telescope framework:
-
-``` bash
-# Builds all Telescope packages.
-./scripts/build-telescope.sh
-# Runs tests for Telescope packages.
-./scripts/test-telescope.sh
-# Runs GHCID for the telescope package.
-./scripts/ghcid.sh telescope
+# Type-check the package passed as first argument.
+./scripts/check.sh demo-backend
+# Run the demo application, view in a browser at localhost:3001.
+./scripts/run.sh demo-backend
+# Run a second server to serve the frontend. View in a broser at localhost:3003,
+# this is faster than generating static files for the backend server to serve.
+./scripts/run.sh demo-frontend
 ```
 
 ## Name
