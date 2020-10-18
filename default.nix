@@ -1,6 +1,7 @@
-{ system ? builtins.currentSystem }:
+{ system ? builtins.currentSystem, withHoogle ? false }:
 (import ./reflex-platform { inherit system; }).project ({ pkgs, ... }: {
   useWarp = true;
+  inherit withHoogle;
   packages = {
     demo-backend         = ./demo-backend;
     demo-common          = ./demo-common;
