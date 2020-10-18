@@ -9,7 +9,7 @@ import           Control.Lens
 import           Reflex.Dom
 import           Telescope.Table    as Table
 
-url query = "http://localhost:3001/viewTable/" <> query
+url query = "http://localhost:3002/viewTable/" <> query
 
 search queries = do
   let toRequest query = XhrRequest "GET" (url query) def
@@ -40,7 +40,7 @@ main = mainWidget $ el "div" $ do
       let newMessage = fmap ((:[]) . encodeUtf8)
             $ tag (current $ zipDynWith (<>) (value table) (value rowKey))
             $ watch
-  ws <- webSocket "ws://localhost:3001/watch" $ def
+  ws <- webSocket "ws://localhost:3002/watch" $ def
     & webSocketConfig_send .~ newMessage
   pure ()
 

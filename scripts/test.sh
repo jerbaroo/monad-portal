@@ -1,4 +1,4 @@
 #!/bin/sh
 
-. scripts/functions.sh
-workaround "cabal new-test $(flags) telescope-ds-file"
+. scripts/util.sh
+nix-shell -A shells.ghc --run "cabal new-test $(flags) telescope-ds-file"

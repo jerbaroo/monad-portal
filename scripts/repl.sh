@@ -1,4 +1,4 @@
 #!/bin/sh
 
-. scripts/functions.sh
-workaround "cabal new-repl $(flags) demo-backend"
+. scripts/util.sh
+nix-shell -A shells.ghc --run "cabal new-repl $(flags) demo-backend"

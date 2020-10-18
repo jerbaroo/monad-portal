@@ -7,7 +7,7 @@
 ### Table of Contents
 - [Introduction](#introduction)
 - [Typical Workflow](#typical-workflow)
-- [Architecture](#architecture)
+- [Application Architecture](#application-architecture)
 - [Why Create Telescope?](#why-create-telescope)
 - [Under the Hood](#under-the-hood)
 - [Contributing](#contributing)
@@ -93,7 +93,7 @@ T.over $ TodoList{} "pancakes" (++ ["sugar", "lemon juice"])
 A full tutorial and demo application are available TODO.
 <!-- TODO: links to reflex-platform and other doc in demo/README.md -->
 
-## Architecture
+## Application Architecture
 The most important component of Telescope from a developer's perspective is the
 Telescope interface, a set of functions that allow you to access external data.
 This interface is available both for server-side and client-side code.
@@ -160,26 +160,39 @@ cd telescope
 ./reflex-platform/try-reflex # Configure reflex-platform.
 ```
 
-Commands for developing the Telescope framework:
+Development commands for the Telescope framework:
 
 ``` bash
-# Build all packages in this repository.
-./scripts/build.sh all
 # Type-check the package passed as first argument.
 ./scripts/check.sh telescope
 # Run tests for all Telescope packages.
 ./scripts/test.sh
 ```
 
-Commands for developing the demo application:
+Development commands for the demo application:
 
 ``` bash
+# Build the demo-backend or demo-frontend packages.
+./scripts/build/dev/backend.sh 
+./scripts/build/dev/frontend.sh 
+# Run a server for demo-backend, or demo-frontend.
+./scripts/run/dev/backend.sh
+./scripts/run/dev/frontend.sh
 # Type-check the package passed as first argument.
 ./scripts/check.sh demo-backend
-# Run the server for the demo application.
-./scripts/run.sh demo-backend
-# Run the frontend and open the application.
-./scripts/run.sh demo-frontend
+# Enter a REPL for interacting with demo database.
+./scripts/repl.sh
+```
+
+Production commands for the demo application:
+
+``` bash 
+# Build the demo-backend server.
+./scripts/build/prod/backend.sh 
+# Generate demo-frontend static files.
+./scripts/build/prod/frontend.sh 
+# Run a server for demo-backend.
+./scripts/run/prod/backend.sh
 ```
 
 ## Name

@@ -4,7 +4,8 @@
 module Telescope.Server.API where
 
 import           Servant.API           ( (:<|>), (:>), Capture, DeleteNoContent,
-                                         Get, JSON, PostNoContent, ReqBody )
+                                         Get, JSON, NoContent, PostNoContent,
+                                         ReqBody )
 import           Servant.API.WebSocket ( WebSocket )
 
 -- | A list of tuples of: RowKey and Row.
@@ -18,11 +19,11 @@ type RestAPI =
   "setTable"
     :> Capture "tableKey" String
     :> ReqBody '[JSON] TableAsList
-    :> PostNoContent
+    :> PostNoContent '[JSON] NoContent
   :<|>
   "rmTable"
     :> Capture "tableKey" String
-    :> DeleteNoContent
+    :> DeleteNoContent '[JSON] NoContent
 
 type WebSocketAPI = "watch" :> WebSocket
 type API = RestAPI :<|> WebSocketAPI
