@@ -176,14 +176,10 @@ Development commands for the Telescope framework:
 Development commands for the demo application:
 
 ``` bash
-# Build the demo-backend or demo-frontend packages.
-./scripts/build/dev/backend.sh 
-./scripts/build/dev/frontend.sh 
-# Run a server for demo-backend, or demo-frontend.
+# Run a server for demo-backend, server restarts on file change.
 ./scripts/run/dev/backend.sh
+# Run a server for demo-frontend, server restarts on file change.
 ./scripts/run/dev/frontend.sh
-# Type-check the package passed as first argument.
-./scripts/check.sh demo-backend
 # Enter a REPL for interacting with demo database.
 ./scripts/repl.sh
 ```
