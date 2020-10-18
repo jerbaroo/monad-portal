@@ -21,20 +21,22 @@ achieves this by abstracting away common tasks you need to undertake when
 developing a web app, **allowing you to focus on your data** and **reducing the
 time you need to build your app**.
 
-An application built with Telescope is..
 <a href="https://unsplash.com/photos/_Sr03VSKIeg">
-  <img width="311" height="466" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
+  <img width="288" height="432" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
 </a>
+
+An application built with Telescope is..
 - **reactive:** don't worry about keeping client-side and server-side data in
-  sync, with Telescope your frontend can react to changes in your database and
-  your database can react to changes in your frontend!
+  sync, with Telescope your frontend can automatically react to changes in your
+  database and your database can be updated seamlessly by your frontend!
 - **strongly-typed:** writing Haskell across the stack prevents server/client
-  protocol mismatches and gives you confidence in the product you're building.
+  protocol mismatches and other run-time errors, allowing you to move fast and
+  not break things.
 - **consistent:** use the same interface for database access, whether you're
   writing server-side code or client-side code!
-- **minimal:** let Telescope setup a database and server for you, so you can
-  focus on your business logic. Or don't! If you prefer, you can integrate
-  Telescope with your existing database, server or frontend.
+- **minimal:** let Telescope handle the database and server for you, so you can
+  focus on your business logic. Or if you prefer, integrate Telescope with your
+  existing Haskell stack.
 
 What can't Telescope do?
 - Provide a full-featured database query language.
