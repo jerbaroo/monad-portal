@@ -12,14 +12,11 @@ import qualified Network.Wai.Handler.Warp      as Warp
 import qualified Network.WebSockets            as WebSocket
 import           Servant                        ( (:<|>)(..) )
 import qualified Servant                       as Servant
+import           Servant.Server.StaticFiles     ( serveDirectoryFileServer )
 import qualified Telescope.Class               as Class
 import qualified Telescope.Table               as Table
 import           Telescope.DS.File              ( runT )
 import qualified Telescope.Server.API          as API
-
-server :: Servant.Server API.API
-server =
-  (viewTableHandler :<|> setTableHandler :<|> rmTableHandler) :<|> watchHandler
 
 viewTableHandler :: String -> Servant.Handler API.TableAsList
 viewTableHandler tableKey = do
@@ -55,6 +52,12 @@ watchHandler conn = do
         putStrLn $ show $ row
         WebSocket.sendTextData conn $ pack $ show $ row
         putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
+
+server :: Servant.Server API.API
+server =
+  (viewTableHandler :<|> setTableHandler :<|> rmTableHandler)
+  :<|> watchHandler
+  :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
 
 -- | Run a Telescope server.
 run :: Int -> IO ()
