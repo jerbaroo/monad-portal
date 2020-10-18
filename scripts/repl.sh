@@ -1,4 +1,4 @@
 #!/bin/sh
 
-. scripts/workaround.sh
-workaround 'cabal new-repl --repl-options -fno-warn-missing-fields demo-backend'
+. scripts/functions.sh
+workaround "cabal new-repl $(flags) demo-backend"

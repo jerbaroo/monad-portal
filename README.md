@@ -176,10 +176,9 @@ Commands for developing the demo application:
 ``` bash
 # Type-check the package passed as first argument.
 ./scripts/check.sh demo-backend
-# Run the demo application, view in a browser at localhost:3001.
+# Run the server for the demo application.
 ./scripts/run.sh demo-backend
-# Run a second server to serve the frontend. View in a broser at localhost:3003,
-# this is faster than generating static files for the backend server to serve.
+# Run the frontend and open the application.
 ./scripts/run.sh demo-frontend
 ```
 

@@ -11,7 +11,7 @@ main :: IO ()
 main = do
   runT $ mapM T.set [ Person "John" 69 ]
   print =<< runT (T.viewTable Person{})
-  Server.run 3001
+  Server.run 3002
 
 {-
 

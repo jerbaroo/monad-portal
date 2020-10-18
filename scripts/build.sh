@@ -1,4 +1,4 @@
 #!/bin/sh
 
-. scripts/workaround.sh
-workaround "cabal new-build $@"
+. scripts/functions.sh
+workaround "cabal new-build $(flags) $@"
