@@ -9,8 +9,7 @@
 
 module Telescope.Class (module Telescope.Class, PrimaryKey) where
 
-import           Data.Functor      ( (<&>) )
-import           Control.Monad     ( void, when )
+import           Control.Monad     ( void )
 import qualified Data.Map         as Map
 import qualified Telescope.Store  as Store
 import qualified Telescope.Table  as Table
@@ -26,7 +25,9 @@ class ToFromF f a where
 -- All operations are based on 'Table.Row' and similar data types.
 class (Applicative f, Monad m, forall a. ToFromF f a) => Telescope m f | m -> f where
   escape :: f a -> m a
-  enter  :: a   -> m (f a)
+  escape = pure . fromF
+  enter  :: a -> m (f a)
+  enter = pure . toF
 
   -- | View a table row in a data source.
   --

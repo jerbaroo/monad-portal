@@ -49,8 +49,6 @@ readTableOnDisk :: Table.TableKey -> TFile TableOnDisk
 readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 
 instance Telescope TFile TFileIdentity where
-  escape (TFileIdentity (Identity a)) = pure a
-  enter = pure . TFileIdentity . Identity
 
   viewTableRows tableKeyId = do
     tableOnDisk <- readTableOnDisk $ fromF tableKeyId

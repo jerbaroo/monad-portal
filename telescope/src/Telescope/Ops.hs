@@ -6,7 +6,6 @@
 module Telescope.Ops where
 
 import           Data.Functor      ( (<&>) )
-import           Control.Monad     ( void, when )
 import qualified Data.Map        as Map
 import           Telescope.Class  ( Entity, PrimaryKey, Telescope )
 import qualified Telescope.Class as Class
@@ -25,26 +24,46 @@ view a = viewK a $ Table.primaryKey a
 viewK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> m (Maybe a)
 viewK a primaryKey =
+  pure . Class.fromF =<< viewKRx (Class.toF a) (Class.toF primaryKey)
+
+-- | Like 'viewK', but a reactive version.
+viewKRx :: (Entity a, PrimaryKey a k, Telescope m f)
+  => f a -> f k -> m (f (Maybe a))
+viewKRx a primaryKey =
   Class.viewRow
   (Table.tableKey <$> a)
   (Table.RowKey . Table.toKey <$> primaryKey) >>=
     pure . (fmap $ fmap Store.fromRow)
 
 -- | View all entities in a table in a data source.
-viewTable :: (Entity a, Telescope m f) => f a -> m (f [a])
-viewTable a = do
-  (Class.viewTableRows $ Table.tableKey <$> a) >>=
-    pure . (fmap $ fmap Store.fromRow . Map.elems)
+viewTable :: (Entity a, Telescope m f) => a -> m [a]
+viewTable a = Class.fromF <$> (viewTableRx $ Class.toF a)
+
+-- | Like 'viewTable', but a reactive version.
+viewTableRx :: (Entity a, Telescope m f) => f a -> m (f [a])
+viewTableRx a =
+  (Class.viewTableRows $ Table.tableKey <$> a)
+  >>= pure . (fmap $ fmap Store.fromRow . Map.elems)
 
 -- | Set an entity in a data source.
 --
 -- WARNING: overwrites existing entity with same primary key.
-set :: (Entity a, Telescope m f) => f a -> m ()
-set a = Class.setManyRows $ Store.toRows . Store.toSDataType <$> a
+set :: (Entity a, Telescope m f) => a -> m ()
+set a = setRx $ Class.toF a
 
 -- | Infix version of 'set'.
-(.~) :: (Entity a, Telescope m f) => f a -> m ()
+(.~) :: (Entity a, Telescope m f) => a -> m ()
 (.~) = set
+
+-- | Like 'set', but a reactive version.
+setRx :: (Entity a, Telescope m f) => f a -> m ()
+setRx a = Class.setManyRows $ Store.toRows . Store.toSDataType <$> a
+
+-- | Set a table in a data source to ONLY the given entities.
+--
+-- WARNING: overwrites all existing entities in the table.
+setTable :: (Entity a, Telescope m f) => [a] -> m ()
+setTable = setTableRx . Class.toF
 
 -- | Set a table in a data source to ONLY the given entities.
 --
@@ -52,34 +71,36 @@ set a = Class.setManyRows $ Store.toRows . Store.toSDataType <$> a
 -- TODO: return either, handling error case of duplicate rows.
 -- TODO: use 'setTable' for values of type 'a'.
 -- TODO: use 'setMany' only for values not of type 'a'.
-setTable :: (Entity a, Telescope m f) => f [a] -> m ()
-setTable as = Class.setManyRows tableMap
+setTableRx :: (Entity a, Telescope m f) => f [a] -> m ()
+setTableRx as = Class.setManyRows tableMap
   where rowsPerA = fmap (map $ Store.toRows . Store.toSDataType) as
         tableMap = fmap (Map.unionsWith Map.union) rowsPerA
 
 -- | Modify an entity in a data source.
 over :: (Entity a, PrimaryKey a k, Telescope m f)
-  => a -> (Maybe a -> Maybe a) -> m (Maybe a)
+  => a -> (a -> a) -> m (Maybe a)
 over a f = overK a (Table.primaryKey a) f
 
--- | Like 'over' but passing primary key separately.
+-- | Like 'over', but passing primary key separately.
 overK :: (Entity a, PrimaryKey a k, Telescope m f)
-  => a -> k -> (Maybe a -> Maybe a) -> m (Maybe a)
+  => a -> k -> (a -> a) -> m (Maybe a)
 overK aType primaryKey f =
-  pure . Class.fromF
-  =<< overKRx (Class.toF aType) (Class.toF primaryKey) (Class.toF f)
+  overKRx (Class.toF aType) (Class.toF primaryKey) (Class.toF f)
+  >>= pure . Class.fromF
 
--- | Modify an entity in a data source, passing primary key separately.
+-- | Like 'overK', but a reactive version.
 overKRx :: forall a k f m. (Entity a, PrimaryKey a k, Telescope m f)
-  => f a -> f k -> f (Maybe a -> Maybe a) -> m (f (Maybe a))
+  => f a -> f k -> f (a -> a) -> m (f (Maybe a))
 overKRx aType primaryKey f = do
-  fMaybeA <- viewK aType primaryKey
-  _ <- Class.escape $ f <*> fMaybeA <&> \newMaybeA -> do
+  let fMaybe :: f (Maybe a -> Maybe a)
+      fMaybe = fmap fmap f
+  fMaybeA <- viewKRx aType primaryKey
+  _ <- Class.escape $ fMaybe <*> fMaybeA <&> \newMaybeA -> do
     case newMaybeA of
       Nothing   -> pure ()
       Just newA -> do
-          fNewA <- Class.enter newA
-          set fNewA :: m ()
+        fNewA <- Class.enter newA
+        setRx fNewA :: m ()
   pure $ fMaybeA
 
 -- | Remove an entity in a data source.

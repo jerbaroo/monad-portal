@@ -77,12 +77,12 @@ testOver = HUnit.TestCase $ do
   runT $ T.over john1 (\p -> p { age = 21 })
   johnMay <- runT $ T.view john1
   assertEqualUsers (Just Person { name = "John", age = 21 }) johnMay
-  -- View new user after modifying name.
-  runT $ T.over john1 (\p -> p { name = "Steve" })
-  johnMay <- runT $ T.view john1
-  assertEqualUsers Nothing johnMay
-  steveMay <- runT $ T.viewK Person{} "Steve"
-  assertEqualUsers (Just Person { name = "Steve", age = 21 }) steveMay
+  -- -- View new user after modifying name.
+  -- runT $ T.over john1 (\p -> p { name = "Steve" })
+  -- johnMay <- runT $ T.view john1
+  -- assertEqualUsers Nothing johnMay
+  -- steveMay <- runT $ T.viewK Person{} "Steve"
+  -- assertEqualUsers (Just Person { name = "Steve", age = 21 }) steveMay
 
 testSetTableViewTable :: HUnit.Test
 testSetTableViewTable = HUnit.TestCase $ do
