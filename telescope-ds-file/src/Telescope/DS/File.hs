@@ -1,5 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MonoLocalBinds             #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
 
 module Telescope.DS.File where
 
@@ -9,6 +11,7 @@ import           Control.Monad           ( void, when )
 import           Control.Monad.IO.Class  ( MonadIO, liftIO )
 import           Data.ByteString.Char8   ( pack, unpack )
 import           Data.Either.Extra       ( fromRight' )
+import           Data.Functor.Identity   ( Identity(..) )
 import           Data.List               ( nub )
 import qualified Data.Map               as Map
 import           Data.Maybe              ( catMaybes, fromJust, isJust)
@@ -19,17 +22,23 @@ import           System.FSNotify         ( Event (Modified) )
 import qualified System.FSNotify        as FS
 import           System.IO.Error         ( isDoesNotExistError )
 import qualified System.IO.Strict       as Strict
-import           Telescope.Class         ( Telescope(..) )
+import           Telescope.Class         ( Telescope(..), ToFromF(..) )
 import qualified Telescope.Table        as Table
 
 -- | A naive file-backed data source, functional but slow.
---
--- TODO: Use MonadReader to hold path to data source.
---
--- For each data type, 'TFile' maintains one file where all instances of that
--- data type are stored. Inside one of these files the data type instances are
--- stored as one serialized nested map: {RowKey: {ColumnKey: value}}.
 newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
+
+-- | Telescope operations are not packed in any special container.
+newtype TFileIdentity a = TFileIdentity (Identity a)
+  deriving (Functor, Applicative)
+
+-- | Enable conversion to/from the container.
+instance ToFromF TFileIdentity a where
+  toF = TFileIdentity . Identity
+  fromF (TFileIdentity (Identity a)) = a
+
+runT :: MonadIO m => TFile a -> m a
+runT (TFile a) = liftIO a
 
 -- | File path for a table.
 tablePath :: Table.TableKey -> String
@@ -39,16 +48,23 @@ tablePath (Table.TableKey tkName) = tkName ++ ".table"
 readTableOnDisk :: Table.TableKey -> TFile TableOnDisk
 readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 
-instance Telescope TFile where
-  viewTableRows tableKey = do
-    tableOnDisk <- readTableOnDisk tableKey
-    pure $ fmap (fromJust . fst) $ Map.filter (isJust . fst) tableOnDisk
+instance Telescope TFile TFileIdentity where
+  escape (TFileIdentity (Identity a)) = pure a
+  enter = pure . TFileIdentity . Identity
+
+  viewTableRows tableKeyId = do
+    tableOnDisk <- readTableOnDisk $ fromF tableKeyId
+    pure $ toF $ fmap (fromJust . fst) $ Map.filter (isJust . fst) tableOnDisk
+
   -- TODO: file lock this function.
-  setTableRows tableKey table = do
+  setTableRows tableKeyId tableId = do
+    let (tableKey, table) = (fromF tableKeyId, fromF tableId)
     tableOnDisk <- readTableOnDisk tableKey
     liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
       newUpdates table tableOnDisk
-  onChangeRow = onChangeRow'
+     
+  onChangeRow tableKeyId rowKeyId fId =
+    onChangeRow' (fromF tableKeyId) (fromF rowKeyId) (fromF fId)
 
 -- | The current value (if exists) and update count for each row in a table.
 type TableOnDisk = Map.Map Table.RowKey (Maybe Table.Row, Int)
@@ -113,6 +129,3 @@ readOrDefault default' path =
   where catchDoesNotExistError e
           | isDoesNotExistError e = pure default'
           | otherwise             = throwIO e
-
-runT :: MonadIO m => TFile a -> m a
-runT (TFile a) = liftIO a

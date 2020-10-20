@@ -1,6 +1,8 @@
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecursiveDo       #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE RecursiveDo          #-}
 
 import           Demo.Common         ( Person(..) )
 import           Data.Text.Encoding  ( encodeUtf8, decodeUtf8 )
@@ -9,6 +11,20 @@ import           Control.Lens
 import           Reflex.Dom
 import           Telescope.Table    as Table
 
+import qualified Data.Map as Map
+import Telescope.Class (Telescope(..))
+
+instance (Functor m, Applicative m, Monad m, MonadWidget t m) => Telescope m where
+  -- viewTableRows' tableKey = do
+  --   let toRequest query = XhrRequest "GET" (url query) def
+  --   -- Async responses to search query.
+  --   resp <- performRequestAsync $ toRequest <$> (constant "Person")
+  --   return $ (const Map.empty) <$> resp
+  setTableRows tableKey table = do
+    let url query = "http://localhost:3002/setTable/" <> query
+        toRequest query = XhrRequest "GET" (url query) def
+    performRequestAsync $ toRequest <$> queries
+ 
 url query = "http://localhost:3002/viewTable/" <> query
 
 search queries = do

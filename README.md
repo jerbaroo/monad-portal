@@ -169,8 +169,8 @@ Development commands for the Telescope framework:
 ./scripts/check.sh telescope
 # Run tests for all Telescope packages.
 ./scripts/test.sh
-# Start a Hoogle server on a given port.
-./scripts/hoogle.sh
+# Start a Hoogle server (optional port argument).
+./scripts/hoogle.sh 5000
 ```
 
 Development commands for the demo application:
