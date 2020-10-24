@@ -21,6 +21,7 @@ import qualified Telescope.Server.API          as API
 viewTableHandler :: String -> Servant.Handler API.TableAsList
 viewTableHandler tableKey = do
   fRows <- runT $ Class.viewTableRows $ Class.toF $ Table.TableKey tableKey
+  liftIO $ print $ Class.fromF fRows
   pure $ map (\(a, b) -> (show a, show b)) $ Map.toList $ Class.fromF fRows
 
 setTableHandler :: String -> API.TableAsList -> Servant.Handler Servant.NoContent

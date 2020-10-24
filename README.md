@@ -14,31 +14,25 @@
 - [Name](#name)
 
 # Introduction
-**In development. Not production ready.**
+**Functional but still in early development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
 achieves this by abstracting away common tasks you need to undertake when
-developing a web app, **allowing you to focus on your data** and **reducing the
-time you need to build your app**.
-
-<a href="https://unsplash.com/photos/_Sr03VSKIeg">
-  <img width="288" height="432" src="https://images.unsplash.com/photo-1521268875244-13b6e2b31e30?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" align="right" />
-</a>
+developing a web app, **allowing you to focus on your business logic** and
+**reducing the time you need to build your app**.
 
 An application built with Telescope is..
 - **reactive:** don't worry about keeping client-side and server-side data in
-  sync, with Telescope your frontend can automatically react to changes in your
-  database and your database can be updated seamlessly by your frontend!
-- **strongly-typed:** writing Haskell across the stack prevents server/client
-  protocol mismatches and other run-time errors, allowing you to move fast and
-  not break things.
-- **consistent:** use the same interface for database access, whether you're
-  writing server-side code or client-side code!
-- **minimal:** let Telescope handle the database and server for you, so you can
-  focus on your business logic. Or if you prefer, integrate Telescope with your
-  existing Haskell stack.
+  sync, with Telescope your _frontend can automatically react to changes in your
+  database_ and your database can be updated seamlessly by your frontend!
+- **robust:** writing the strongly-typed language Haskell across your stack
+  prevents server/client protocol mismatches and other run-time errors, allowing
+  you to _move fast and not break things._
+- **minimal:** Telescope can setup a database and server for you and also manage
+  communication between client and server, so you can _focus on the parts of your
+  application that really matter._
 
-What can't Telescope do?
+What doesn't Telescope do currently?
 - Provide a full-featured database query language.
 - Generate a small file to be sent to web clients.
 
@@ -46,6 +40,9 @@ Telescope is particularly well-suited for applications where events are pushed
 by the server e.g. notifications and dashboards. Telescope also handles forms
 and input-validation very well. On the flip-side, applications with heavy
 client-side computation such as animations are not well-suited for Telescope.
+
+Telescope is built on top of the wonderful [Servant](https://www.servant.dev/)
+and [Reflex](https://reflex-frp.org/) Haskell libraries!
 
 ## Typical Workflow
 Building a reactive web app with Telescope looks something like this:
@@ -62,20 +59,19 @@ instance PrimaryKey TodoList where
   primaryKey = name
 ```
 
-**2.** Populate your database with some dummy data so you can test your app.
+**2.** Populate your database with some data.
 
 ``` haskell
 T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
-**3.** Start the Telescope server (or integrate it with your existing
-[Servant](https://www.servant.dev/) Server).
+**3.** Start the Telescope server.
 
 ``` haskell
 Server.run port
 ```
 
-**4.** Write the frontend of your reactive web app with [Reflex](https://reflex-frp.org/)!
+**4.** Write the frontend of your reactive web app!
 
 ``` haskell
 -- NOTE: work in progress.

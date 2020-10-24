@@ -6,6 +6,7 @@
 module Telescope.Ops where
 
 import           Data.Functor      ( (<&>) )
+import           Control.Monad     ( join )
 import qualified Data.Map        as Map
 import           Telescope.Class  ( Entity, PrimaryKey, Telescope )
 import qualified Telescope.Class as Class
@@ -24,7 +25,8 @@ view a = viewK a $ Table.primaryKey a
 viewK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> m (Maybe a)
 viewK a primaryKey =
-  pure . Class.fromF =<< viewKRx (Class.toF a) (Class.toF primaryKey)
+  viewKRx (Class.toF a) (Class.toF primaryKey)
+  >>= pure . Class.fromF
 
 -- | Like 'viewK', but a reactive version.
 viewKRx :: (Entity a, PrimaryKey a k, Telescope m f)
@@ -32,8 +34,8 @@ viewKRx :: (Entity a, PrimaryKey a k, Telescope m f)
 viewKRx a primaryKey =
   Class.viewRow
   (Table.tableKey <$> a)
-  (Table.RowKey . Table.toKey <$> primaryKey) >>=
-    pure . (fmap $ fmap Store.fromRow)
+  (Table.RowKey . Table.toKey <$> primaryKey)
+  >>= pure . (fmap $ fmap Store.fromRow)
 
 -- | View all entities in a table in a data source.
 viewTable :: (Entity a, Telescope m f) => a -> m [a]
@@ -95,7 +97,7 @@ overKRx aType primaryKey f = do
   let fMaybe :: f (Maybe a -> Maybe a)
       fMaybe = fmap fmap f
   fMaybeA <- viewKRx aType primaryKey
-  _ <- Class.escape $ fMaybe <*> fMaybeA <&> \newMaybeA -> do
+  _ <- join $ Class.escape $ fMaybe <*> fMaybeA <&> \newMaybeA -> do
     case newMaybeA of
       Nothing   -> pure ()
       Just newA -> do

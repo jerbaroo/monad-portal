@@ -63,7 +63,8 @@ instance (ToPrim a, ToPrim b, ToPrim c, ToPrim d) => ToKey (a, b, c, d) where
 -- | Unique identifier for a table in a database.
 --
 -- Derived via 'Typeable' from the type of a data type.
-newtype TableKey  = TableKey  String deriving (Eq, Ord, Read, Show, Generic, Serialize)
+newtype TableKey  = TableKey { unTableKey :: String }
+  deriving (Eq, Ord, Read, Show, Generic, Serialize)
 
 -- | Unique identifier for a row in a database.
 --
