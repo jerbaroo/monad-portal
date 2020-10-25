@@ -6,7 +6,7 @@
 module Telescope.Ops where
 
 import           Data.Functor      ( (<&>) )
-import           Control.Monad     ( join )
+import           Control.Monad     ( join, when )
 import qualified Data.Map        as Map
 import           Telescope.Class  ( Entity, PrimaryKey, Telescope )
 import qualified Telescope.Class as Class
@@ -21,7 +21,7 @@ view a = viewK a $ Table.primaryKey a
 (^.) :: (Entity a, PrimaryKey a k, Telescope m f) => a -> m (Maybe a)
 (^.) = view
 
--- | Like 'view' but passing row key separately.
+-- | Like 'view' but row key is passed separately.
 viewK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> m (Maybe a)
 viewK a primaryKey =
@@ -83,7 +83,7 @@ over :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> (a -> a) -> m (Maybe a)
 over a f = overK a (Table.primaryKey a) f
 
--- | Like 'over', but passing primary key separately.
+-- | Like 'over', but row key is passed separately.
 overK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> (a -> a) -> m (Maybe a)
 overK aType primaryKey f =
@@ -93,23 +93,28 @@ overK aType primaryKey f =
 -- | Like 'overK', but a reactive version.
 overKRx :: forall a k f m. (Entity a, PrimaryKey a k, Telescope m f)
   => f a -> f k -> f (a -> a) -> m (f (Maybe a))
-overKRx aType primaryKey f = do
-  let fMaybe :: f (Maybe a -> Maybe a)
-      fMaybe = fmap fmap f
-  fMaybeA <- viewKRx aType primaryKey
-  _ <- join $ Class.escape $ fMaybe <*> fMaybeA <&> \newMaybeA -> do
-    case newMaybeA of
-      Nothing   -> pure ()
-      Just newA -> do
-        fNewA <- Class.enter newA
-        setRx fNewA :: m ()
-  pure $ fMaybeA
+overKRx aTypeF primaryKeyF funcF = do
+  oldAMayF <- viewKRx aTypeF primaryKeyF
+      -- Modify the function to return (old value, new value)..
+  let funcF' :: f (a -> (a, a))
+      funcF' = (\func a -> (a, func a)) <$> funcF
+      -- ..and apply this function over the "viewed" entity.
+      oldNewAMayF :: f (Maybe (a, a))
+      oldNewAMayF = fmap <$> funcF' <*> oldAMayF
+  -- Whenever the entity changes, apply the function and "set" the update. In
+  -- addition, if the primary key has changed, the old entity is "rm"ed.
+  _ <- join $ Class.escape $ oldNewAMayF <&> \case
+    Nothing           -> pure ()
+    Just (oldA, newA) -> do
+      when (Table.rowKey oldA /= Table.rowKey newA) $ rm oldA
+      set newA
+  pure $ fmap snd <$> oldNewAMayF
 
 -- | Remove an entity in a data source.
 rm :: (Entity a, PrimaryKey a k, Telescope m f) => a -> m ()
 rm a = rmK a $ Table.primaryKey a
 
--- | Like 'rm' but passing row key separately.
+-- | Like 'rm' but row key is passed separately.
 rmK :: (Entity a, PrimaryKey a k, Telescope m f) => a -> k -> m ()
 rmK a primaryKey =
   Class.rmRow

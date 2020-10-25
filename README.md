@@ -6,7 +6,7 @@
 
 ### Table of Contents
 - [Introduction](#introduction)
-- [Typical Workflow](#typical-workflow)
+- [Getting Started](#getting-started)
 - [Application Architecture](#application-architecture)
 - [Why Create Telescope?](#why-create-telescope)
 - [Under the Hood](#under-the-hood)
@@ -14,7 +14,7 @@
 - [Name](#name)
 
 # Introduction
-**Functional but still in early development. Not production ready.**
+**Functional but still in development. Not production ready.**
 
 Telescope helps you build reactive web apps with Haskell, fast. Telescope
 achieves this by abstracting away common tasks you need to undertake when
@@ -41,10 +41,10 @@ by the server e.g. notifications and dashboards. Telescope also handles forms
 and input-validation very well. On the flip-side, applications with heavy
 client-side computation such as animations are not well-suited for Telescope.
 
-Telescope is built on top of the wonderful [Servant](https://www.servant.dev/)
-and [Reflex](https://reflex-frp.org/) Haskell libraries!
+Telescope is built on top of the wonderful [Reflex](https://reflex-frp.org/) and
+[Servant](https://www.servant.dev/) Haskell libraries!
 
-## Typical Workflow
+## Getting Started
 Building a reactive web app with Telescope looks something like this:
 
 **1.** Declare the data types used in your application.

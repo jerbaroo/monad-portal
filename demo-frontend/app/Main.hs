@@ -47,16 +47,6 @@ instance (
         -- mergedTables = (Map.fromList . fmap (mapPair read)) <$> textEvnt
     holdDyn Map.empty tableEvnt
 
-  --   let toRequest query = XhrRequest "GET" (url query) def
-  --   -- Async responses to search query.
-  --   resp <- performRequestAsync $ toRequest <$> (constant "Person")
-  --   return $ (const Map.empty) <$> resp
-  -- setTableRows tableKey table = do
-  --   let url query = "http://localhost:3002/setTable/" <> query
-  --       toRequest query = XhrRequest "GET" (url query) def
-  --   performRequestAsync $ toRequest <$> queries
- 
-
 search queries = do
   let toRequest query = XhrRequest "GET" (root <> "/viewTable/" <> query) def
   -- Async responses to search query.
