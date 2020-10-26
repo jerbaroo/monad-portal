@@ -44,6 +44,7 @@ instance (
     -- ..and decode responses.
     let tableAsListEvent = mapMaybe id $
           decodeXhrResponse <$> responseEvent :: Event t (API.TableAsList)
+    logEvent tableAsListEvent $ \t -> "viewTableRows: " ++ show t
     holdDyn Map.empty $ Map.fromList <$> tableAsListEvent
 
 -- | Prints a string when an event fires.  This differs slightly from

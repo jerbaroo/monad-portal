@@ -76,10 +76,12 @@ Server.run port
 ``` haskell
 -- NOTE: work in progress.
 main = mainWidget $ el "div" $ do
-  el "h3" $ text "View a list:"
-  input   <- textInput def
-  results <- T.view (constant TodoList{}) $ updated $ input ^. textInput_value
-  dynText =<< (holdDyn "No results." $ (pack . show) <$> results)
+  el "h3" $ text "View a todo list"
+  inputDyn <- textInput def
+  list <- flip T.viewKRx
+    (unpack <$> inputDyn ^. textInput_value)
+    (const TodoList{} <$> (inputDyn ^. textInput_value))
+  dynText $ fmap (pack . show) people
 ```
 
 **5.** Modify data in your database and watch your frontend react!

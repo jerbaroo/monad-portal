@@ -15,9 +15,9 @@ import qualified Telescope.Table         as Table
 main = mainWidget $ el "div" $ do
   el "h3" $ text "viewTableRows"
   el "p" $ text "enter table name:"
-  viewTableInputDyn <- textInput def
+  viewTableRowsInputDyn <- textInput def
   table <- Class.viewTableRows $
-    Table.TableKey . unpack <$> viewTableInputDyn ^. textInput_value
+    Table.TableKey . unpack <$> viewTableRowsInputDyn ^. textInput_value
   dynText $ fmap (pack . show) table
 
   el "h3" $ text "viewTableRx"
@@ -31,7 +31,7 @@ main = mainWidget $ el "div" $ do
   nameInputDyn <- textInput def
   people <- flip T.viewKRx
     (unpack <$> nameInputDyn ^. textInput_value)
-    =<< holdDyn Person{} (const Person{} <$> updated (nameInputDyn ^. textInput_value))
+    (const Person{} <$> (nameInputDyn ^. textInput_value))
   dynText $ fmap (pack . show) people
 
   el "p" $ text "Watch database"
@@ -44,9 +44,3 @@ main = mainWidget $ el "div" $ do
   ws <- webSocket "ws://localhost:3002/watch" $ def
     & webSocketConfig_send .~ newMessage
   pure ()
-
---------------------------------
--- DEVELOPMENT CODE BELOW     --
--- WILL BE REFACTORED INTO A  --
--- NEW PACKAGE BEFORE RELEASE --
---------------------------------
