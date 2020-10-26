@@ -3,13 +3,24 @@
 
 module Telescope.Server.API where
 
-import           Servant.API           ( (:<|>), (:>), Capture, DeleteNoContent,
-                                         Get, JSON, NoContent, PostNoContent,
-                                         Raw, ReqBody )
-import           Servant.API.WebSocket ( WebSocket )
+import           Data.Aeson             ( FromJSON, ToJSON )
+import           Servant.API            ( (:<|>), (:>), Capture,
+                                          DeleteNoContent, Get, JSON, NoContent,
+                                          PostNoContent, Raw, ReqBody )
+import           Servant.API.WebSocket  ( WebSocket )
+import           Telescope.Table       as Table
 
--- | A list of tuples of: RowKey and Row.
-type TableAsList = [(String, String)]
+type TableAsList = [(Table.RowKey, Table.Row)]
+
+instance FromJSON Table.ColumnKey
+instance FromJSON Table.Key
+instance FromJSON Table.Prim
+instance FromJSON Table.RowKey
+
+instance ToJSON Table.ColumnKey
+instance ToJSON Table.Key
+instance ToJSON Table.Prim
+instance ToJSON Table.RowKey
 
 type RestAPI =
   "viewTable"

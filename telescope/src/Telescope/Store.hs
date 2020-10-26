@@ -16,6 +16,7 @@ import qualified Generics.Eot                  as Eot
 import           GHC.Generics                   ( Generic )
 import qualified Telescope.Exception           as T
 import qualified Telescope.Table               as Table
+import           Text.Read                      ( readEither )
 
 -- A storable representation of a data type and fields.
 --
@@ -214,8 +215,8 @@ sFieldsToRow (SFields fieldsMap) =
 
 -- | Convert 'SValue' to a bytestring.
 -- TODO: handle case of nested 'SDataType'.
-encodeSValue :: SValue -> ByteString
-encodeSValue (SValue prim) = Serialize.encode prim
+encodeSValue :: SValue -> String
+encodeSValue (SValue prim) = show prim
 
 -- Decode (from bytestring).
 
@@ -224,9 +225,9 @@ rowToSValues :: Table.Row -> [SValue]
 rowToSValues row = [decodeSValue bs | (_, bs) <- row]
 
 -- | An 'SValue' from a bytestring.
-decodeSValue :: ByteString -> SValue
+decodeSValue :: String -> SValue
 decodeSValue prim =
-  case Serialize.decode prim of
+  case readEither prim of
     Left  _ -> throw $ T.DeserializeException $
       "Could not deserialize the following into 'SValue':\n  " ++ show prim
     Right r -> SValue r

@@ -1,45 +1,38 @@
 {-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RecursiveDo          #-}
 
-import           Demo.Common         ( Person(..) )
-import           Data.Text.Encoding  ( encodeUtf8, decodeUtf8 )
-import           Data.Text           ( pack, unpack )
-import           Control.Lens
+import           Demo.Common              ( Person(..) )
+import           Data.Text.Encoding       ( encodeUtf8, decodeUtf8 )
+import           Data.Text                ( pack, unpack )
+import           Control.Lens             ( (^.), view )
 import           Reflex.Dom
-import           Telescope.Table    as Table
-import           Telescope.Server.API as API
-
-root = "http://localhost:3002"
-
-search queries = do
-  let toRequest query = XhrRequest "GET" (root <> "/viewTable/" <> query) def
-  -- Async responses to search query.
-  responses <- performRequestAsync $ toRequest <$> queries
-  -- Extract text from response.
-  return $ view xhrResponse_responseText <$> responses
+import qualified Telescope.Ops           as T
+import qualified Telescope.Class         as Class
+import           Telescope.DS.Reflex.Dom  ( logEvent, root )
+import qualified Telescope.Table         as Table
 
 main = mainWidget $ el "div" $ do
-  el "p" $ text "Reflex is"
-  el "ul" $ do
-    el "li" $ text "Efficient"
-    el "li" $ text "Higher-order"
-    el "li" $ text "Glitch-free"
-
-  el "h3" $ text "Search database"
-  -- A text input element.
-  input <- textInput def
-  -- Results of search query.
-  results <- search $ updated $ input ^. textInput_value
-  -- Display search results.
-  dynText =<< (holdDyn "No results." $ pack . show <$> results)
-
-  table <- viewTableRows =<< (holdDyn (TableKey "") $ (Table.TableKey . show) <$> results)
+  el "h3" $ text "viewTableRows"
+  el "p" $ text "enter table name:"
+  viewTableInputDyn <- textInput def
+  table <- Class.viewTableRows $
+    Table.TableKey . unpack <$> viewTableInputDyn ^. textInput_value
   dynText $ fmap (pack . show) table
+
+  el "h3" $ text "viewTableRx"
+  viewTableButtonEvent <- button "click to view Person table"
+  people <- T.viewTableRx
+    =<< holdDyn Person{} (const Person{} <$> viewTableButtonEvent)
+  dynText $ fmap (pack . show) people
+
+  el "h3" $ text "viewKRx"
+  el "p" $ text "Enter Person's name:"
+  nameInputDyn <- textInput def
+  people <- flip T.viewKRx
+    (unpack <$> nameInputDyn ^. textInput_value)
+    =<< holdDyn Person{} (const Person{} <$> updated (nameInputDyn ^. textInput_value))
+  dynText $ fmap (pack . show) people
 
   el "p" $ text "Watch database"
   rec table  <- inputElement def

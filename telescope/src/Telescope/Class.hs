@@ -23,7 +23,8 @@ class ToFromF f a where
 -- | Defines primitive operations to interact with a data source.
 --
 -- All operations are based on 'Table.Row' and similar data types.
-class (Applicative f, Monad m, forall a. ToFromF f a) => Telescope m f | m -> f where
+class (Applicative f, Monad m, forall a. ToFromF f a)
+  => Telescope m f | m -> f where
   escape :: f a -> m a
   escape = pure . fromF
   enter  :: a -> m (f a)

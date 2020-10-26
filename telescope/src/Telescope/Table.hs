@@ -9,7 +9,7 @@
 
 module Telescope.Table where
 
-import           Data.ByteString                ( ByteString )
+-- import           Data.ByteString                ( ByteString )
 import           Data.Map                      as Map
 import           Data.Serialize                 ( Serialize )
 import           Data.Typeable                  ( Typeable, typeOf )
@@ -81,7 +81,7 @@ newtype ColumnKey = ColumnKey String deriving (Eq, Ord, Read, Show, Generic, Ser
 type Ref = (TableKey, RowKey)
 
 -- | A row consists of a serialized value per column.
-type Row = [(ColumnKey, ByteString)]
+type Row = [(ColumnKey, String)]
 
 -- | A table consists of a number of rows, each with a key.
 type Table = Map RowKey Row

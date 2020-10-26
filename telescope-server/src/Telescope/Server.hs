@@ -22,15 +22,13 @@ viewTableHandler :: String -> Servant.Handler API.TableAsList
 viewTableHandler tableKey = do
   fRows <- runT $ Class.viewTableRows $ Class.toF $ Table.TableKey tableKey
   liftIO $ print $ Class.fromF fRows
-  pure $ map (\(a, b) -> (show a, show b)) $ Map.toList $ Class.fromF fRows
+  pure $ Map.toList $ Class.fromF fRows
 
 setTableHandler :: String -> API.TableAsList -> Servant.Handler Servant.NoContent
-setTableHandler tableKey rowStrings = do
-  let rows :: [(Table.RowKey, Table.Row)]
-      rows = map (\(a, b) -> (read a, read b)) rowStrings
+setTableHandler tableKey tableAsList = do
   runT $ Class.setTableRows
     (Class.toF $ Table.TableKey tableKey)
-    (Class.toF $ Map.fromList rows)
+    (Class.toF $ Map.fromList tableAsList)
   pure Servant.NoContent
 
 rmTableHandler :: String -> Servant.Handler Servant.NoContent
