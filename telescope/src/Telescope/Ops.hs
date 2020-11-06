@@ -21,6 +21,10 @@ view a = viewK a $ Table.primaryKey a
 (^.) :: (Entity a, PrimaryKey a k, Telescope m f) => a -> m (Maybe a)
 (^.) = view
 
+-- | Like 'view' but a reactive version.
+viewRx :: (Entity a, PrimaryKey a k, Telescope m f) => f a -> m (f (Maybe a))
+viewRx aF = viewKRx aF (Table.primaryKey <$> aF)
+
 -- | Like 'view' but row key is passed separately.
 viewK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> m (Maybe a)
@@ -28,28 +32,26 @@ viewK a primaryKey =
   viewKRx (Class.toF a) (Class.toF primaryKey)
   >>= pure . Class.fromF
 
--- | Like 'viewK', but a reactive version.
+-- | Like 'viewK' but a reactive version.
 viewKRx :: (Entity a, PrimaryKey a k, Telescope m f)
   => f a -> f k -> m (f (Maybe a))
-viewKRx a primaryKey =
+viewKRx aF primaryKeyF =
   Class.viewRow
-  (Table.tableKey <$> a)
-  (Table.RowKey . Table.toKey <$> primaryKey)
+  (Table.tableKey <$> aF)
+  (Table.RowKey . Table.toKey <$> primaryKeyF)
   >>= pure . (fmap $ fmap Store.fromRow)
 
 -- | View all entities in a table in a data source.
 viewTable :: (Entity a, Telescope m f) => a -> m [a]
 viewTable a = Class.fromF <$> (viewTableRx $ Class.toF a)
 
--- | Like 'viewTable', but a reactive version.
+-- | Like 'viewTable' but a reactive version.
 viewTableRx :: (Entity a, Telescope m f) => f a -> m (f [a])
-viewTableRx a =
-  (Class.viewTableRows $ Table.tableKey <$> a)
+viewTableRx aF =
+  (Class.viewTableRows $ Table.tableKey <$> aF)
   >>= pure . (fmap $ fmap Store.fromRow . Map.elems)
 
 -- | Set an entity in a data source.
---
--- WARNING: overwrites existing entity with same primary key.
 set :: (Entity a, Telescope m f) => a -> m ()
 set a = setRx $ Class.toF a
 
@@ -57,25 +59,25 @@ set a = setRx $ Class.toF a
 (.~) :: (Entity a, Telescope m f) => a -> m ()
 (.~) = set
 
--- | Like 'set', but a reactive version.
+-- | Like 'set' but a reactive version.
 setRx :: (Entity a, Telescope m f) => f a -> m ()
-setRx a = Class.setManyRows $ Store.toRows . Store.toSDataType <$> a
+setRx aF = Class.setManyRows $ Store.toRows . Store.toSDataType <$> aF
 
 -- | Set a table in a data source to ONLY the given entities.
 --
--- WARNING: overwrites all existing entities in the table.
+-- WARNING: removed all existing entities in the table.
 setTable :: (Entity a, Telescope m f) => [a] -> m ()
 setTable = setTableRx . Class.toF
 
--- | Set a table in a data source to ONLY the given entities.
+-- | Like 'setTable' but a reactive version.
 --
--- WARNING: overwrites all existing entities in the table.
+-- WARNING: removes all existing entities in the table.
 -- TODO: return either, handling error case of duplicate rows.
 -- TODO: use 'setTable' for values of type 'a'.
 -- TODO: use 'setMany' only for values not of type 'a'.
 setTableRx :: (Entity a, Telescope m f) => f [a] -> m ()
-setTableRx as = Class.setManyRows tableMap
-  where rowsPerA = fmap (map $ Store.toRows . Store.toSDataType) as
+setTableRx asF = Class.setManyRows tableMap
+  where rowsPerA = fmap (map $ Store.toRows . Store.toSDataType) asF
         tableMap = fmap (Map.unionsWith Map.union) rowsPerA
 
 -- | Modify an entity in a data source.
@@ -83,14 +85,19 @@ over :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> (a -> a) -> m (Maybe a)
 over a f = overK a (Table.primaryKey a) f
 
--- | Like 'over', but row key is passed separately.
+-- | Like 'over' but a reactive version.
+overRx :: (Entity a, PrimaryKey a k, Telescope m f)
+  => f a -> f (a -> a) -> m (f (Maybe a))
+overRx aF fF = overKRx aF (Table.primaryKey <$> aF) fF
+
+-- | Like 'over' but row key is passed separately.
 overK :: (Entity a, PrimaryKey a k, Telescope m f)
   => a -> k -> (a -> a) -> m (Maybe a)
 overK aType primaryKey f =
   overKRx (Class.toF aType) (Class.toF primaryKey) (Class.toF f)
   >>= pure . Class.fromF
 
--- | Like 'overK', but a reactive version.
+-- | Like 'overK' but a reactive version.
 overKRx :: forall a k f m. (Entity a, PrimaryKey a k, Telescope m f)
   => f a -> f k -> f (a -> a) -> m (f (Maybe a))
 overKRx aTypeF primaryKeyF funcF = do
@@ -114,21 +121,37 @@ overKRx aTypeF primaryKeyF funcF = do
 rm :: (Entity a, PrimaryKey a k, Telescope m f) => a -> m ()
 rm a = rmK a $ Table.primaryKey a
 
+-- | Like 'rm' but a reactive version.
+rmRx :: (Entity a, PrimaryKey a k, Telescope m f) => f a -> m ()
+rmRx aF = rmKRx aF (Table.primaryKey <$> aF)
+
 -- | Like 'rm' but row key is passed separately.
 rmK :: (Entity a, PrimaryKey a k, Telescope m f) => a -> k -> m ()
-rmK a primaryKey =
+rmK a primaryKey = rmKRx (Class.toF a) (Class.toF primaryKey)
+
+-- | Like 'rmK' but a reactive version.
+rmKRx :: (Entity a, PrimaryKey a k, Telescope m f) => f a -> f k -> m ()
+rmKRx aF primaryKeyF =
   Class.rmRow
-  (Class.toF $ Table.tableKey a)
-  (Class.toF $ Table.RowKey $ Table.toKey primaryKey)
+  (Table.tableKey <$> aF)
+  (Table.RowKey . Table.toKey <$> primaryKeyF)
 
 -- | Remove a table in a data source.
 rmTable :: (Entity a, Telescope m f) => a -> m ()
-rmTable a = Class.rmTableRows $ Class.toF $ Table.tableKey a
+rmTable = rmTableRx . Class.toF
+
+-- | Like 'rmTable' but a reactive version.
+rmTableRx :: (Entity a, Telescope m f) => f a -> m ()
+rmTableRx aF = Class.rmTableRows $ Table.tableKey <$> aF
 
 -- | Run a function when an entity in a data source changes.
 onChange :: (Entity a, Telescope m f) => a -> (Maybe a -> m ()) -> m ()
-onChange a f =
+onChange a f = onChangeRx (Class.toF a) (Class.toF f)
+
+-- | Like 'onChange' but a reacive version.
+onChangeRx :: (Entity a, Telescope m f) => f a -> f (Maybe a -> m ()) -> m ()
+onChangeRx aF fF =
   Class.onChangeRow
-  (Class.toF $ Table.tableKey a)
-  (Class.toF $ Table.rowKey a)
-  (Class.toF $ f . fmap Store.fromRow)
+  (Table.tableKey <$> aF)
+  (Table.rowKey   <$> aF)
+  ((. fmap Store.fromRow) <$> fF)

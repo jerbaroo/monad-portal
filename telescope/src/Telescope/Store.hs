@@ -7,11 +7,9 @@
 module Telescope.Store where
 
 import           Control.Exception              ( throw )
-import           Data.ByteString                ( ByteString )
 import qualified Data.Foldable                 as Foldable
 import qualified Data.Map                      as Map
 import           Data.Proxy                     ( Proxy(Proxy) )
-import qualified Data.Serialize                as Serialize
 import qualified Generics.Eot                  as Eot
 import           GHC.Generics                   ( Generic )
 import qualified Telescope.Exception           as T
