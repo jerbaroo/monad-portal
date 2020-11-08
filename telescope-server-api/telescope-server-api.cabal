@@ -18,6 +18,6 @@ library
   exposed-modules:     Telescope.Server.API
   -- other-modules:
   -- other-extensions:
-  build-depends:       aeson, base, servant, servant-websockets, telescope
+  build-depends:       base, containers, servant, servant-websockets, telescope
   hs-source-dirs:      src
   default-language:    Haskell2010

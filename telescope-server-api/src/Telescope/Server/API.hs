@@ -3,37 +3,38 @@
 
 module Telescope.Server.API where
 
-import           Data.Aeson             ( FromJSON, ToJSON )
+import qualified Data.Map               as Map
 import           Servant.API            ( (:<|>), (:>), Capture,
                                           DeleteNoContent, Get, JSON, NoContent,
                                           PostNoContent, Raw, ReqBody )
 import           Servant.API.WebSocket  ( WebSocket )
-import           Telescope.Table       as Table
+import qualified Telescope.Table        as Table'
 
-type TableAsList = [(Table.RowKey, Table.Row)]
+type TableName = String
+type Table     = (TableName, [(Table'.RowKey, Table'.Row)])
+type Tables    = [Table]
 
-instance FromJSON Table.ColumnKey
-instance FromJSON Table.Key
-instance FromJSON Table.Prim
-instance FromJSON Table.RowKey
+-- | Convert Telescope Tables to API-format tables.
+toAPITables :: Table'.Tables -> Tables
+toAPITables = map f . Map.toList
+  where f (Table'.TableKey tn, table) = (tn, Map.toList table)
 
-instance ToJSON Table.ColumnKey
-instance ToJSON Table.Key
-instance ToJSON Table.Prim
-instance ToJSON Table.RowKey
+-- | Convert API-format tables to Telescope Tables.
+fromAPITables :: Tables -> Table'.Tables
+fromAPITables = Map.fromList . map f
+  where f (tn, table) = (Table'.TableKey tn, Map.fromList table)
 
 type RestAPI =
-  "viewTable"
-    :> Capture "tableKey" String
-    :> Get '[JSON] TableAsList
+  "viewTables"
+    :> ReqBody         '[JSON] [TableName]
+    :> Get             '[JSON] Tables
   :<|>
-  "setTable"
-    :> Capture "tableKey" String
-    :> ReqBody '[JSON] TableAsList
-    :> PostNoContent '[JSON] NoContent
+  "setTables"
+    :> ReqBody         '[JSON] Tables
+    :> PostNoContent   '[JSON] NoContent
   :<|>
-  "rmTable"
-    :> Capture "tableKey" String
+  "rmTables"
+    :> ReqBody         '[JSON] [TableName]
     :> DeleteNoContent '[JSON] NoContent
 
 type WebSocketAPI = "watch" :> WebSocket

@@ -6,7 +6,6 @@ module Telescope.Server where
 import           Control.Monad                  ( forever, void )
 import           Control.Monad.IO.Class         ( liftIO )
 import           Data.ByteString.Char8          ( ByteString, pack, unpack )
-import qualified Data.Map                      as Map
 import           Data.Proxy                     ( Proxy(..) )
 import qualified Network.Wai.Handler.Warp      as Warp
 import qualified Network.WebSockets            as WebSocket
@@ -18,22 +17,21 @@ import qualified Telescope.Table               as Table
 import           Telescope.DS.File              ( runT )
 import qualified Telescope.Server.API          as API
 
-viewTableHandler :: String -> Servant.Handler API.TableAsList
-viewTableHandler tableKey = do
-  fRows <- runT $ Class.viewTableRows $ Class.toF $ Table.TableKey tableKey
-  liftIO $ print $ Class.fromF fRows
-  pure $ Map.toList $ Class.fromF fRows
+viewTablesHandler :: [API.TableName] -> Servant.Handler API.Tables
+viewTablesHandler tableNames = do
+  tablesF <- runT $ Class.viewTables $ Class.toF $ map Table.TableKey tableNames
+  liftIO $ putStrLn $ "Server: viewTables: " ++ show (Class.fromF tablesF)
+  pure $ API.toAPITables $ Class.fromF tablesF
 
-setTableHandler :: String -> API.TableAsList -> Servant.Handler Servant.NoContent
-setTableHandler tableKey tableAsList = do
-  runT $ Class.setTableRows
-    (Class.toF $ Table.TableKey tableKey)
-    (Class.toF $ Map.fromList tableAsList)
+setTablesHandler :: API.Tables -> Servant.Handler Servant.NoContent
+setTablesHandler apiTables = do
+  runT $ Class.setTables $ Class.toF $ API.fromAPITables apiTables
+  liftIO $ putStrLn $ "Server: setTables: " ++ show apiTables
   pure Servant.NoContent
 
-rmTableHandler :: String -> Servant.Handler Servant.NoContent
-rmTableHandler tableKey = do
-  runT $ Class.rmTableRows $ Class.toF $ Table.TableKey tableKey
+rmTablesHandler :: [API.TableName] -> Servant.Handler Servant.NoContent
+rmTablesHandler tableNames = do
+  runT $ Class.rmTables $ Class.toF $ map Table.TableKey tableNames
   pure Servant.NoContent
 
 type Sub = (Table.TableKey, Table.RowKey)
@@ -57,7 +55,7 @@ watchHandler conn = do
 
 server :: Servant.Server API.API
 server =
-  (viewTableHandler :<|> setTableHandler :<|> rmTableHandler)
+  (viewTablesHandler :<|> setTablesHandler :<|> rmTablesHandler)
   :<|> watchHandler
   :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
 
