@@ -1,5 +1,5 @@
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MonoLocalBinds             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 
@@ -7,7 +7,7 @@ module Telescope.DS.File where
 
 import           Control.Concurrent.MVar as MVar
 import           Control.Exception       ( catch, throwIO )
-import           Control.Monad           ( void, when )
+import           Control.Monad           ( forM_, void, when )
 import           Control.Monad.IO.Class  ( MonadIO, liftIO )
 import           Data.ByteString.Char8   ( pack, unpack )
 import           Data.Either.Extra       ( fromRight' )
@@ -29,11 +29,12 @@ import qualified Telescope.Table        as Table
 newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
 
 -- | Telescope operations are not packed in any special container.
+-- TODO: remove unecessary nesting.
 newtype TFileIdentity a = TFileIdentity (Identity a)
   deriving (Functor, Applicative)
 
 -- | Enable conversion to/from the container.
-instance ToFromF TFileIdentity a where
+instance ToFromF TFileIdentity where
   toF = TFileIdentity . Identity
   fromF (TFileIdentity (Identity a)) = a
 
@@ -49,18 +50,20 @@ readTableOnDisk :: Table.TableKey -> TFile TableOnDisk
 readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 
 instance Telescope TFile TFileIdentity where
-
-  viewTableRows tableKeyId = do
+  viewTable tableKeyId = do
     tableOnDisk <- readTableOnDisk $ fromF tableKeyId
     pure $ toF $ fmap (fromJust . fst) $ Map.filter (isJust . fst) tableOnDisk
 
   -- TODO: file lock this function.
-  setTableRows tableKeyId tableId = do
-    let (tableKey, table) = (fromF tableKeyId, fromF tableId)
-    tableOnDisk <- readTableOnDisk tableKey
-    liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
-      newUpdates table tableOnDisk
-     
+  setRows mapF = do
+    let tableKeysAndTables  = Map.toList $ fromF mapF
+        (tableKeys, tables) = unzip tableKeysAndTables
+    tablesOnDisk <- mapM readTableOnDisk tableKeys
+    forM_ (zip tablesOnDisk tableKeysAndTables) $
+      \(tableOnDisk, (tableKey, table)) ->
+        liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
+          newUpdates table tableOnDisk
+
   onChangeRow tableKeyId rowKeyId fId =
     onChangeRow' (fromF tableKeyId) (fromF rowKeyId) (fromF fId)
 

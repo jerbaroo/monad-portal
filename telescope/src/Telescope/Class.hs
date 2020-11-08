@@ -17,19 +17,9 @@ import qualified Telescope.Store  as Store
 import qualified Telescope.Table  as Table
 import           Telescope.Table   ( PrimaryKey )
 
--- | A data type that can be put in a container.
-class ToFromF f a where
-  toF   :: a -> f a
-  fromF :: f a -> a
-
 -- | 'Table.Row'-based operations for interacting with a data source.
 -- TODO: Use Set instead of list for key types.
-class (Applicative f, Monad m, forall a. ToFromF f a)
-  => Telescope m f | m -> f where
-  escape :: f a -> m a
-  escape = pure . fromF
-  enter  :: a -> m (f a)
-  enter = pure . toF
+class (Applicative f, Monad m) => Telescope m f | m -> f where
   perform :: f (m ()) -> m ()
 
   -- | View one row in a data source.
@@ -105,3 +95,8 @@ instance (Store.ToSDataType a, Store.FromSValues a) => Entity a where
 -- | Restrict a 'Table.Table' to only rows with given 'Table.RowKey's.
 restrictTable :: Table.Table -> [Table.RowKey] -> Table.Table
 restrictTable table rowKeys = Map.restrictKeys table (Set.fromList rowKeys)
+
+-- | A container type that can be entered/exited.
+class ToFromF f where
+  toF   :: a -> f a
+  fromF :: f a -> a
