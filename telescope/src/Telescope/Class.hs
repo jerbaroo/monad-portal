@@ -20,8 +20,6 @@ import           Telescope.Table   ( PrimaryKey )
 -- | 'Table.Row'-based operations for interacting with a data source.
 -- TODO: Use Set instead of list for key types.
 class (Applicative f, Monad m) => Telescope m f | m -> f where
-  perform :: f (m ()) -> m ()
-
   -- | View one row in a data source.
   viewRow :: f Table.TableKey -> f Table.RowKey -> m (f (Maybe Table.Row))
   viewRow tableKeyF rowKeyF = do
@@ -34,7 +32,7 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
     -> m (f (Map.Map Table.TableKey Table.Table))
   viewRows rowKeysMapF = do
     tablesF <- viewTables $ Map.keys <$> rowKeysMapF
-    pure $ Map.intersectionWith restrictTable <$> tablesF <*> rowKeysMapF
+    pure $ Map.intersectionWith onlyRows <$> tablesF <*> rowKeysMapF
 
   -- | View one table in a data source.
   viewTable :: f Table.TableKey -> m (f (Table.Table))
@@ -70,14 +68,15 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
     rmRows $ Map.singleton <$> tableKeyF <*> ((:[]) <$> rowKeyF)
 
   -- | Remove multiple rows from a data source.
+  -- TODO: fix.
   rmRows :: f (Map.Map Table.TableKey [Table.RowKey]) -> m ()
   rmRows rowKeysMapF = do
     tablesF <- viewTables $ Map.keys <$> rowKeysMapF
-    setTables $ Map.intersectionWith restrictTable <$> tablesF <*> rowKeysMapF
+    setTables $ Map.intersectionWith withoutRows <$> tablesF <*> rowKeysMapF
 
   -- | Remove one table from a data source.
   rmTable :: f Table.TableKey -> m ()
-  rmTable tableKeyF = setTable tableKeyF $ pure Map.empty
+  rmTable tableKeyF = rmTables $ (:[]) <$> tableKeyF
 
   -- | Remove multiples table from a data source.
   rmTables :: f [Table.TableKey] -> m ()
@@ -88,13 +87,19 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
   onChangeRow
     :: f Table.TableKey -> f Table.RowKey -> f (Maybe Table.Row -> m ()) -> m ()
 
+  perform :: f (m ()) -> m ()
+
 -- | A storable datatype (can be serialized and deserialized via Generics).
 class    (Store.ToSDataType a, Store.FromSValues a) => Entity a where
 instance (Store.ToSDataType a, Store.FromSValues a) => Entity a where
 
--- | Restrict a 'Table.Table' to only rows with given 'Table.RowKey's.
-restrictTable :: Table.Table -> [Table.RowKey] -> Table.Table
-restrictTable table rowKeys = Map.restrictKeys table (Set.fromList rowKeys)
+-- | A 'Table.Table' with ONLY rows corresponding to given 'Table.RowKey's.
+onlyRows :: Table.Table -> [Table.RowKey] -> Table.Table
+onlyRows table rowKeys = Map.restrictKeys table (Set.fromList rowKeys)
+
+-- | A 'Table.Table' WITHOUT rows corresponding to given 'Table.RowKey's.
+withoutRows :: Table.Table -> [Table.RowKey] -> Table.Table
+withoutRows table rowKeys = Map.withoutKeys table (Set.fromList rowKeys)
 
 -- | A container type that can be entered/exited.
 class ToFromF f where

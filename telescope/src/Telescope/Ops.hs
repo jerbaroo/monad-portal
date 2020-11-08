@@ -13,6 +13,10 @@ import qualified Telescope.Class as Class
 import qualified Telescope.Table as Table
 import qualified Telescope.Store as Store
 
+----------
+-- view --
+----------
+
 -- | View an entity in a data source.
 view :: (Entity a, PrimaryKey a k, Telescope m f, ToFromF f) => a -> m (Maybe a)
 view a = viewK a $ Table.primaryKey a
@@ -51,6 +55,10 @@ viewTableRx aF =
   (Class.viewTable $ Table.tableKey <$> aF)
   >>= pure . (fmap $ fmap Store.fromRow . Map.elems)
 
+---------
+-- set --
+---------
+
 -- | Set an entity in a data source.
 set :: (Entity a, Telescope m f, ToFromF f) => a -> m ()
 set a = setRx $ Class.toF a
@@ -79,6 +87,10 @@ setTableRx :: (Entity a, Telescope m f) => f [a] -> m ()
 setTableRx asF = Class.setRows tableMap
   where rowsPerA = fmap (map $ Store.toRows . Store.toSDataType) asF
         tableMap = fmap (Map.unionsWith Map.union) rowsPerA
+
+----------
+-- over --
+----------
 
 -- -- | Modify an entity in a data source.
 -- over :: (Entity a, PrimaryKey a k, Telescope m f)
@@ -117,6 +129,10 @@ setTableRx asF = Class.setRows tableMap
 --       set newA
 --   pure $ fmap snd <$> oldNewAMayF
 
+--------
+-- rm --
+--------
+
 -- | Remove an entity in a data source.
 rm :: (Entity a, PrimaryKey a k, Telescope m f, ToFromF f) => a -> m ()
 rm a = rmK a $ Table.primaryKey a
@@ -143,6 +159,10 @@ rmTable = rmTableRx . Class.toF
 -- | Like 'rmTable' but a reactive version.
 rmTableRx :: (Entity a, Telescope m f) => f a -> m ()
 rmTableRx aF = Class.rmTable $ Table.tableKey <$> aF
+
+--------------
+-- onChange --
+--------------
 
 -- | Run a function when an entity in a data source changes.
 onChange :: (Entity a, Telescope m f, ToFromF f) => a -> (Maybe a -> m ()) -> m ()
