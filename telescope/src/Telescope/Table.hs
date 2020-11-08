@@ -9,7 +9,7 @@
 
 module Telescope.Table where
 
--- import           Data.ByteString                ( ByteString )
+import           Data.Aeson                     ( FromJSON, ToJSON )
 import           Data.Map                      as Map
 import           Data.Serialize                 ( Serialize )
 import           Data.Typeable                  ( Typeable, typeOf )
@@ -86,6 +86,9 @@ type Row = [(ColumnKey, String)]
 -- | A table consists of a number of rows, each with a key.
 type Table = Map RowKey Row
 
+-- | A number of tables indexed by 'TableKey'.
+type Tables = Map TableKey Table
+
 -- | A data type which has a table key.
 class HasTableKey a where
   tableKey :: a -> TableKey
@@ -106,3 +109,16 @@ class (Eq k, ToKey k) => PrimaryKey a k | a -> k where
 instance PrimaryKey a k => HasRowKey a where
   rowKey a = RowKey $ toKey $ primaryKey a
 
+--------------------
+-- JSON INSTANCES --
+--------------------
+
+instance FromJSON ColumnKey
+instance FromJSON Key
+instance FromJSON Prim
+instance FromJSON RowKey
+
+instance ToJSON ColumnKey
+instance ToJSON Key
+instance ToJSON Prim
+instance ToJSON RowKey

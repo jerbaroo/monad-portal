@@ -9,13 +9,14 @@
 
 module Telescope.Class (module Telescope.Class, PrimaryKey) where
 
-import           Control.Monad     ( void )
-import           Data.Functor      ( (<&>) )
-import qualified Data.Map         as Map
-import qualified Data.Set         as Set
-import qualified Telescope.Store  as Store
-import qualified Telescope.Table  as Table
-import           Telescope.Table   ( PrimaryKey )
+import           Control.Monad            ( void )
+import           Data.Functor             ( (<&>) )
+import           Data.Functor.Identity    ( Identity(..) )
+import qualified Data.Map                as Map
+import qualified Data.Set                as Set
+import qualified Telescope.Store         as Store
+import qualified Telescope.Table         as Table
+import           Telescope.Table          ( PrimaryKey )
 
 -- | 'Table.Row'-based operations for interacting with a data source.
 -- TODO: Use Set instead of list for key types.
@@ -68,7 +69,6 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
     rmRows $ Map.singleton <$> tableKeyF <*> ((:[]) <$> rowKeyF)
 
   -- | Remove multiple rows from a data source.
-  -- TODO: fix.
   rmRows :: f (Map.Map Table.TableKey [Table.RowKey]) -> m ()
   rmRows rowKeysMapF = do
     tablesF <- viewTables $ Map.keys <$> rowKeysMapF
@@ -105,3 +105,8 @@ withoutRows table rowKeys = Map.withoutKeys table (Set.fromList rowKeys)
 class ToFromF f where
   toF   :: a -> f a
   fromF :: f a -> a
+
+-- | Data sources may pack values in the identity functor.
+instance ToFromF Identity where
+  toF   = Identity
+  fromF = runIdentity
