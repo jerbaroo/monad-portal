@@ -9,17 +9,17 @@
 - [Getting Started](#getting-started)
 - [Application Architecture](#application-architecture)
 - [Technical Description](#technical-description)
-- [Why Create Telescope?](#why-create-telescope)
+- [Another Web Framework?](#another-web-framework)
 - [Contributing](#contributing)
 - [Name](#name)
 
 # Introduction
 **Minimum viable product. Not production ready.**
 
-Telescope is a Haskell web framework for building reactive web apps, fast.
-Telescope abstracts away common tasks you undertake when developing a web app,
-**allowing you to focus on your business logic** and **reducing the time you
-need to build your app**.
+Telescope is a Haskell framework for building reactive web apps, fast. Telescope
+abstracts away common tasks you undertake when developing a web app, **allowing
+you to focus on your business logic** and **reducing the time you need to build
+your app**.
 
 An application built with Telescope is..
 - **Reactive:** don't worry about keeping client-side and server-side data in
@@ -158,7 +158,7 @@ Person "john" 70     <--->     "Person"
 
 <!-- TODO: example that results in two rows. -->
 
-## Why create Telescope?
+## Another Web Framework?
 <!-- Many existing frameworks, pros and cons. -->
 There are many different web frameworks out there, and they all have pros and
 cons. They pretty much all allow you to write reuseable components. Some can
@@ -179,11 +179,11 @@ communication with a server.
 
 <!-- Liberated of where/when. -->
 The primary motivation behind creating Telescope is that a developer should be
-able to write a _reactive frontend as a function of the data in their one true
-data source_ (e.g. database). The Telescope framework solves this by providing a
-direct Reflex-DOM to database link. Even better, the Telescope interface is not
-specific to Reflex-DOM (where the interface is used) or the data source. You can
-write your own instance to use in e.g. a `reflex-vty` application, or to
+able to write a *reactive frontend as a function of the data in their one true
+data source* (e.g. database). The Telescope framework solves this by providing a
+*direct Reflex-DOM to database link*. Even better, the Telescope interface is
+*not specific to Reflex-DOM (where the interface is used) or the database*. You
+could write an instance to use in e.g. a `reflex-vty` application, or to
 communicate with a different server or database.
 
 ## Contributing

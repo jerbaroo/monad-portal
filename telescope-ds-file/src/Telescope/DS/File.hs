@@ -35,16 +35,9 @@ newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
 runT :: MonadIO m => TFile a -> m a
 runT (TFile a) = liftIO a
 
--- | Telescope operations are not packed in any special container.
--- TODO: remove unecessary nesting.
--- TODO: derive ToFromF
+-- | Values are not packed in any special container.
 newtype TFileIdentity a = TFileIdentity (Identity a)
-  deriving (Functor, Applicative, Show)
-
--- | Enable conversion to/from the container.
-instance ToFromF TFileIdentity where
-  toF = TFileIdentity . Identity
-  fromF (TFileIdentity (Identity a)) = a
+  deriving (Functor, Applicative, Show, ToFromF)
 
 instance Telescope TFile TFileIdentity where
   viewTables tableKeysF = do
