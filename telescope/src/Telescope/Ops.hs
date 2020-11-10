@@ -73,7 +73,7 @@ setRx aF = Class.setRows $ Store.toRows . Store.toSDataType <$> aF
 
 -- | Set a table in a data source to ONLY the given entities.
 --
--- WARNING: removed all existing entities in the table.
+-- WARNING: removes all existing entities in the table.
 setTable :: (Entity a, Telescope m f, ToFromF f) => [a] -> m ()
 setTable = setTableRx . Class.toF
 
