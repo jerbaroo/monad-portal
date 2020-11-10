@@ -8,29 +8,29 @@
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
 - [Application Architecture](#application-architecture)
-- [Technical Description](#technical-description)
 - [Another Web Framework?](#another-web-framework)
+- [Technical Details](#technical-details)
 - [Contributing](#contributing)
 - [Name](#name)
 
 # Introduction
-**Minimum viable product. Not production ready.**
+*Minimum viable product. Not production ready.*
 
 Telescope is a Haskell framework for building reactive web apps, fast. Telescope
-abstracts away common tasks you undertake when developing a web app, **allowing
-you to focus on your business logic** and **reducing the time you need to build
-your app**.
+abstracts away common tasks you undertake when developing a web app, *allowing
+you to focus on your business logic* and *reducing the time you need to build
+your app*.
 
 An application built with Telescope is..
 - **Reactive:** don't worry about keeping client-side and server-side data in
-  sync, with Telescope your _frontend can automatically react to changes in your
-  database_ and your database can be updated seamlessly by your frontend!
+  sync, with Telescope your *frontend can automatically react to changes in your
+  database* and your database can be updated seamlessly by your frontend!
 - **Robust:** writing the strongly-typed language Haskell across the stack
   prevents server/client protocol mismatches and other run-time errors, allowing
-  you to _move fast and not break things._
+  you to *move fast and not break things.*
 - **Minimal:** Telescope can setup a database and server for you and also manage
-  communication between client and server, so you can _focus on the parts of
-  your application that really matter._
+  communication between client and server, so you can *focus on the parts of
+  your application that really matter.*
 
 What doesn't Telescope do currently?
 - Provide a full-featured database query language.
@@ -42,9 +42,9 @@ and input-validation very well. On the flip-side, applications with heavy
 client-side computation such as animations are not well-suited for Telescope.
 
 ## Getting Started
-Building a reactive web app with Telescope looks something like this:
+Building a reactive web app with Telescope looks a little like this:
 
-**1.** Declare the data types used in your application.
+*1.* Declare the data types used in your application.
 
 ``` haskell
 data TodoList = TodoList {
@@ -56,19 +56,20 @@ instance PrimaryKey TodoList where
   primaryKey = name
 ```
 
-**2.** Populate your database with some data.
+*2.* Populate your database with some data.
 
 ``` haskell
 T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
-**3.** Start the Telescope server.
+*3.* Start the Telescope server.
 
 ``` haskell
 Server.run port
 ```
 
-**4.** Write the frontend of your reactive web app!
+*4.* Write the frontend of your reactive web app with
+[Reflex-DOM](https://reflex-frp.org/)!
 
 ``` haskell
 -- NOTE: work in progress.
@@ -81,7 +82,7 @@ main = mainWidget $ el "div" $ do
   dynText $ fmap (pack . show) people
 ```
 
-**5.** Modify data in your database and watch your frontend react!
+*5.* Open two tabs, edit the to-do list in one tab and watch the other react!
 
 ``` haskell
 T.over $ TodoList{} "pancakes" (++ ["sugar", "lemon juice"])
@@ -101,8 +102,8 @@ interface.
 
 <!-- Bottom row. -->
 The bottom row of the diagram represents a developer interacting with a database
-on their own machine. More specifically the developer has opened a GHCI repl and
-is using the Telescope interface to interact with the local database.
+on their own machine. More specifically the developer has opened a REPL and is
+using the Telescope interface to interact with the local database.
 
 <!-- Top row, server is a proxy. -->
 The top row of the diagram shows two uses of the Telescope interface, one by a
@@ -112,13 +113,49 @@ The web client is communicating with the server via the Telescope interface, but
 since the server is only acting as a proxy the client is really interacting with
 the database.
 
-<!-- TODO: outline data flow, top row subscribes and reacts to data. -->
-
 <div align="center">
   <img src="diagram/diagram.png" />
 </div>
 
-## Technical Description
+There are a number of important points about the Telescope interface which we
+will go over in turn.
+- There are reactive variants of Telescope functions
+- Multiple instances of the Telescope interface
+- The Telescope interface is data source agnostic
+- Data is uniquely determined by type and primary key
+<!-- TODO: finish discussion about these points. -->
+<!-- TODO: outline data flow, top row subscribes and reacts to data. -->
+
+## Another Web Framework?
+<!-- Many existing frameworks, pros and cons. -->
+There are many different web frameworks out there, and they all have pros and
+cons. They pretty much all allow you to write reuseable components. Some can
+ship a small file to the client, some allow you to write your server-side and
+client-side code in the same language, some can pre-render server-side for a
+speedy TTI (time to interactive).
+
+<!-- Reactive frontend is popular. -->
+One idea that has become fairly popular in recent years is that of a reactive
+frontend. Whereby the frontend is written as a function of the current state,
+and whenever the state changes, the frontend "reacts" to the change and updates
+itself.
+
+<!-- Network is boundary of reactivity. -->
+Implementations of reactive frontends vary, however in the vast majority of
+cases one significant limitation is that the frontend only reacts to client-side
+changes in data. At this network boundary the developer still has to manage
+communication with a server.
+
+<!-- Liberated of where/when. -->
+The primary motivation behind creating Telescope is that a developer should be
+able to *write a reactive frontend as a function of data in their one true data
+source*. Telescope solves this by providing a direct Reflex-DOM to database
+link. Even better, the Telescope interface is not specific to Reflex-DOM (where
+the interface is used) or the database. You could write an instance to use in
+e.g. a `reflex-vty` application, or to communicate with a different server or
+database.
+
+## Technical Details 
 <!-- Reactive interface to data, data location is a parameter. -->
 So Telescope is a web framework? More generally Telescope provides a reactive
 interface (the `Telescope` typeclass) to read/write datatypes from/to a data
@@ -157,34 +194,6 @@ Person "john" 70     <--->     "Person"
 ```
 
 <!-- TODO: example that results in two rows. -->
-
-## Another Web Framework?
-<!-- Many existing frameworks, pros and cons. -->
-There are many different web frameworks out there, and they all have pros and
-cons. They pretty much all allow you to write reuseable components. Some can
-ship a small file to the client, some allow you to write your server-side and
-client-side code in the same language, some can pre-render server-side for a
-speedy TTI (time to interactive).
-
-<!-- Reactive frontend is popular. -->
-One idea that has become fairly popular in recent years is that of a reactive
-frontend. Whereby the view is written as a function of the current state, and
-whenever the state changes, the view "reacts" to the change and is updated.
-
-<!-- Network is boundary of reactivity. -->
-Implementations of reactive frontends vary, however in the vast majority of
-cases one significant limitation is that the frontend only reacts to client-side
-changes in data. At this network boundary the developer still has to manage
-communication with a server.
-
-<!-- Liberated of where/when. -->
-The primary motivation behind creating Telescope is that a developer should be
-able to write a *reactive frontend as a function of the data in their one true
-data source* (e.g. database). The Telescope framework solves this by providing a
-*direct Reflex-DOM to database link*. Even better, the Telescope interface is
-*not specific to Reflex-DOM (where the interface is used) or the database*. You
-could write an instance to use in e.g. a `reflex-vty` application, or to
-communicate with a different server or database.
 
 ## Contributing
 Install the [Nix](https://nixos.org/download.html) package manager, clone this
