@@ -1,14 +1,17 @@
-{-# LANGUAGE DeriveGeneric        #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE MonoLocalBinds       #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MonoLocalBinds        #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 module Telescope.Store where
 
 import           Control.Exception              ( throw )
 import qualified Data.Foldable                 as Foldable
 import qualified Data.Map                      as Map
+import           Data.Typeable                  ( Typeable )
 import           Data.Proxy                     ( Proxy(Proxy) )
 import qualified Generics.Eot                  as Eot
 import           GHC.Generics                   ( Generic )
@@ -59,12 +62,12 @@ instance Table.ToPrim a => ToSValue (Maybe a) where
   toSValue (Just a) = SValue $ Table.toPrim a
 
 -- | A storable data type may be a field's value in another storable data type.
-instance {-# OVERLAPPABLE #-} ToSDataType a => ToSValue a where
+instance {-# OVERLAPPABLE #-} ToSDataType a k => ToSValue a where
   toSValue a = SDT $ toSDataType a
 
 -- | A list (or 'Foldable') of storable data types may be a field's value in
 -- another storable data type.
-instance {-# OVERLAPPABLE #-} (Foldable t, ToSDataType a)
+instance {-# OVERLAPPABLE #-} (Foldable t, ToSDataType a k)
   => ToSValue (t a) where
   toSValue t = SDTs $ map toSDataType $ Foldable.toList t
 
@@ -90,19 +93,16 @@ instance {-# OVERLAPPABLE #-} (Eot.HasEot a, EotSValues (Eot.Eot a))
     in  SFields $ zipWith (\n v -> (Table.ColumnKey n, v)) names values
 
 -- | Convert a data type to a storable representation.
---
--- TODO: 'toSDataType' may not be needed.
-class (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
-  => ToSDataType a where
+class (Typeable a, Table.PrimaryKey a k, ToSFields a)
+  => ToSDataType a k where
   toSDataType :: a -> SDataType
   toSDataType a =
-    SDataType (Table.tableKey a, Table.rowKey a) (toSFields a)
+    SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)
 
 -- | If a data type has a table key, row key, and fields with a storable
 -- representation, then it also has a storable representation.
-instance {-# OVERLAPPABLE #-}
-  (Table.HasTableKey a, Table.HasRowKey a, ToSFields a)
-  => ToSDataType a where
+instance {-# OVERLAPPABLE #-} (Typeable a, Table.PrimaryKey a k, ToSFields a)
+  => ToSDataType a k where
 
 -- Generics-Eot implementations of 'EotSValues' and 'fieldNames'.
 
@@ -137,6 +137,7 @@ fieldNames a = do
       Eot.NoFields        -> throw T.NoFieldsException
     _ -> throw T.MultipleConstructorsException
 
+-- TODO: remove.
 proxyByExample :: a -> Proxy a
 proxyByExample _ = Proxy
 

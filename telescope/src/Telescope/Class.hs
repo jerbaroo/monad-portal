@@ -1,16 +1,11 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MonoLocalBinds         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE QuantifiedConstraints  #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
 module Telescope.Class (module Telescope.Class, PrimaryKey) where
 
 import           Control.Monad            ( join )
-import           Data.Functor.Identity    ( Identity(..) )
 import qualified Data.Map                as Map
 import qualified Data.Set                as Set
 import qualified Telescope.Store         as Store
@@ -93,17 +88,5 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
   perform :: f (m ()) -> m ()
 
 -- | A storable datatype (can be serialized and deserialized via Generics).
-class    (Store.ToSDataType a, Store.FromSValues a) => Entity a where
-instance (Store.ToSDataType a, Store.FromSValues a) => Entity a where
-
--- | A container type that can be converted to/from.
---
--- Only necessary if you are writing an instance of 'Telescope'.
-class ToFromF f where
-  toF   :: a -> f a
-  fromF :: f a -> a
-
--- | Data sources may pack values in the identity functor.
-instance ToFromF Identity where
-  toF   = Identity
-  fromF = runIdentity
+class    (Store.ToSDataType a k, Store.FromSValues a) => Entity a k where
+instance (Store.ToSDataType a k, Store.FromSValues a) => Entity a k where

@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MonoLocalBinds        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -9,16 +8,12 @@
 
 module Telescope.DS.Reflex.Dom where
 
-import           Control.Lens
-import           Control.Monad          ( void )
 import           Control.Monad.IO.Class ( liftIO )
 import qualified Data.Map              as Map
-import           Data.Text              ( Text, pack, unpack )
+import           Data.Text              ( Text )
 import           Reflex.Dom
 import           Telescope.Server.API  as API
-import           Telescope.Table       as Table
-import           Telescope.Store       as Store
-import           Telescope.Class        ( Telescope(..), ToFromF(..) )
+import           Telescope.Class        ( Telescope(..) )
 
 rootURL :: Text
 rootURL = "http://localhost:3002"

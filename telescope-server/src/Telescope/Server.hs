@@ -4,6 +4,7 @@
 
 module Telescope.Server where
 
+import           Control.Comonad              ( extract )
 import           Control.Monad                ( forever, void )
 import           Control.Monad.IO.Class       ( liftIO )
 import           Data.ByteString.Char8        ( ByteString, pack, unpack )
@@ -24,34 +25,35 @@ import qualified Telescope.Server.API        as API
 viewTablesHandler :: [API.TableKey] -> Servant.Handler API.Tables
 viewTablesHandler apiTableKeys = do
   let tableKeys = API.fromAPITableKeys apiTableKeys
-  tablesF <- runT $ Class.viewTables $ Class.toF $ tableKeys
-  liftIO $ putStrLn $ "\nServer: viewTables: " ++ show (Class.fromF tablesF)
-  pure $ API.toAPITables $ Class.fromF tablesF
+  tablesF <- runT $ Class.viewTables $ pure $ tableKeys
+  liftIO $ putStrLn $ "\nServer: viewTables: " ++ show (extract tablesF)
+  pure $ API.toAPITables $ extract tablesF
 
 setRowsHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setRowsHandler apiRows = do
 
-  -- FOR DEBUGGGING
+  -- BEGIN FOR DEBUGGGING
   let tables :: Table.Tables
       tables = API.fromAPITables apiRows
       tableKeys :: [Table.TableKey]
       tableKeys = Map.keys tables
-  tablesF <- runT $ Class.viewTables $ Class.toF tableKeys
-  liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (Class.fromF tablesF)
+  tablesF <- runT $ Class.viewTables $ pure tableKeys
+  liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (extract tablesF)
+  -- END FOR DEBUGGGING
 
-  runT $ Class.setRows $ Class.toF $ API.fromAPITables apiRows
+  runT $ Class.setRows $ pure $ API.fromAPITables apiRows
   liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRows
   pure Servant.NoContent
 
 setTablesHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setTablesHandler apiTables = do
-  runT $ Class.setTables $ Class.toF $ API.fromAPITables apiTables
+  runT $ Class.setTables $ pure $ API.fromAPITables apiTables
   liftIO $ putStrLn $ "\nServer: setTables: (toSet)" ++ show apiTables
   pure Servant.NoContent
 
 rmTablesHandler :: [API.TableKey] -> Servant.Handler Servant.NoContent
 rmTablesHandler apiTableKeys = do
-  runT $ Class.rmTables $ Class.toF $ API.fromAPITableKeys apiTableKeys
+  runT $ Class.rmTables $ pure $ API.fromAPITableKeys apiTableKeys
   pure Servant.NoContent
 
 type Sub = (Table.TableKey, Table.RowKey)
@@ -67,7 +69,7 @@ watchHandler conn = do
     WebSocket.sendTextData conn $ pack confirmation
     putStrLn $ confirmation
     runT $ Class.onChangeRow
-      (Class.toF tableKey) (Class.toF rowKey) $ Class.toF $
+      (pure tableKey) (pure rowKey) $ pure $
         \maybeRow -> runT $ liftIO $ do
           putStrLn $ show $ maybeRow
           WebSocket.sendTextData conn $ pack $ show $ maybeRow
@@ -88,7 +90,7 @@ type Port = Int
 -- | CORS policy useful when using a separate frontend server.
 developmentCors :: Middleware
 developmentCors = Cors.cors $ const $ Just Cors.simpleCorsResourcePolicy
-  { Cors.corsMethods        = ["OPTIONS", "GET", "POST"]
+  { Cors.corsMethods        = ["OPTIONS", "POST"]
   , Cors.corsRequestHeaders = ["Content-Type"]
   }
 

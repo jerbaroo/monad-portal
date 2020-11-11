@@ -6,11 +6,13 @@
 {-# LANGUAGE RecursiveDo         #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 
 import           Control.Lens             ( (^.), view )
 import           Control.Monad            ( void, when )
 import           Data.Either              ( isLeft )
 import qualified Data.Map                as Map
+import           Data.Proxy               ( Proxy(Proxy) )
 import           Data.Text.Encoding       ( encodeUtf8 )
 import           Data.Text                ( Text, pack, unpack )
 import           Data.These               ( These(..) )
@@ -53,7 +55,7 @@ viewKWidget = do
   el "h3" $ text "viewKRx"
   nameDyn   <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
-  personDyn <- T.viewKRx (const Person{} <$> nameDyn) (unpack <$> nameDyn)
+  personDyn <- T.viewKRx @Person (unpack <$> nameDyn)
   dynText $ pack . (" " ++) . show <$> personDyn
 
 -- | 'T.viewTableRx' the Person table.
@@ -62,7 +64,8 @@ viewTableWidget :: MonadWidget t m => m ()
 viewTableWidget = do
   el "h3" $ text "viewTableRx"
   clickEvn  <- button "View Table"
-  peopleDyn <- T.viewTableRx =<< holdDyn Person{} (const Person{} <$> clickEvn)
+  peopleDyn <- T.viewTableRx =<<
+    holdDyn (Proxy @Person) (const (Proxy @Person) <$> clickEvn)
   void $ dyn $ personTable <$> peopleDyn
 
 -- | 'T.setRx' a Person.

@@ -1,10 +1,11 @@
-{-# LANGUAGE DeriveAnyClass             #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE FunctionalDependencies     #-}
-{-# LANGUAGE UndecidableInstances       #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeApplications        #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE DeriveAnyClass         #-}
+{-# LANGUAGE DeriveGeneric          #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
 
 -- Definitions for tables and keys in a data source.
 -- Telescope end-users should not need this module.
@@ -13,8 +14,9 @@ module Telescope.Table where
 
 import           Data.Aeson                     ( FromJSON, ToJSON )
 import           Data.Map                      as Map
+import           Data.Proxy                     ( Proxy(..) )
 import           Data.Serialize                 ( Serialize )
-import           Type.Reflection                ( Typeable, typeRep )
+import qualified Data.Typeable                 as Data
 import           GHC.Generics                   ( Generic )
 
 -- | A storable primitive, a cell in a table.
@@ -91,27 +93,16 @@ type Table = Map RowKey Row
 -- | A number of tables indexed by 'TableKey'.
 type Tables = Map TableKey Table
 
--- | A data type which has a table key.
-class Typeable a => HasTableKey a where
-  tableKey :: a -> TableKey
+-- | A 'TableKey' for a data type.
+tableKey :: forall a. Data.Typeable a => TableKey
+tableKey = TableKey $ show $ Data.typeRep $ Proxy @a
 
-instance {-# OVERLAPPABLE #-} Typeable a => HasTableKey a where
-  tableKey _ = TableKey $ show $ typeRep @a
-
-instance Typeable a => HasTableKey [a] where
-  tableKey _ = TableKey $ show $ typeRep @a
-
--- | A data type which has a row key.
-class HasRowKey a where
-  rowKey :: a -> RowKey
- 
 -- | A data type that has a primary key.
 class (Eq k, ToKey k) => PrimaryKey a k | a -> k where
   primaryKey :: a -> k
 
--- | A row key can be converted from the primary key of a data type.
-instance PrimaryKey a k => HasRowKey a where
-  rowKey a = RowKey $ toKey $ primaryKey a
+rowKey :: PrimaryKey a k => a -> RowKey
+rowKey = RowKey . toKey . primaryKey
 
 --------------------
 -- JSON INSTANCES --

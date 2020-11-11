@@ -5,6 +5,7 @@
 
 module Telescope.DS.File where
 
+import           Control.Comonad          ( Comonad, extract )
 import           Control.Concurrent.MVar as MVar
 import           Control.Exception        ( catch, throwIO )
 import           Control.Monad            ( forM_, void, when )
@@ -22,7 +23,7 @@ import           System.FSNotify          ( Event (Modified) )
 import qualified System.FSNotify        as FS
 import           System.IO.Error          ( isDoesNotExistError )
 import qualified System.IO.Strict       as Strict
-import           Telescope.Class          ( Telescope(..), ToFromF(..) )
+import           Telescope.Class          ( Telescope(..) )
 import qualified Telescope.Table        as Table
 
 -------------------------------
@@ -37,23 +38,23 @@ runT (TFile a) = liftIO a
 
 -- | Values are not packed in any special container.
 newtype TFileIdentity a = TFileIdentity (Identity a)
-  deriving (Functor, Applicative, Show, ToFromF)
+  deriving (Functor, Applicative, Comonad, Show)
 
 instance Telescope TFile TFileIdentity where
 
   viewTables tableKeysF = do
-    tables <- map toNormalTable <$> (mapM readTableOnDisk $ fromF tableKeysF)
-    pure $ toF $ Map.fromList $ zip (fromF tableKeysF) tables
+    tables <- map toNormalTable <$> (mapM readTableOnDisk $ extract tableKeysF)
+    pure $ pure $ Map.fromList $ zip (extract tableKeysF) tables
 
   setTables tablesF = do
-    tablesOnDisk <- mapM readTableOnDisk $ Map.keys $ fromF tablesF
-    forM_ (zip tablesOnDisk $ Map.toList $ fromF tablesF) $
+    tablesOnDisk <- mapM readTableOnDisk $ Map.keys $ extract tablesF
+    forM_ (zip tablesOnDisk $ Map.toList $ extract tablesF) $
       \(tableOnDisk, (tableKey, table)) ->
         liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
           updatedTableOnDisk table tableOnDisk
 
   onChangeRow tableKeyId rowKeyId fId = do
-    onChangeRow' (fromF tableKeyId) (fromF rowKeyId) (fromF fId)
+    onChangeRow' (extract tableKeyId) (extract rowKeyId) (extract fId)
 
 --------------------------------------
 -- TableOnDisk and Helper Functions --

@@ -1,17 +1,21 @@
-{-# OPTIONS_GHC -fno-warn-missing-fields #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
+{-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 module Main ( main ) where
 
 import           Control.Concurrent       ( threadDelay )
 import           Control.Concurrent.MVar as MVar
 import           Control.Exception        ( try )
-import           Control.Monad            ( void, when )
+import           Control.Monad            ( when )
 import           Control.Monad.IO.Class   ( liftIO )
 import           Data.Either              ( isRight )
+import           Data.Proxy               ( Proxy(Proxy) )
 import           GHC.Generics             ( Generic )
 import           Telescope.Exception      ( TelescopeException )
 import qualified Telescope.Ops           as T
@@ -42,18 +46,26 @@ data Person = Person
   } deriving (Eq, Generic, Show, Typeable)
 
 instance PrimaryKey Person String where
-  primaryKey (Person name age) = name
-  
-john1 = Person "John" 69
-john2 = Person "John" 70
-mary  = Person "Mary" 70
+  primaryKey = name
 
+john1 :: Person
+john1 = Person "John" 69
+
+john2 :: Person
+john2 = Person "John" 70
+
+mary :: Person
+mary = Person "Mary" 70
+
+equalTablesMsg :: String
 equalTablesMsg = "Viewed table not equal to set table"
-equalUsersMsg  = "Viewed 'User' not equal to set 'User'"
+
+equalUsersMsg :: String
+equalUsersMsg = "Viewed 'User' not equal to set 'User'"
 
 testSetView :: HUnit.Test
 testSetView = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- View John before set.
   johnMay <- runT $ T.view john1
@@ -71,25 +83,25 @@ testSetView = HUnit.TestCase $ do
 
 testSetTableViewTable :: HUnit.Test
 testSetTableViewTable = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- View table before set.
-  table <- runT $ T.viewTable john1
+  table <- runT $ T.viewTable @Person
   HUnit.assertEqual equalTablesMsg [] table
 
   -- View table after setting users.
   runT $ T.setTable [john1, mary]
-  table <- runT $ T.viewTable john1
+  table <- runT $ T.viewTable
   HUnit.assertEqual equalTablesMsg [john1, mary] table
 
   -- View table after overwriting users.
   runT $ T.setTable [john2, mary]
-  table <- runT $ T.viewTable john1
+  table <- runT $ T.viewTable
   HUnit.assertEqual equalTablesMsg [john2, mary] table
 
 testSetTableDuplicateUsers :: HUnit.Test
 testSetTableDuplicateUsers = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- No error after setting unique users.
   runT $ T.setTable [john1, mary]
@@ -102,7 +114,7 @@ testSetTableDuplicateUsers = HUnit.TestCase $ do
   
 testOver :: HUnit.Test
 testOver = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- View John after modifying non-existing user.
   -- runT $ T.over john1 (\p -> p { age = 21 })
@@ -124,36 +136,36 @@ testOver = HUnit.TestCase $ do
 
 testRmRmTable :: HUnit.Test
 testRmRmTable = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- View John after remove.
   runT $ T.set john1
   runT $ T.rm john1
-  johnMay <- runT $ T.viewK Person{} "John"
+  (johnMay :: Maybe Person) <- runT $ T.viewK "John"
   HUnit.assertEqual equalUsersMsg Nothing johnMay
 
   -- View table after removing table.
   runT $ T.setTable [john1, mary]
-  runT $ T.rmTable Person{}
-  table <- runT $ T.viewTable Person{}
+  runT $ T.rmTable @Person
+  table <- runT $ T.viewTable @Person
   HUnit.assertEqual equalTablesMsg [] table
 
   -- View table after removing 1 user.
   runT $ T.setTable [john1, mary]
   runT $ T.rm john1
-  table <- runT $ T.viewTable Person{}
+  table <- runT $ T.viewTable
   HUnit.assertEqual equalTablesMsg [mary] table
 
 testOnChange :: HUnit.Test
 testOnChange = HUnit.TestCase $ do
-  runT $ T.rmTable Person{} -- Test setup.
+  runT $ T.rmTable @Person -- Test setup.
 
   -- MVar to record changes.
   changesMVar <- MVar.newMVar (Nothing, 0 :: Int)
   let delayAndRead = threadDelay 1000000 >> MVar.readMVar changesMVar
 
   -- Register on change function.
-  runT $ T.onChange john1 $ \p -> liftIO $ do
+  runT $ T.onChange "John" $ \p -> liftIO $ do
     (_, lastCount) <- MVar.takeMVar changesMVar
     MVar.putMVar changesMVar (p, lastCount + 1)
 
@@ -173,7 +185,7 @@ testOnChange = HUnit.TestCase $ do
 
   -- Assert 'onChange' does NOT run after setting same value again.
   runT $ T.set john2
-  (lastPerson, lastCount) <- delayAndRead
+  (_, lastCount) <- delayAndRead
   HUnit.assertEqual "'onChange' DID record 'set' (duplicate)" 2 lastCount
 
   -- Assert 'onChange' runs after removing value.
@@ -184,5 +196,5 @@ testOnChange = HUnit.TestCase $ do
 
   -- Assert 'onChange' does NOT run after removing value again.
   runT $ T.rm john2
-  (lastPerson, lastCount) <- delayAndRead
+  (_, lastCount) <- delayAndRead
   HUnit.assertEqual "'onChange' DID record 'rm' (duplicate)" 3 lastCount
