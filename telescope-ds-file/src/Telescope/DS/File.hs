@@ -40,6 +40,7 @@ newtype TFileIdentity a = TFileIdentity (Identity a)
   deriving (Functor, Applicative, Show, ToFromF)
 
 instance Telescope TFile TFileIdentity where
+
   viewTables tableKeysF = do
     tables <- map toNormalTable <$> (mapM readTableOnDisk $ fromF tableKeysF)
     pure $ toF $ Map.fromList $ zip (fromF tableKeysF) tables

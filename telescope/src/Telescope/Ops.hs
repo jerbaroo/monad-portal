@@ -5,8 +5,6 @@
 -- Operations on entities in a data source.
 module Telescope.Ops where
 
-import           Data.Functor      ( (<&>) )
-import           Control.Monad     ( join, when )
 import qualified Data.Map        as Map
 import           Telescope.Class  ( Entity, PrimaryKey, Telescope, ToFromF )
 import qualified Telescope.Class as Class
@@ -81,12 +79,14 @@ setTable = setTableRx . Class.toF
 --
 -- WARNING: removes all existing entities in the table.
 -- TODO: return either, handling error case of duplicate rows.
--- TODO: use 'setTable' for values of type 'a'.
--- TODO: use 'setMany' only for values not of type 'a'.
 setTableRx :: (Entity a, Telescope m f) => f [a] -> m ()
-setTableRx asF = Class.setRows tableMap
-  where rowsPerA = fmap (map $ Store.toRows . Store.toSDataType) asF
-        tableMap = fmap (Map.unionsWith Map.union) rowsPerA
+setTableRx asF = do
+  let tableKeyF = Table.tableKey <$> asF
+      rowsPerA  = (map $ Store.toRows . Store.toSDataType) <$> asF
+      tableMap  = Map.unionsWith Map.union <$> rowsPerA
+  Class.setTable tableKeyF $ (maybe Map.empty id)
+    <$> (Map.lookup <$> tableKeyF <*> tableMap)
+  Class.setRows $ Map.delete <$> tableKeyF <*> tableMap
 
 ----------
 -- over --

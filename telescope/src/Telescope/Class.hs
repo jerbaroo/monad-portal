@@ -9,8 +9,7 @@
 
 module Telescope.Class (module Telescope.Class, PrimaryKey) where
 
-import           Control.Monad            ( join, void )
-import           Data.Functor             ( (<&>) )
+import           Control.Monad            ( join )
 import           Data.Functor.Identity    ( Identity(..) )
 import qualified Data.Map                as Map
 import qualified Data.Set                as Set

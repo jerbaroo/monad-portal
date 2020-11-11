@@ -18,6 +18,7 @@ import qualified Telescope.Ops           as T
 import           Telescope.Table          ( PrimaryKey(..) )
 import           Telescope.DS.File        ( runT )
 import qualified Test.HUnit              as HUnit
+import           Type.Reflection          ( Typeable )
 import qualified System.Exit             as Exit
 
 main :: IO ()
@@ -38,7 +39,7 @@ main = do
 data Person = Person
   { name :: String
   , age  :: Int
-  } deriving (Eq, Generic, Show)
+  } deriving (Eq, Generic, Show, Typeable)
 
 instance PrimaryKey Person String where
   primaryKey (Person name age) = name

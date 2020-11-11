@@ -27,7 +27,6 @@ import           Text.Read                      ( readEither )
 --   '"John"' is the value of a field.
 
 -- | A storable representation of a field's value.
--- TODO: consider renaming.
 data SValue =
   -- A primitive storable value.
   SValue Table.Prim
@@ -192,9 +191,14 @@ class FromSValues a where
 instance (Eot.HasEot a, EotFromSValues (Eot.Eot a)) => FromSValues a where
   fromSValues = Eot.fromEot . eotFromSValues
 
--- Encode/decode to/from bytestring.
+-- Conversion from/to "storable" representation to table representation.
+--
+-- Storable representation refers to 'SDataType' and 'SValue'. Whereas table
+-- representation refers to 'Table.Table' and related datatypes.
 
--- Encode (to bytestring).
+-----------------------
+-- Storable -> Table --
+-----------------------
 
 -- | Convert an 'SDataType' to flattened 'Row's.
 -- TODO: make this take an 'a' not 'SDataType'.
@@ -216,7 +220,9 @@ sFieldsToRow (SFields fieldsMap) =
 encodeSValue :: SValue -> String
 encodeSValue (SValue prim) = show prim
 
--- Decode (from bytestring).
+-----------------------
+-- Table -> Storable --
+-----------------------
 
 -- | 'SValue's reconstructed from a row.
 rowToSValues :: Table.Row -> [SValue]

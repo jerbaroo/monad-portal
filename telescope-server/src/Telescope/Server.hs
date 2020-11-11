@@ -1,37 +1,57 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Telescope.Server where
 
-import           Control.Monad                  ( forever, void )
-import           Control.Monad.IO.Class         ( liftIO )
-import           Data.ByteString.Char8          ( ByteString, pack, unpack )
-import           Data.Proxy                     ( Proxy(..) )
-import qualified Network.Wai.Handler.Warp      as Warp
-import qualified Network.WebSockets            as WebSocket
-import           Servant                        ( (:<|>)(..) )
-import qualified Servant                       as Servant
-import           Servant.Server.StaticFiles     ( serveDirectoryFileServer )
-import qualified Telescope.Class               as Class
-import qualified Telescope.Table               as Table
-import           Telescope.DS.File              ( runT )
-import qualified Telescope.Server.API          as API
+import           Control.Monad                ( forever, void )
+import           Control.Monad.IO.Class       ( liftIO )
+import           Data.ByteString.Char8        ( ByteString, pack, unpack )
+import           Data.Map                   as Map
+import           Data.Proxy                   ( Proxy(..) )
+import           Network.Wai                  ( Middleware )
+import qualified Network.Wai.Handler.Warp    as Warp
+import qualified Network.Wai.Middleware.Cors as Cors
+import qualified Network.WebSockets          as WebSocket
+import           Servant                      ( (:<|>)(..) )
+import qualified Servant                     as Servant
+import           Servant.Server.StaticFiles   ( serveDirectoryFileServer )
+import qualified Telescope.Class             as Class
+import qualified Telescope.Table             as Table
+import           Telescope.DS.File            ( runT )
+import qualified Telescope.Server.API        as API
 
-viewTablesHandler :: [API.TableName] -> Servant.Handler API.Tables
-viewTablesHandler tableNames = do
-  tablesF <- runT $ Class.viewTables $ Class.toF $ map Table.TableKey tableNames
-  liftIO $ putStrLn $ "Server: viewTables: " ++ show (Class.fromF tablesF)
+viewTablesHandler :: [API.TableKey] -> Servant.Handler API.Tables
+viewTablesHandler apiTableKeys = do
+  let tableKeys = API.fromAPITableKeys apiTableKeys
+  tablesF <- runT $ Class.viewTables $ Class.toF $ tableKeys
+  liftIO $ putStrLn $ "\nServer: viewTables: " ++ show (Class.fromF tablesF)
   pure $ API.toAPITables $ Class.fromF tablesF
+
+setRowsHandler :: API.Tables -> Servant.Handler Servant.NoContent
+setRowsHandler apiRows = do
+
+  -- FOR DEBUGGGING
+  let tables :: Table.Tables
+      tables = API.fromAPITables apiRows
+      tableKeys :: [Table.TableKey]
+      tableKeys = Map.keys tables
+  tablesF <- runT $ Class.viewTables $ Class.toF tableKeys
+  liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (Class.fromF tablesF)
+
+  runT $ Class.setRows $ Class.toF $ API.fromAPITables apiRows
+  liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRows
+  pure Servant.NoContent
 
 setTablesHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setTablesHandler apiTables = do
   runT $ Class.setTables $ Class.toF $ API.fromAPITables apiTables
-  liftIO $ putStrLn $ "Server: setTables: " ++ show apiTables
+  liftIO $ putStrLn $ "\nServer: setTables: (toSet)" ++ show apiTables
   pure Servant.NoContent
 
-rmTablesHandler :: [API.TableName] -> Servant.Handler Servant.NoContent
-rmTablesHandler tableNames = do
-  runT $ Class.rmTables $ Class.toF $ map Table.TableKey tableNames
+rmTablesHandler :: [API.TableKey] -> Servant.Handler Servant.NoContent
+rmTablesHandler apiTableKeys = do
+  runT $ Class.rmTables $ Class.toF $ API.fromAPITableKeys apiTableKeys
   pure Servant.NoContent
 
 type Sub = (Table.TableKey, Table.RowKey)
@@ -55,12 +75,27 @@ watchHandler conn = do
 
 server :: Servant.Server API.API
 server =
-  (viewTablesHandler :<|> setTablesHandler :<|> rmTablesHandler)
+  (viewTablesHandler :<|> setRowsHandler :<|> setTablesHandler :<|> rmTablesHandler)
   :<|> watchHandler
   :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
 
+------------------
+-- RUN A SERVER --
+------------------
+
+type Port = Int
+
+-- | CORS policy useful when using a separate frontend server.
+developmentCors :: Middleware
+developmentCors = Cors.cors $ const $ Just Cors.simpleCorsResourcePolicy
+  { Cors.corsMethods        = ["OPTIONS", "GET", "POST"]
+  , Cors.corsRequestHeaders = ["Content-Type"]
+  }
+
 -- | Run a Telescope server.
-run :: Int -> IO ()
-run port = do
-  putStrLn $ "Running server on port " ++ show port ++ " ..."
-  Warp.run port $ Servant.serve (Proxy :: Proxy API.API) server
+run :: Port -> Middleware -> IO ()
+run port middleware = do
+  putStrLn $ "Running Telescope server on port " ++ show port
+  Warp.run port
+    $ middleware
+    $ Servant.serve (Proxy :: Proxy API.API) server
