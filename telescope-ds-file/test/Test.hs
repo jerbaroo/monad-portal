@@ -11,13 +11,8 @@ module Main ( main ) where
 
 import           Control.Concurrent       ( threadDelay )
 import           Control.Concurrent.MVar as MVar
-import           Control.Exception        ( try )
-import           Control.Monad            ( when )
 import           Control.Monad.IO.Class   ( liftIO )
-import           Data.Either              ( isRight )
-import           Data.Proxy               ( Proxy(Proxy) )
 import           GHC.Generics             ( Generic )
-import           Telescope.Exception      ( TelescopeException )
 import qualified Telescope.Ops           as T
 import           Telescope.Table          ( PrimaryKey(..) )
 import           Telescope.DS.File        ( runT )
