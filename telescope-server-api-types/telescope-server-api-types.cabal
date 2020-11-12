@@ -1,22 +1,23 @@
 cabal-version:       2.4
-name:                telescope-ds-reflex-dom
+name:                telescope-server-api-types
 version:             0.1.0.0
-synopsis:            Telescope instance for a Reflex Dom application.
+synopsis:            Types used in communication with the Telescope framework's server.
 -- description:
 homepage:            https://github.com/jerbaroo/telescope
 -- bug-reports:
 license:             BSD-3-Clause
 license-file:        LICENSE
-author:              jerbaroo
+author:              Jeremy Barisch-Rooney
 maintainer:          jerbaroo.work@pm.me
 -- copyright:
 category:            Web
 extra-source-files:  CHANGELOG.md
 
+
 library
-  exposed-modules:     Telescope.DS.Reflex.Dom
+  exposed-modules:     Telescope.Server.API.Types
   -- other-modules:
   -- other-extensions:
-  build-depends:       base, containers, lens, reflex-dom, telescope, telescope-server-api-types, text
+  build-depends:       base, containers, telescope
   hs-source-dirs:      src
   default-language:    Haskell2010

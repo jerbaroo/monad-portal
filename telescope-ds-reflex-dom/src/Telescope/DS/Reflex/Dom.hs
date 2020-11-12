@@ -8,13 +8,13 @@
 
 module Telescope.DS.Reflex.Dom where
 
-import           Control.Monad          ( void )
-import           Control.Monad.IO.Class ( liftIO )
-import qualified Data.Map              as Map
-import           Data.Text              ( Text )
+import           Control.Monad               ( void )
+import           Control.Monad.IO.Class      ( liftIO )
+import qualified Data.Map                   as Map
+import           Data.Text                   ( Text )
 import           Reflex.Dom
-import           Telescope.Server.API  as API
-import           Telescope.Class        ( Telescope(..) )
+import           Telescope.Server.API.Types as API
+import           Telescope.Class             ( Telescope(..) )
 
 rootURL :: Text
 rootURL = "http://localhost:3002"

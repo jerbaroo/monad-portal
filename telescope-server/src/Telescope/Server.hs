@@ -22,6 +22,7 @@ import qualified Telescope.Class             as Class
 import qualified Telescope.Table             as Table
 import           Telescope.DS.File            ( runT )
 import qualified Telescope.Server.API        as API
+import qualified Telescope.Server.API.Types  as API
 
 viewRowsHandler :: API.RowsIndex -> Servant.Handler API.Tables
 viewRowsHandler apiRowsIndex = do
