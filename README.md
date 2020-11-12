@@ -17,20 +17,20 @@
 *Minimum viable product. Not production ready.*
 
 Telescope is a Haskell framework for building reactive web apps, fast. Telescope
-abstracts away common tasks you undertake when developing a web app, *allowing
-you to focus on your business logic* and *reducing the time you need to build
-your app*.
+abstracts away common tasks you undertake when developing a web app, **allowing
+you to focus on your business logic** and **reducing the time you need to build
+your app**.
 
 An application built with Telescope is..
 - **Reactive:** don't worry about keeping client-side and server-side data in
-  sync, with Telescope your *frontend can automatically react to changes in your
-  database* and your database can be updated seamlessly by your frontend!
+  sync, your **frontend can automatically react to changes in your database**
+  and your database can be updated seamlessly by your frontend!
 - **Robust:** writing the strongly-typed language Haskell across the stack
   prevents server/client protocol mismatches and other run-time errors, allowing
-  you to *move fast and not break things.*
+  you to **move fast and not break things**.
 - **Minimal:** Telescope can setup a database and server for you and also manage
-  communication between client and server, so you can *focus on the parts of
-  your application that really matter.*
+  communication between client and server, so you can **focus on the parts of
+  your application that really matter**.
 
 What doesn't Telescope do currently?
 - Provide a full-featured database query language.
@@ -42,9 +42,9 @@ and input-validation very well. On the flip-side, applications with heavy
 client-side computation such as animations are not well-suited for Telescope.
 
 ## Getting Started
-Building a reactive web app with Telescope looks a little like this:
+Building a reactive web app with Telescope looks something like this:
 
-*1.* Declare the data types used in your application.
+**1.** Declare the data types used in your application.
 
 ``` haskell
 data TodoList = TodoList {
@@ -56,19 +56,19 @@ instance PrimaryKey TodoList where
   primaryKey = name
 ```
 
-*2.* Populate your database with some data.
+**2.** Populate your database with some data.
 
 ``` haskell
 T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
-*3.* Start the Telescope server.
+**3.** Start the Telescope server.
 
 ``` haskell
 Server.run port
 ```
 
-*4.* Write the frontend of your reactive web app with
+**4.** Write the frontend of your reactive web app with
 [Reflex-DOM](https://reflex-frp.org/)!
 
 ``` haskell
@@ -82,11 +82,8 @@ main = mainWidget $ el "div" $ do
   dynText $ fmap (pack . show) people
 ```
 
-*5.* Open two tabs, edit the to-do list in one tab and watch the other react!
-
-``` haskell
-T.over $ TodoList{} "pancakes" (++ ["sugar", "lemon juice"])
-```
+**5.** Open the app in two browser tabs. Edit one to-do-list and watch the other
+one react!
 
 A full tutorial and demo application are available TODO.
 <!-- TODO: links to reflex-platform and other doc in demo/README.md -->
@@ -118,11 +115,11 @@ the database.
 </div>
 
 There are a number of important points about the Telescope interface which we
-will go over in turn.
-- There are reactive variants of Telescope functions
-- Multiple instances of the Telescope interface
-- The Telescope interface is data source agnostic
-- Data is uniquely determined by type and primary key
+will now discuss in turn, referring back to the architecture diagram above.
+- Reactive variants of Telescope functions.
+- Multiple instances of the Telescope interface.
+- The Telescope interface is data source agnostic.
+- Data is uniquely determined by type and primary key.
 <!-- TODO: finish discussion about these points. -->
 <!-- TODO: outline data flow, top row subscribes and reacts to data. -->
 
@@ -148,15 +145,15 @@ communication with a server.
 
 <!-- Liberated of where/when. -->
 The primary motivation behind creating Telescope is that a developer should be
-able to *write a reactive frontend as a function of data in their one true data
-source*. Telescope solves this by providing a direct Reflex-DOM to database
-link. Even better, the Telescope interface is not specific to Reflex-DOM (where
-the interface is used) or the database. You could write an instance to use in
-e.g. a `reflex-vty` application, or to communicate with a different server or
-database.
+able to **write a reactive frontend as a function of data in their one true data
+source**. Telescope solves this by providing a direct Reflex-DOM <-> database
+link. Even better, the Telescope interface is not specific to Reflex-DOM or the
+database. You could write an instance to use in e.g. a `reflex-vty` application,
+or to communicate with a different server or database.
 
 ## Technical Details 
 <!-- Reactive interface to data, data location is a parameter. -->
+<!-- TODO: Rewrite paragraph. -->
 So Telescope is a web framework? More generally Telescope provides a reactive
 interface (the `Telescope` typeclass) to read/write datatypes from/to a data
 source. The data source's location (e.g. filepath or URL) is a parameter of the
@@ -199,7 +196,7 @@ Person "john" 70     <--->     "Person"
 Install the [Nix](https://nixos.org/download.html) package manager, clone this
 repository (with submodules) and change in to the `telescope` directory. If
 you’ve never built a project with `reflex-platform` before you'll also need to
-run a configuration step. Note that initial builds will take a looong time.
+run a configuration step. Please note that initial builds may take a long time.
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh

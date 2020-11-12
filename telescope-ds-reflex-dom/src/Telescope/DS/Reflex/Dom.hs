@@ -8,6 +8,7 @@
 
 module Telescope.DS.Reflex.Dom where
 
+import           Control.Monad          ( void )
 import           Control.Monad.IO.Class ( liftIO )
 import qualified Data.Map              as Map
 import           Data.Text              ( Text )
@@ -27,25 +28,45 @@ instance
   , Reflex t
   ) => Telescope m (Dynamic t) where
 
+  viewRows rowsIndexDyn = do
+    -- Perform XHR requests..
+    let toRequest = postJson (rootURL <> "/viewRows") . API.to
+    responseEvent <- performRequestAsync $ toRequest <$> updated rowsIndexDyn
+    -- ..and decode responses.
+    let apiTables :: Event t (API.Tables)
+        apiTables = mapMaybe id $ decodeXhrResponse <$> responseEvent
+    logEvent apiTables $ \t -> "DOM-viewRows: " ++ show t
+    holdDyn Map.empty $ API.from <$> apiTables
+
   viewTables tableKeysDyn = do
     -- Perform XHR requests..
-    let toRequest = postJson (rootURL <> "/viewTables") . API.toAPITableKeys
+    let toRequest = postJson (rootURL <> "/viewTables") . API.to
     responseEvent <- performRequestAsync $ toRequest <$> updated tableKeysDyn
     -- ..and decode responses.
     let apiTables :: Event t (API.Tables)
         apiTables = mapMaybe id $ decodeXhrResponse <$> responseEvent
-    logEvent apiTables $ \t -> "\nviewTables: " ++ show t
-    holdDyn Map.empty $ API.fromAPITables <$> apiTables
+    logEvent apiTables $ \t -> "DOM-viewTables: " ++ show t
+    holdDyn Map.empty $ API.from <$> apiTables
 
   setRows rowsDyn = do
-    let toRequest = postJson (rootURL <> "/setRows") . API.toAPITables
-    performRequestAsync $ toRequest <$> updated rowsDyn
-    logEvent (updated rowsDyn) $ \t -> "setRows: " ++ show t
+    let toRequest = postJson (rootURL <> "/setRows") . API.to
+    void $ performRequestAsync $ toRequest <$> updated rowsDyn
+    logEvent (updated rowsDyn) $ \t -> "DOM-setRows: " ++ show t
 
   setTables tablesDyn = do
-    let toRequest = postJson (rootURL <> "/setTables") . API.toAPITables
-    performRequestAsync $ toRequest <$> updated tablesDyn
-    logEvent (updated tablesDyn) $ \t -> "setTables: " ++ show t
+    let toRequest = postJson (rootURL <> "/setTables") . API.to
+    void $ performRequestAsync $ toRequest <$> updated tablesDyn
+    logEvent (updated tablesDyn) $ \t -> "DOM-setTables: " ++ show t
+
+  rmRows rowsIndexDyn = do
+    let toRequest = postJson (rootURL <> "/rmRows") . API.to
+    void $ performRequestAsync $ toRequest <$> updated rowsIndexDyn
+    logEvent (updated rowsIndexDyn) $ \t -> "DOM-rmRows: " ++ show t
+
+  rmTables tableKeysDyn = do
+    let toRequest = postJson (rootURL <> "/rmTables") . API.to
+    void $ performRequestAsync $ toRequest <$> updated tableKeysDyn
+    logEvent (updated tableKeysDyn) $ \t -> "DOM-rmTables: " ++ show t
 
   --  -- dyn :: Dynamic t (m a) -> m (Event t a)
   -- perform aMDyn = do
@@ -56,9 +77,9 @@ instance
   --   -- dyn aMDyn
   --   -- performEvent_ $ (PerformEventT) <$> aMEvn
 
--- | Prints a string when an event fires.
+-- | Logs a string to the console when an event fires.
 --
 -- Differs slightly from 'Reflex.traceEvent' because it will print even if the
--- event is otherwise unused. Copied from the reflex-dom-contrib package.
+-- event is otherwise unused. from the reflex-dom-contrib package.
 logEvent :: MonadWidget t m => Event t a -> (a -> String) -> m ()
 logEvent e mkStr = performEvent_ (liftIO . putStrLn . mkStr <$> e)

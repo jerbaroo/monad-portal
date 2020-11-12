@@ -93,6 +93,9 @@ type Table = Map RowKey Row
 -- | A number of tables indexed by 'TableKey'.
 type Tables = Map TableKey Table
 
+-- | Indexed into a number of rows across tables.
+type RowsIndex = Map TableKey [RowKey]
+
 -- | A 'TableKey' for a data type.
 tableKey :: forall a. Data.Typeable a => TableKey
 tableKey = TableKey $ show $ Data.typeRep $ Proxy @a

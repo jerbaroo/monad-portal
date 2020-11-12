@@ -24,7 +24,7 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
     pure $ join <$> (fmap . Map.lookup <$> rowKeyF <*> rowsMayF)
 
   -- | View multiple rows in a data source.
-  viewRows :: f (Map.Map Table.TableKey [Table.RowKey]) -> m (f (Table.Tables))
+  viewRows :: f Table.RowsIndex -> m (f (Table.Tables))
   viewRows rowKeysMapF = do
     tablesF <- viewTables $ Map.keys <$> rowKeysMapF
     pure $ Map.intersectionWith onlyRows <$> tablesF <*> rowKeysMapF
@@ -65,7 +65,7 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
     rmRows $ Map.singleton <$> tableKeyF <*> ((:[]) <$> rowKeyF)
 
   -- | Remove multiple rows from a data source.
-  rmRows :: f (Map.Map Table.TableKey [Table.RowKey]) -> m ()
+  rmRows :: f Table.RowsIndex -> m ()
   rmRows rowKeysMapF = do
     tablesF <- viewTables $ Map.keys <$> rowKeysMapF
     setTables $ Map.intersectionWith withoutRows <$> tablesF <*> rowKeysMapF

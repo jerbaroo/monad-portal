@@ -22,38 +22,49 @@ import qualified Telescope.Table             as Table
 import           Telescope.DS.File            ( runT )
 import qualified Telescope.Server.API        as API
 
+viewRowsHandler :: API.RowsIndex -> Servant.Handler API.Tables
+viewRowsHandler apiRowsIndex = do
+  rowsF <- runT $ Class.viewRows $ pure $ API.from apiRowsIndex
+  liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRowsIndex
+  pure $ API.to $ extract rowsF
+
 viewTablesHandler :: [API.TableKey] -> Servant.Handler API.Tables
 viewTablesHandler apiTableKeys = do
-  let tableKeys = API.fromAPITableKeys apiTableKeys
+  let tableKeys = API.from apiTableKeys
   tablesF <- runT $ Class.viewTables $ pure $ tableKeys
   liftIO $ putStrLn $ "\nServer: viewTables: " ++ show (extract tablesF)
-  pure $ API.toAPITables $ extract tablesF
+  pure $ API.to $ extract tablesF
 
 setRowsHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setRowsHandler apiRows = do
 
   -- BEGIN FOR DEBUGGGING
   let tables :: Table.Tables
-      tables = API.fromAPITables apiRows
+      tables = API.from apiRows
       tableKeys :: [Table.TableKey]
       tableKeys = Map.keys tables
   tablesF <- runT $ Class.viewTables $ pure tableKeys
   liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (extract tablesF)
   -- END FOR DEBUGGGING
 
-  runT $ Class.setRows $ pure $ API.fromAPITables apiRows
+  runT $ Class.setRows $ pure $ API.from apiRows
   liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRows
   pure Servant.NoContent
 
 setTablesHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setTablesHandler apiTables = do
-  runT $ Class.setTables $ pure $ API.fromAPITables apiTables
+  runT $ Class.setTables $ pure $ API.from apiTables
   liftIO $ putStrLn $ "\nServer: setTables: (toSet)" ++ show apiTables
+  pure Servant.NoContent
+
+rmRowsHandler :: API.RowsIndex -> Servant.Handler Servant.NoContent
+rmRowsHandler apiRowsIndex = do
+  runT $ Class.rmRows $ pure $ API.from apiRowsIndex
   pure Servant.NoContent
 
 rmTablesHandler :: [API.TableKey] -> Servant.Handler Servant.NoContent
 rmTablesHandler apiTableKeys = do
-  runT $ Class.rmTables $ pure $ API.fromAPITableKeys apiTableKeys
+  runT $ Class.rmTables $ pure $ API.from apiTableKeys
   pure Servant.NoContent
 
 type Sub = (Table.TableKey, Table.RowKey)
@@ -77,7 +88,13 @@ watchHandler conn = do
 
 server :: Servant.Server API.API
 server =
-  (viewTablesHandler :<|> setRowsHandler :<|> setTablesHandler :<|> rmTablesHandler)
+  (    viewRowsHandler
+  :<|> viewTablesHandler
+  :<|> setRowsHandler
+  :<|> setTablesHandler
+  :<|> rmRowsHandler
+  :<|> rmTablesHandler
+  )
   :<|> watchHandler
   :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
 

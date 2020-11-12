@@ -58,11 +58,11 @@ viewTableRx proxyF =
 ---------
 
 -- | Set an entity in a data source.
-set :: (Entity a k, Telescope m f, Comonad f) => a -> m ()
+set :: (Entity a k, Telescope m f) => a -> m ()
 set = setRx . pure
 
 -- | Infix version of 'set'.
-(.~) :: (Entity a k, Telescope m f, Comonad f) => a -> m ()
+(.~) :: (Entity a k, Telescope m f) => a -> m ()
 (.~) = set
 
 -- | Like 'set' but a reactive version.
@@ -72,7 +72,7 @@ setRx aF = Class.setRows $ Store.toRows . Store.toSDataType <$> aF
 -- | Set a table in a data source to ONLY the given entities.
 --
 -- WARNING: removes all existing entities in the table.
-setTable :: (Entity a k, Telescope m f, Comonad f) => [a] -> m ()
+setTable :: (Entity a k, Telescope m f) => [a] -> m ()
 setTable = setTableRx . pure
 
 -- | Like 'setTable' but a reactive version.
@@ -108,7 +108,7 @@ setTableRx asF = do
 --   overKRx (Class.toF aType) (Class.toF primaryKey) (Class.toF f)
 --   >>= pure . Class.fromF
 
--- | Like 'overK' but a reactive version.
+-- -- | Like 'overK' but a reactive version.
 -- overKRx :: forall a k f m. (Entity a, PrimaryKey a k, Telescope m f)
 --   => f a -> f k -> f (a -> a) -> m (f (Maybe a))
 -- overKRx aTypeF primaryKeyF funcF = do
@@ -133,7 +133,7 @@ setTableRx asF = do
 --------
 
 -- | Remove an entity in a data source.
-rm :: forall a k m f. (Entity a k, Telescope m f, Comonad f) => a -> m ()
+rm :: forall a k m f. (Entity a k, Telescope m f) => a -> m ()
 rm = rmK @a . Table.primaryKey
 
 -- | Like 'rm' but a reactive version.
@@ -141,7 +141,7 @@ rmRx :: forall a k m f. (Entity a k, Telescope m f) => f a -> m ()
 rmRx aF = rmKRx @a $ Table.primaryKey <$> aF
 
 -- | Like 'rm' but row key is passed separately.
-rmK :: forall a k m f. (Entity a k, Telescope m f, Comonad f) => k -> m ()
+rmK :: forall a k m f. (Entity a k, Telescope m f) => k -> m ()
 rmK = rmKRx @a . pure
 
 -- | Like 'rmK' but a reactive version.
@@ -152,7 +152,7 @@ rmKRx primaryKeyF =
     (Table.RowKey . Table.toKey <$> primaryKeyF)
 
 -- | Remove a table in a data source.
-rmTable :: forall a k m f. (Entity a k, Telescope m f, Comonad f) => m ()
+rmTable :: forall a k m f. (Entity a k, Telescope m f) => m ()
 rmTable = rmTableRx $ pure $ Proxy @a
 
 -- | Like 'rmTable' but a reactive version.
@@ -164,7 +164,7 @@ rmTableRx proxyF = Class.rmTable $ const (Table.tableKey @a) <$> proxyF
 --------------
 
 -- | Run a function when an entity in a data source changes.
-onChange :: forall a k m f. (Entity a k, Telescope m f, Comonad f)
+onChange :: forall a k m f. (Entity a k, Telescope m f)
   => k -> (Maybe a -> m ()) -> m ()
 onChange k f = onChangeRx @a (pure k) (pure f)
 

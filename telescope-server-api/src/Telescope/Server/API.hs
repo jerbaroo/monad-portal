@@ -1,35 +1,47 @@
-{-# LANGUAGE DataKinds     #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE TypeSynonymInstances   #-}
 
 module Telescope.Server.API where
 
-import qualified Data.Map               as Map
-import           Servant.API            ( (:<|>), (:>), Capture,
-                                          DeleteNoContent, Get, JSON, NoContent,
+import           Data.Bifunctor         ( first )
+import qualified Data.Map              as Map
+import           Servant.API            ( (:<|>), (:>), JSON, NoContent,
                                           PostNoContent, Raw, ReqBody, Post )
 import           Servant.API.WebSocket  ( WebSocket )
-import qualified Telescope.Table        as Table'
+import qualified Telescope.Table       as Table'
 
-type TableKey = String
-type Table    = (TableKey, [(Table'.RowKey, Table'.Row)])
-type Tables   = [Table]
+type RowsIndex = [(TableKey, [Table'.RowKey])]
+type TableKey  = String
+type Table     = (TableKey, [(Table'.RowKey, Table'.Row)])
+type Tables    = [Table]
 
 type RestAPI =
+  "viewRows"
+    :> ReqBody       '[JSON] RowsIndex
+    :> Post          '[JSON] Tables
+  :<|>
   "viewTables"
-    :> ReqBody         '[JSON] [TableKey]
-    :> Post            '[JSON] Tables
+    :> ReqBody       '[JSON] [TableKey]
+    :> Post          '[JSON] Tables
   :<|>
   "setRows"
-    :> ReqBody         '[JSON] Tables
-    :> PostNoContent   '[JSON] NoContent
+    :> ReqBody       '[JSON] Tables
+    :> PostNoContent '[JSON] NoContent
   :<|>
   "setTables"
-    :> ReqBody         '[JSON] Tables
-    :> PostNoContent   '[JSON] NoContent
+    :> ReqBody       '[JSON] Tables
+    :> PostNoContent '[JSON] NoContent
+  :<|>
+  "rmRows"
+    :> ReqBody       '[JSON] RowsIndex
+    :> PostNoContent '[JSON] NoContent
   :<|>
   "rmTables"
-    :> ReqBody         '[JSON] [TableKey]
-    :> DeleteNoContent '[JSON] NoContent
+    :> ReqBody       '[JSON] [TableKey]
+    :> PostNoContent '[JSON] NoContent
 
 type WebSocketAPI = "watch" :> WebSocket
 type StaticAPI    = Raw
@@ -39,20 +51,19 @@ type API          = RestAPI :<|> WebSocketAPI :<|> StaticAPI
 -- CONVERSION FUNCTIONS --
 --------------------------
 
--- | Convert Telescope Tables to API-format.
-toAPITables :: Table'.Tables -> Tables
-toAPITables = map f . Map.toList
-  where f (Table'.TableKey tn, table) = (tn, Map.toList table)
+-- | A datatype that can be converted to/from API format.
+class APIFormat a b | a -> b, b -> a where
+  to   :: a -> b
+  from :: b -> a
 
--- | Convert from API-format to Telescope Tables.
-fromAPITables :: Tables -> Table'.Tables
-fromAPITables = Map.fromList . map f
-  where f (tn, table) = (Table'.TableKey tn, Map.fromList table)
+instance APIFormat Table'.RowsIndex RowsIndex where
+  to   = map (first Table'.unTableKey) . Map.toList
+  from = Map.fromList . map (first Table'.TableKey)
 
--- | Convert Telescope TableKeys to API-format.
-toAPITableKeys :: [Table'.TableKey] -> [TableKey]
-toAPITableKeys = map Table'.unTableKey
+instance APIFormat Table'.Tables Tables where
+  to   = map (first Table'.unTableKey) . Map.toList . fmap Map.toList
+  from = fmap Map.fromList . Map.fromList . map (first Table'.TableKey)
 
--- | Convert from API-format to Telescope TableKeys.
-fromAPITableKeys :: [TableKey] -> [Table'.TableKey]
-fromAPITableKeys = map Table'.TableKey
+instance APIFormat [Table'.TableKey] [TableKey] where
+  to   = map Table'.unTableKey
+  from = map Table'.TableKey

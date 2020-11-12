@@ -10,6 +10,7 @@
 
 import           Control.Lens             ( (^.), view )
 import           Control.Monad            ( void, when )
+import           Data.Bool                ( bool )
 import           Data.Either              ( isLeft )
 import qualified Data.Map                as Map
 import           Data.Proxy               ( Proxy(Proxy) )
@@ -38,7 +39,10 @@ main = mainWidget $ el "div" $ do
   viewTableWidget
   setWidget
   setTableWidget
-  webSocketWidget
+  rmWidget
+  rmKWidget
+  rmTableWidget
+  -- webSocketWidget
 
 -- | 'T.viewRx' a Person with user-input name.
 viewWidget :: MonadWidget t m => m ()
@@ -59,14 +63,15 @@ viewKWidget = do
   dynText $ pack . (" " ++) . show <$> personDyn
 
 -- | 'T.viewTableRx' the Person table.
--- TODO: Add switch button.
 viewTableWidget :: MonadWidget t m => m ()
 viewTableWidget = do
   el "h3" $ text "viewTableRx"
-  clickEvn  <- button "View Table"
+  rec viewingDyn <- toggle False clickEvn
+      clickEvn   <- domEvent Click . fst <$> el' "button" (dynText
+        $ bool "View Table" "Hide Table" <$> viewingDyn)
   peopleDyn <- T.viewTableRx =<<
     holdDyn (Proxy @Person) (const (Proxy @Person) <$> clickEvn)
-  void $ dyn $ personTable <$> peopleDyn
+  void $ dyn $ zipDynWith (bool $ text "") (personTable <$> peopleDyn) viewingDyn
 
 -- | 'T.setRx' a Person.
 setWidget :: MonadWidget t m => m ()
@@ -83,8 +88,6 @@ setWidget = do
   clickEvn <- disabledButton (isLeft <$> ageEiDyn) "Set Person"
   T.setRx =<< holdDyn Person{} (tag (current personDyn) clickEvn)
   dynText =<< (holdDyn "" $ errText <$> updated ageEiDyn)
-  where errText (Left t) = " " <> t
-        errText _        = ""
 
 -- | 'T.setTableRx' a table of Person.
 setTableWidget :: MonadWidget t m => m ()
@@ -95,9 +98,9 @@ setTableWidget = do
       countRows (That _)    n = n + 1
       countRows (These _ _) n = n -- Both buttons clicked at same time.
   -- Buttons above the input table.
-  rec countPEvn <- button "+ Row"
-      countNEvn <- disabledButton ((<= 1) <$> numRowsDyn) "- Row"
-      setEvn    <- disabledButton (isLeft <$> peopleEiDyn) "Set Table"
+  rec countPEvn  <- button "+ Row"
+      countNEvn  <- disabledButton ((<= 1) <$> numRowsDyn) "- Row"
+      setEvn     <- disabledButton (isLeft <$> peopleEiDyn) "Set Table"
       numRowsDyn <- foldDyn countRows minRows $
         alignEventWithMaybe Just countNEvn countPEvn
       -- The input table.
@@ -106,6 +109,7 @@ setTableWidget = do
         simpleList ((\a -> [(1::Int)..a]) <$> numRowsDyn) $ const $ el "tr" $ do
           nameInput <- el "td" $ textInput $ def & textInputConfig_initialValue .~ initialName
           ageEiDyn  <- el "td" $ numberInput (pack $ show initialAge) parseAge
+          dynText =<< (holdDyn "" $ errText <$> updated ageEiDyn)
           pure $ (\name -> fmap (\age -> (unpack name, age)))
             <$> nameInput ^. textInput_value <*> ageEiDyn
       -- Set input table on click.
@@ -114,9 +118,34 @@ setTableWidget = do
   peopleDyn <- holdDyn [] $ filterRight $ (updated peopleEiDyn)
   T.setTableRx =<< holdDyn [Person{}] (tag (current peopleDyn) setEvn)
 
+-- | 'T.rmRx' a Person with user-input name.
+rmWidget :: MonadWidget t m => m ()
+rmWidget = do
+  el "h3" $ text "rmRx"
+  let toPerson = fmap (\n -> Person{name = unpack n}) . view textInput_value
+  personDyn <- toPerson <$> textInput (def &
+    textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
+  clickEvn  <- button "Remove"
+  T.rmRx =<< holdDyn Person{} (tag (current personDyn) clickEvn)
+
+-- | 'T.viewKRx' a Person with user-input name.
+rmKWidget :: MonadWidget t m => m ()
+rmKWidget = do
+  el "h3" $ text "rmKRx"
+  nameDyn  <- fmap unpack . view textInput_value <$> textInput (def &
+    textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
+  clickEvn <- button "Remove"
+  T.rmKRx @Person =<< holdDyn "" (tag (current nameDyn) clickEvn)
+
+-- | 'T.rmTableRx' the Person table.
+rmTableWidget :: MonadWidget t m => m ()
+rmTableWidget = do
+  el "h3" $ text "rmTableRx"
+  clickEvn <- button "Remove"
+  T.rmTableRx =<< holdDyn (Proxy @Person) (const (Proxy @Person) <$> clickEvn)
+
 webSocketWidget :: MonadWidget t m => m ()
 webSocketWidget = do
-  -- TODO: Move to telescope-ds-reflex-dom
   el "p" $ text "Watch database"
   rec table  <- inputElement def
       rowKey <- inputElement def
@@ -127,6 +156,10 @@ webSocketWidget = do
   ws <- webSocket "ws://localhost:3002/watch" $ def
     & webSocketConfig_send .~ newMessage
   pure ()
+
+----------------------
+-- HELPER FUNCTIONS --
+----------------------
 
 -- | A list of 'Person' to a HTML "table".
 personTable :: DomBuilder t m => [Person] -> m ()
@@ -145,6 +178,11 @@ personTable people = el "table" $ do
             & inputElementConfig_initialValue .~ text
             & inputElementConfig_elementConfig . elementConfig_initialAttributes .~
               ("disabled" =: "true")
+
+-- | Error text with a leading space, or empty text.
+errText :: Either Text a -> Text
+errText (Left t) = " " <> t
+errText _        = ""
 
 -- | A valid age parsed from text, or an error message.
 parseAge :: Text -> Either Text Int
