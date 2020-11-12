@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
   PORT=3001
 else
   PORT="$1"

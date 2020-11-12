@@ -1,7 +1,7 @@
  packages:
-   demo-backend/
-   demo-common/
-   demo-frontend/
+   demos/demo-backend/
+   demos/demo-common/
+   demos/demo-frontend/
    telescope/
    telescope-ds-file/
    telescope-ds-reflex-dom/

@@ -208,7 +208,7 @@ cd telescope
 Development commands for the Telescope framework:
 
 ``` bash
-# Type-check the package passed as first argument.
+# Type-check (with GHCID) the package passed as first argument.
 ./scripts/check.sh telescope
 # Run tests for all Telescope packages.
 ./scripts/test.sh
@@ -220,22 +220,22 @@ Development commands for the demo application:
 
 ``` bash
 # Run a server for demo-backend, server restarts on file change.
-./scripts/run/dev/backend.sh
+./scripts/run/dev.sh demo-backend
 # Run a server for demo-frontend, server restarts on file change.
-./scripts/run/dev/frontend.sh
-# Enter a REPL for interacting with demo database.
-./scripts/repl.sh
+./scripts/run/dev.sh demo-frontend
+# Enter a REPL for interacting with the demo's database.
+./scripts/repl.sh demo-backend
 ```
 
 Production commands for the demo application:
 
 ``` bash 
 # Build the demo-backend server.
-./scripts/build/prod/backend.sh 
+./scripts/build/prod.sh demo-backend
 # Generate demo-frontend static files.
-./scripts/build/prod/frontend.sh 
+./scripts/build/prod.sh demo-frontend
 # Run a server for demo-backend.
-./scripts/run/prod/backend.sh
+./scripts/run/prod.sh demo-backend
 ```
 
 ## Name
