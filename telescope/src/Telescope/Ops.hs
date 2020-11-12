@@ -72,19 +72,30 @@ setRx aF = Class.setRows $ Store.toRows . Store.toSDataType <$> aF
 -- | Set a table in a data source to ONLY the given entities.
 --
 -- WARNING: removes all existing entities in the table.
+--
+-- WARNING: if multiple 'a's with equal primary keys are given, then only the
+-- 'a' nearest the tail of the list will be set in the data source. And if any
+-- 'a's contain nested 'Entity's with equal primary keys, then only the 'Entity'
+-- contained within the 'a' nearest the tail of the list will be set.
 setTable :: (Entity a k, Telescope m f) => [a] -> m ()
 setTable = setTableRx . pure
 
 -- | Like 'setTable' but a reactive version.
 --
 -- WARNING: removes all existing entities in the table.
--- TODO: return either, handling error case of duplicate rows.
+--
+-- WARNING: if multiple 'a's with equal primary keys are given, then only the
+-- 'a' nearest the tail of the list will be set in the data source. And if any
+-- 'a's contain nested 'Entity's with equal primary keys, then only the 'Entity'
+-- contained within the 'a' nearest the tail of the list will be set.
 setTableRx :: forall a k m f. (Entity a k, Telescope m f) => f [a] -> m ()
 setTableRx asF = do
-  let rowsPerA = (map $ Store.toRows . Store.toSDataType) <$> asF
-      tableMap = Map.unionsWith Map.union <$> rowsPerA
-  Class.setTable (pure $ Table.tableKey @a) $ (maybe Map.empty id)
-    <$> (Map.lookup (Table.tableKey @a) <$> tableMap)
+      -- First convert each 'a' into 1 or more rows across 1 or more tables..
+  let rowsPerA = (map $ Store.toRows . Store.toSDataType) <$> asF :: f [Table.Tables]
+      -- ..then combine these rows per 'a' into a single data structure.
+      tableMap = Map.unionsWith Map.union <$> rowsPerA            :: f  Table.Tables
+  Class.setTable (pure $ Table.tableKey @a) $ maybe Map.empty id <$>
+    (Map.lookup (Table.tableKey @a) <$> tableMap)
   Class.setRows $ Map.delete (Table.tableKey @a) <$> tableMap
 
 ----------

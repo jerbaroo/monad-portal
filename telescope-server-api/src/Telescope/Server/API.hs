@@ -6,8 +6,10 @@
 
 module Telescope.Server.API where
 
-import           Data.Bifunctor         ( first )
+import           Data.Bifunctor         ( first, second )
 import qualified Data.Map              as Map
+import           Data.Set               ( Set )
+import qualified Data.Set              as Set
 import           Servant.API            ( (:<|>), (:>), JSON, NoContent,
                                           PostNoContent, Raw, ReqBody, Post )
 import           Servant.API.WebSocket  ( WebSocket )
@@ -57,13 +59,13 @@ class APIFormat a b | a -> b, b -> a where
   from :: b -> a
 
 instance APIFormat Table'.RowsIndex RowsIndex where
-  to   = map (first Table'.unTableKey) . Map.toList
-  from = Map.fromList . map (first Table'.TableKey)
+  to   = map (first Table'.unTableKey . second Set.toList) . Map.toList
+  from = Map.fromList . map (first Table'.TableKey . second Set.fromList)
 
 instance APIFormat Table'.Tables Tables where
   to   = map (first Table'.unTableKey) . Map.toList . fmap Map.toList
   from = fmap Map.fromList . Map.fromList . map (first Table'.TableKey)
 
-instance APIFormat [Table'.TableKey] [TableKey] where
-  to   = map Table'.unTableKey
-  from = map Table'.TableKey
+instance APIFormat (Set Table'.TableKey) [TableKey] where
+  to   = map Table'.unTableKey . Set.toList
+  from = Set.fromList . map Table'.TableKey

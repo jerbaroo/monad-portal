@@ -30,7 +30,6 @@ main = do
   results <- HUnit.runTestTT $ HUnit.TestList
     [ testSetView
     , testSetTableViewTable
-    -- [ testSetTableDuplicateUsers
     , testOver
     , testRmRmTable
     , testOnChange
@@ -99,19 +98,6 @@ testSetTableViewTable = HUnit.TestCase $ do
   table <- runT $ T.viewTable
   HUnit.assertEqual equalTablesMsg [john2, mary] table
 
-testSetTableDuplicateUsers :: HUnit.Test
-testSetTableDuplicateUsers = HUnit.TestCase $ do
-  runT $ T.rmTable @Person -- Test setup.
-
-  -- No error after setting unique users.
-  runT $ T.setTable [john1, mary]
-
-  -- Error after setting duplicate users.
-  errored <- try $ runT $ T.setTable [john1, john1]
-    :: IO (Either TelescopeException ())
-  when (isRight errored) $ HUnit.assertFailure
-    "No error thrown setting duplicate users with setTable"
-  
 testOver :: HUnit.Test
 testOver = HUnit.TestCase $ do
   runT $ T.rmTable @Person -- Test setup.

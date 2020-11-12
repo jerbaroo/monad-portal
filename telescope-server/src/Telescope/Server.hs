@@ -9,6 +9,7 @@ import           Control.Monad                ( forever, void )
 import           Control.Monad.IO.Class       ( liftIO )
 import           Data.ByteString.Char8        ( ByteString, pack, unpack )
 import           Data.Map                   as Map
+import           Data.Set                   as Set
 import           Data.Proxy                   ( Proxy(..) )
 import           Network.Wai                  ( Middleware )
 import qualified Network.Wai.Handler.Warp    as Warp
@@ -41,8 +42,8 @@ setRowsHandler apiRows = do
   -- BEGIN FOR DEBUGGGING
   let tables :: Table.Tables
       tables = API.from apiRows
-      tableKeys :: [Table.TableKey]
-      tableKeys = Map.keys tables
+      tableKeys :: Set Table.TableKey
+      tableKeys = Set.fromList $ Map.keys tables
   tablesF <- runT $ Class.viewTables $ pure tableKeys
   liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (extract tablesF)
   -- END FOR DEBUGGGING

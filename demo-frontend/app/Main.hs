@@ -236,10 +236,3 @@ var ws = newws();
 ws.send("(TableKey \"Person\",RowKey (KeyOne (PString \"John\")))");
 
 -}
-
--- -- | A HTML "br" tag
--- br :: DomBuilder t m => Int -> m ()
--- br n = sequence_ $ replicate n (el "br" $ text "")
--- -- | An empty HTML "span" tag
--- none :: DomBuilder t m => m ()
--- none = el "span" $ text ""

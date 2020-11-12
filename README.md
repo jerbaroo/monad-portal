@@ -23,14 +23,14 @@ your app**.
 
 An application built with Telescope is..
 - **Reactive:** don't worry about keeping client-side and server-side data in
-  sync, your **frontend can automatically react to changes in your database**
-  and your database can be updated seamlessly by your frontend!
+  sync, your frontend can automatically react to changes in your database and
+  your database can be updated seamlessly by your frontend!
 - **Robust:** writing the strongly-typed language Haskell across the stack
   prevents server/client protocol mismatches and other run-time errors, allowing
-  you to **move fast and not break things**.
+  you to move fast and not break things.
 - **Minimal:** Telescope can setup a database and server for you and also manage
-  communication between client and server, so you can **focus on the parts of
-  your application that really matter**.
+  communication between client and server, so you can focus on the parts of your
+  application that really matter.
 
 What doesn't Telescope do currently?
 - Provide a full-featured database query language.

@@ -15,6 +15,7 @@ import           Data.Either.Extra        ( fromRight' )
 import           Data.Functor.Identity    ( Identity(..) )
 import           Data.List                ( nub )
 import qualified Data.Map               as Map
+import qualified Data.Set               as Set
 import           Data.Maybe               ( catMaybes, fromJust, isJust)
 import           Data.Serialize           ( Serialize, decode, encode )
 import           System.Directory         ( canonicalizePath )
@@ -42,13 +43,17 @@ newtype TFileIdentity a = TFileIdentity (Identity a)
 
 instance Telescope TFile TFileIdentity where
 
-  viewTables tableKeysF = do
-    tables <- map toNormalTable <$> (mapM readTableOnDisk $ extract tableKeysF)
+  -- For each given 'Table.TableKey', read the table from disk. Then zip the
+  -- tables and keys together and return as a 'Map'.
+  viewTables tableKeysSetF = do
+    let tableKeysF = Set.toList <$> tableKeysSetF -- Order for zipping.
+    tables <- fmap toNormalTable <$> (mapM readTableOnDisk $ extract tableKeysF)
     pure $ pure $ Map.fromList $ zip (extract tableKeysF) tables
 
   setTables tablesF = do
-    tablesOnDisk <- mapM readTableOnDisk $ Map.keys $ extract tablesF
-    forM_ (zip tablesOnDisk $ Map.toList $ extract tablesF) $
+    let keysTableKeysF = Map.toList $ extract tablesF -- Order for zipping.
+    tablesOnDisk <- mapM readTableOnDisk $ map fst keysTableKeysF
+    forM_ (zip tablesOnDisk $ keysTableKeysF) $
       \(tableOnDisk, (tableKey, table)) ->
         liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
           updatedTableOnDisk table tableOnDisk
