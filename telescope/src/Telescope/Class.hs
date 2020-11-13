@@ -3,15 +3,16 @@
 {-# LANGUAGE MonoLocalBinds         #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Telescope.Class (module Telescope.Class, PrimaryKey) where
+-- | The important user-facing type classes.
+module Telescope.Class (module Telescope.Class, Table.PrimaryKey(..)) where
 
-import           Control.Monad    ( join )
-import qualified Data.Map        as Map
-import           Data.Set         ( Set )
-import qualified Data.Set        as Set
-import qualified Telescope.Store as Store
-import qualified Telescope.Table as Table
-import           Telescope.Table  ( PrimaryKey )
+import           Control.Monad            ( join )
+import qualified Data.Map                as Map
+import           Data.Set                 ( Set )
+import qualified Data.Set                as Set
+import           Telescope.Storable.From  ( FromSValues )
+import           Telescope.Storable.To    ( ToSDataType )
+import           Telescope.Table.Types   as Table
 
 -- | 'Table.Row'-based operations for interacting with a data source.
 class (Applicative f, Monad m) => Telescope m f | m -> f where
@@ -19,7 +20,8 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
   -- | View one row in a data source.
   viewRow :: f Table.TableKey -> f Table.RowKey -> m (f (Maybe Table.Row))
   viewRow tableKeyF rowKeyF = do
-    rowsF <- viewRows $ Map.singleton <$> tableKeyF <*> (Set.singleton <$> rowKeyF)
+    rowsF <- viewRows $
+      Map.singleton <$> tableKeyF <*> (Set.singleton <$> rowKeyF)
     let rowsMayF = Map.lookup <$> tableKeyF <*> rowsF -- Rows for the table.
     pure $ join <$> (fmap . Map.lookup <$> rowKeyF <*> rowsMayF)
 
@@ -78,10 +80,13 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
 
   -- | Run a function when a row in a data source changes.
   onChangeRow
-    :: f Table.TableKey -> f Table.RowKey -> f (Maybe Table.Row -> m ()) -> m ()
+      :: f Table.TableKey
+      -> f Table.RowKey
+      -> f (Maybe Table.Row -> m ())
+      -> m ()
 
   perform :: f (m ()) -> m ()
 
 -- | A storable datatype (can be serialized and deserialized via Generics).
-class    (Store.ToSDataType a k, Store.FromSValues a) => Entity a k where
-instance (Store.ToSDataType a k, Store.FromSValues a) => Entity a k where
+class    (ToSDataType a k, FromSValues a) => Entity a k where
+instance (ToSDataType a k, FromSValues a) => Entity a k where

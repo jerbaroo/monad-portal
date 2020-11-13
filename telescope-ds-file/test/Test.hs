@@ -16,7 +16,7 @@ import           Control.Monad.IO.Class   ( liftIO )
 import           Data.Text                ( Text )
 import           GHC.Generics             ( Generic )
 import qualified Telescope.Ops           as T
-import           Telescope.Table          ( PrimaryKey(..) )
+import           Telescope.Table.Types    ( PrimaryKey(..) )
 import           Telescope.DS.File        ( runT )
 import qualified Test.HUnit              as HUnit
 import qualified System.Exit             as Exit

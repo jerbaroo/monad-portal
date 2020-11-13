@@ -10,10 +10,10 @@
 
 import           Data.Text                ( pack )
 import           Control.Lens             ( view )
-import           ToDoList.Common          ( ToDoList(..) )
 import           Reflex.Dom
-import qualified Telescope.Ops           as T
+import qualified Telescope.Operations    as T
 import           Telescope.DS.Reflex.Dom  ()
+import           ToDoList.Common          ( ToDoList(..) )
 
 -- | Widget's to test different server endpoints.
 main :: IO ()

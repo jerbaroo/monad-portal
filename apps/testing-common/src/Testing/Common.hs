@@ -4,9 +4,9 @@
 
 module Testing.Common where
 
-import           Data.Text              ( Text )
-import           GHC.Generics           ( Generic )
-import           Telescope.Table        ( PrimaryKey(..) )
+import           Data.Text       ( Text )
+import           GHC.Generics    ( Generic )
+import           Telescope.Class ( PrimaryKey(..) )
 
 data Person = Person {
     name :: Text
@@ -14,4 +14,4 @@ data Person = Person {
   } deriving (Generic, Show)
 
 instance PrimaryKey Person Text where
-  primaryKey (Person name age) = name
+  primaryKey = name

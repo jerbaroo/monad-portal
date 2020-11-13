@@ -14,6 +14,8 @@ data TelescopeException =
   | NoSelectorsException
     -- Could not deserialize a primitive.
   | DeserializeException String
+    -- Could not serialize a primitive.
+  | SerializeException String
   deriving Show
 
 instance Exception TelescopeException

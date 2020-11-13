@@ -7,10 +7,8 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
 
--- Definitions for tables and keys in a data source.
--- Telescope end-users should not need this module.
-
-module Telescope.Table where
+-- The table representation of data types.
+module Telescope.Table.Types where
 
 import           Data.Aeson           ( FromJSON, ToJSON )
 import           Data.Map            as Map

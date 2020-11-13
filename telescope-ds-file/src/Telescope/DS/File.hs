@@ -25,7 +25,7 @@ import qualified System.FSNotify        as FS
 import           System.IO.Error          ( isDoesNotExistError )
 import qualified System.IO.Strict       as Strict
 import           Telescope.Class          ( Telescope(..) )
-import qualified Telescope.Table        as Table
+import qualified Telescope.Table.Types  as Table
 
 -------------------------------
 -- Types, Instances and runT --

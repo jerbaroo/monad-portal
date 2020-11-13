@@ -19,7 +19,7 @@ import           Servant                      ( (:<|>)(..) )
 import qualified Servant                     as Servant
 import           Servant.Server.StaticFiles   ( serveDirectoryFileServer )
 import qualified Telescope.Class             as Class
-import qualified Telescope.Table             as Table
+import qualified Telescope.Table.Types       as Table
 import           Telescope.DS.File            ( runT )
 import qualified Telescope.Server.API        as API
 import qualified Telescope.Server.API.Types  as API

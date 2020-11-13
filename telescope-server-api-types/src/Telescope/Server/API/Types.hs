@@ -7,7 +7,7 @@ import           Data.Bifunctor         ( first, second )
 import qualified Data.Map              as Map
 import qualified Data.Set              as Set
 import           Data.Set               ( Set )
-import qualified Telescope.Table       as Table'
+import qualified Telescope.Table.Types as Table'
 
 type RowsIndex = [(TableKey, [Table'.RowKey])]
 type TableKey  = String

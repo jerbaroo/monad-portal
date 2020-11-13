@@ -4,15 +4,16 @@
 {-# LANGUAGE TypeApplications    #-}
 
 -- Operations on entities in a data source.
-module Telescope.Ops where
+module Telescope.Operations where
 
-import           Control.Comonad  ( Comonad, extract )
-import           Data.Proxy       ( Proxy(..) )
-import qualified Data.Map        as Map
-import           Telescope.Class  ( Entity, Telescope )
-import qualified Telescope.Class as Class
-import qualified Telescope.Table as Table
-import qualified Telescope.Store as Store
+import           Control.Comonad          ( Comonad, extract )
+import           Data.Proxy               ( Proxy(..) )
+import qualified Data.Map                as Map
+import           Telescope.Class          ( Entity, Telescope )
+import qualified Telescope.Class         as Class
+import qualified Telescope.Table.From    as Table
+import qualified Telescope.Table.To      as Table
+import qualified Telescope.Table.Types   as Table
 
 ----------
 -- view --
@@ -40,7 +41,7 @@ viewKRx primaryKeyF = do
   Class.viewRow
     (pure $ Table.tableKey @a)
     (Table.RowKey . Table.toKey <$> primaryKeyF)
-  >>= pure . (fmap $ fmap Store.fromRow)
+  >>= pure . (fmap $ fmap Table.aFromRow)
 
 -- | View all entities in a table in a data source.
 viewTable :: forall a k m f. (Entity a k, Telescope m f, Comonad f) => m [a]
@@ -51,7 +52,7 @@ viewTableRx :: forall a k m f. (Entity a k, Telescope m f)
   => f (Proxy a) -> m (f [a])
 viewTableRx proxyF =
   Class.viewTable (const (Table.tableKey @a) <$> proxyF)
-  >>= pure . (fmap $ fmap Store.fromRow . Map.elems)
+  >>= pure . (fmap $ fmap Table.aFromRow . Map.elems)
 
 ---------
 -- set --
@@ -67,7 +68,7 @@ set = setRx . pure
 
 -- | Like 'set' but a reactive version.
 setRx :: (Entity a k, Telescope m f) => f a -> m ()
-setRx aF = Class.setRows $ Store.toRows . Store.toSDataType <$> aF
+setRx aF = Class.setRows $ Table.aToRows <$> aF
 
 -- | Set a table in a data source to ONLY the given entities.
 --
@@ -90,12 +91,13 @@ setTable = setTableRx . pure
 -- contained within the 'a' nearest the tail of the list will be set.
 setTableRx :: forall a k m f. (Entity a k, Telescope m f) => f [a] -> m ()
 setTableRx asF = do
-      -- First convert each 'a' into 1 or more rows across 1 or more tables..
-  let rowsPerA = (map $ Store.toRows . Store.toSDataType) <$> asF :: f [Table.Tables]
-      -- ..then combine these rows per 'a' into a single data structure.
-      tableMap = Map.unionsWith Map.union <$> rowsPerA            :: f  Table.Tables
+  -- Convert each 'a' into 1 or more rows across 1 or more tables and then
+  -- combine these rows per 'a' into a single data structure 'tableMap'.
+  let tableMap = Map.unionsWith Map.union . map Table.aToRows <$> asF
+  -- Set the table that was requested to be set..
   Class.setTable (pure $ Table.tableKey @a) $ maybe Map.empty id <$>
     (Map.lookup (Table.tableKey @a) <$> tableMap)
+  -- ..and set any rows in any other tables.
   Class.setRows $ Map.delete (Table.tableKey @a) <$> tableMap
 
 ----------
@@ -186,4 +188,4 @@ onChangeRx kF fF =
   Class.onChangeRow
     (pure $ Table.tableKey @a)
     (Table.RowKey . Table.toKey <$> kF)
-    ((. fmap Store.fromRow) <$> fF)
+    ((. fmap Table.aFromRow) <$> fF)
