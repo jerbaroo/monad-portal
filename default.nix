@@ -3,12 +3,14 @@
   useWarp = true;
   inherit withHoogle;
   packages = {
-    demo-backend                = ./apps/demo-backend;
-    demo-common                 = ./apps/demo-common;
-    demo-frontend               = ./apps/demo-frontend;
+    ## Apps ##
     todolist-backend            = ./apps/todolist-backend;
     todolist-common             = ./apps/todolist-common;
     todolist-frontend           = ./apps/todolist-frontend;
+    testing-backend             = ./apps/testing-backend;
+    testing-common              = ./apps/testing-common;
+    testing-frontend            = ./apps/testing-frontend;
+    ## Telescope packages ##
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
     telescope-ds-reflex-dom     = ./telescope-ds-reflex-dom;
@@ -18,12 +20,13 @@
   };
   shells = {
     ghc = [
-      "demo-backend"
-      "demo-common"
-      "demo-frontend"
+    ## Apps ##
       "todolist-backend"
       "todolist-common"
       "todolist-frontend"
+      "testing-backend"
+      "testing-common"
+      "testing-frontend"
       ## Telescope packages ##
       "telescope"
       "telescope-ds-file"
@@ -33,10 +36,11 @@
       "telescope-server-api-types"
     ];
     ghcjs = [
-      "demo-common"
-      "demo-frontend"
+      ## Apps ##
       "todolist-common"
       "todolist-frontend"
+      "testing-common"
+      "testing-frontend"
       ## Telescope packages ##
       "telescope"
       "telescope-ds-file"

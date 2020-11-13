@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Demo.Common where
+module Testing.Common where
 
 import           Data.Text              ( Text )
 import           GHC.Generics           ( Generic )

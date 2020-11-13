@@ -216,26 +216,26 @@ Development commands for the Telescope framework:
 ./scripts/hoogle.sh 5000
 ```
 
-Development commands for the demo application:
+Development commands for the testing application:
 
 ``` bash
-# Run a server for demo-backend, server restarts on file change.
-./scripts/run/dev.sh demo-backend
-# Run a server for demo-frontend, server restarts on file change.
-./scripts/run/dev.sh demo-frontend
-# Enter a REPL for interacting with the demo's database.
-./scripts/repl.sh demo-backend
+# Run a server for testing-backend, server restarts on file change.
+./scripts/run/dev.sh testing-backend
+# Run a server for testing-frontend, server restarts on file change.
+./scripts/run/dev.sh testing-frontend
+# Enter a REPL for interacting with the testing's database.
+./scripts/repl.sh testing-backend
 ```
 
-Production commands for the demo application:
+Production commands for the testing application:
 
 ``` bash 
-# Build the demo-backend server.
-./scripts/build/prod.sh demo-backend
-# Generate demo-frontend static files.
-./scripts/build/prod.sh demo-frontend
-# Run a server for demo-backend.
-./scripts/run/prod.sh demo-backend
+# Build the testing-backend server.
+./scripts/build/prod.sh testing-backend
+# Generate testing-frontend static files.
+./scripts/build/prod.sh testing-frontend
+# Run a server for testing-backend.
+./scripts/run/prod.sh testing-backend
 ```
 
 ## Name

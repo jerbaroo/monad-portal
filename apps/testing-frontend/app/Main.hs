@@ -17,10 +17,10 @@ import           Data.Proxy               ( Proxy(Proxy) )
 import           Data.Text.Encoding       ( encodeUtf8 )
 import           Data.Text                ( Text, pack, unpack )
 import           Data.These               ( These(..) )
-import           Demo.Common              ( Person(..) )
 import           Reflex.Dom
 import qualified Telescope.Ops           as T
 import           Telescope.DS.Reflex.Dom  ()
+import           Testing.Common           ( Person(..) )
 import           Text.Read                ( readMaybe )
 
 -- | Default Person's name for input fields.

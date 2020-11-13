@@ -3,7 +3,7 @@
 
 module Main where
 
-import           Demo.Common        ( Person(..) )
+import           Testing.Common     ( Person(..) )
 import qualified Telescope.Ops     as T
 import qualified Telescope.Server  as Server
 import           Telescope.DS.File  ( runT )

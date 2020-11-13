@@ -1,7 +1,7 @@
 cabal-version:       2.4
-name:                demo-frontend
+name:                testing-common
 version:             0.1.0.0
-synopsis:            Frontend code for Telescope framework demo application.
+synopsis:            Common code for Telescope framework testing application.
 -- description:
 homepage:            https://github.com/jerbaroo/telescope
 -- bug-reports:
@@ -13,10 +13,10 @@ maintainer:          jerbaroo.work@pm.me
 category:            Web
 extra-source-files:  CHANGELOG.md
 
-executable demo-frontend
-  main-is:             Main.hs
+library
+  exposed-modules:     Testing.Common
   -- other-modules:
   -- other-extensions:
-  build-depends:       base, containers, demo-common, lens, reflex-dom, telescope, telescope-ds-reflex-dom, text, these
-  hs-source-dirs:      app
+  build-depends:       base, telescope, text
+  hs-source-dirs:      src
   default-language:    Haskell2010

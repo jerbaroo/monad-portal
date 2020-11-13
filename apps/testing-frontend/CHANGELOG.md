@@ -1,4 +1,4 @@
-# Revision history for demo-frontend
+# Revision history for testing-frontend
 
 ## 0.1.0.0 -- YYYY-mm-dd
 

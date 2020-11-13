@@ -1,7 +1,7 @@
  packages:
-   apps/demo-backend/
-   apps/demo-common/
-   apps/demo-frontend/
+   apps/testing-backend/
+   apps/testing-common/
+   apps/testing-frontend/
    apps/todolist-backend/
    apps/todolist-common/
    apps/todolist-frontend/

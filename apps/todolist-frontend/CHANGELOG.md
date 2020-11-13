@@ -1,4 +1,4 @@
-# Revision history for demo-frontend
+# Revision history for todolist-frontend
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
