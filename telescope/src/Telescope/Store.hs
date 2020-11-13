@@ -4,37 +4,39 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
 module Telescope.Store where
 
-import           Control.Exception              ( throw )
-import qualified Data.Foldable                 as Foldable
-import qualified Data.Map                      as Map
-import           Data.Typeable                  ( Typeable )
-import           Data.Proxy                     ( Proxy(Proxy) )
-import qualified Generics.Eot                  as Eot
-import           GHC.Generics                   ( Generic )
-import qualified Telescope.Exception           as T
-import qualified Telescope.Table               as Table
-import           Text.Read                      ( readEither )
+import           Control.Exception    ( throw )
+import qualified Data.Map            as Map
+import           Data.Typeable        ( Typeable )
+import           Data.Proxy           ( Proxy(Proxy) )
+import           Data.Text            ( Text, pack, unpack )
+import qualified Generics.Eot        as Eot
+import           GHC.Generics         ( Generic )
+import qualified Telescope.Exception as T
+import qualified Telescope.Table     as Table
+import           Text.Read            ( readEither )
 
 -- A storable representation of a data type and fields.
 --
--- data Person { name :: String }
--- john = Person { name = "John" }
+-- data Person { name :: Text }
+-- somPerson = Person { name = "John" }
 --
--- For some clarity on how we describe this data type:
---   'Person' is the type.
---   '"name"' is the name of a field.
---   '"John"' is the value of a field.
+-- Here we refer to:
+--   "Person" as the type.
+--   "name" as the field's name.
+--   "John" as the field's value.
 
 -- | A storable representation of a field's value.
 data SValue =
   -- A primitive storable value.
-  SValue Table.Prim
+    SValue Table.Prim
   -- One nested storable data type.
   | SDT SDataType
+  -- TODO: https://wiki.haskell.org/GHC/AdvancedOverlap
   -- A nested list (from any 'Foldable') of storable data types.
   | SDTs [SDataType]
   deriving (Generic, Show)
@@ -49,35 +51,38 @@ data SDataType = SDataType Table.Ref SFields
 
 -- Typeclasses and instances for converting to storable representation.
 
--- | Convert a field's value to a storable representation.
+--------------------
+-- BEGIN ToSValue --
+--------------------
+
 class ToSValue a where
   toSValue :: a -> SValue
 
-instance ToSValue Int where    toSValue a = SValue $ Table.PInt a
-instance ToSValue String where toSValue a = SValue $ Table.PString a
-
--- | Convert 'Maybe' to storable representation.
+instance ToSValue Int  where toSValue a = SValue $ Table.PInt  a
+instance ToSValue Text where toSValue a = SValue $ Table.PText a
 instance Table.ToPrim a => ToSValue (Maybe a) where
   toSValue Nothing  = SValue Table.PNull
   toSValue (Just a) = SValue $ Table.toPrim a
 
+-- | Convert a list of primitives to storable representation.
+instance Table.ToPrim a => ToSValue [a] where
+  toSValue t = SValue $ Table.PText $ pack $ show $ fmap Table.toPrim $ t
+
 -- | A storable data type may be a field's value in another storable data type.
+-- TODO: Create ToSDataTypes class.
 instance {-# OVERLAPPABLE #-} ToSDataType a k => ToSValue a where
   toSValue a = SDT $ toSDataType a
 
--- | A list (or 'Foldable') of storable data types may be a field's value in
--- another storable data type.
-instance {-# OVERLAPPABLE #-} (Foldable t, ToSDataType a k)
-  => ToSValue (t a) where
-  toSValue t = SDTs $ map toSDataType $ Foldable.toList t
+------------------
+-- END ToSValue --
+------------------
 
 -- | Convert ALL a data type's field's values to storable representation.
 class ToSValues a where
   toSValues :: a -> [SValue]
 
 -- | Derive an instance for 'ToSValues' via Generics-Eot, implementation below.
-instance {-# OVERLAPPABLE #-} (Eot.HasEot a, EotSValues (Eot.Eot a))
-  => ToSValues a where
+instance (Eot.HasEot a, EotSValues (Eot.Eot a)) => ToSValues a where
   toSValues = eotSValues . Eot.toEot
 
 -- | Convert a data types field's to storable representation.
@@ -85,24 +90,20 @@ class ToSFields a where
   toSFields :: a -> SFields
 
 -- | Derive an instance for 'ToSFields' via Generics.
-instance {-# OVERLAPPABLE #-} (Eot.HasEot a, EotSValues (Eot.Eot a))
-  => ToSFields a where
+instance (Eot.HasEot a, EotSValues (Eot.Eot a)) => ToSFields a where
   toSFields a =
     let names  = fieldNames a
         values = toSValues a
     in  SFields $ zipWith (\n v -> (Table.ColumnKey n, v)) names values
 
 -- | Convert a data type to a storable representation.
-class (Typeable a, Table.PrimaryKey a k, ToSFields a)
-  => ToSDataType a k where
+class (Typeable a, Table.PrimaryKey a k, ToSFields a) => ToSDataType a k where
   toSDataType :: a -> SDataType
-  toSDataType a =
-    SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)
+  toSDataType a = SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)
 
 -- | If a data type has a table key, row key, and fields with a storable
 -- representation, then it also has a storable representation.
-instance {-# OVERLAPPABLE #-} (Typeable a, Table.PrimaryKey a k, ToSFields a)
-  => ToSDataType a k where
+instance (Typeable a, Table.PrimaryKey a k, ToSFields a) => ToSDataType a k
 
 -- Generics-Eot implementations of 'EotSValues' and 'fieldNames'.
 
@@ -149,7 +150,7 @@ class EotFromSValues eot where
 -- | Construct 'Either's from 'SValue's.
 --
 -- Only data types with a single constructor are supported. So we will never
--- construct a 'Right' which represents additional constructors. Only a single
+-- return a 'Right' which represents additional constructors. Only a single
 -- 'Left' will be returned.
 instance (EotFromSValues l, EotFromSValues r)
   => EotFromSValues (Either l r) where
@@ -159,7 +160,7 @@ instance (EotFromSValues l, EotFromSValues r)
 -- | Construction of right-nested tuples from each ordered 'SValue'.
 instance (FromSValue a, EotFromSValues as) => EotFromSValues (a, as) where
   eotFromSValues (a:as) = (fromSValue a, eotFromSValues as)
-  eotFromSValues [] = throw T.NoFieldsException
+  eotFromSValues []     = throw T.NoFieldsException
 
 instance EotFromSValues Eot.Void where
   eotFromSValues _ = throw $ T.DeserializeException "Eot error constructing Void"
@@ -171,15 +172,30 @@ instance EotFromSValues () where
 class FromSValue a where
   fromSValue :: SValue -> a
 
+class FromPrim a where
+  fromPrim :: Table.Prim -> a
+
+instance FromPrim Text where
+  fromPrim (Table.PText a) = a
+
 instance FromSValue Int where
   fromSValue (SValue (Table.PInt a)) = a
   fromSValue s = throw $ T.DeserializeException $
     "Can't deserialize the following into 'Int':\n  " ++ show s
 
-instance FromSValue String where
-  fromSValue (SValue (Table.PString a)) = a
+instance FromSValue Text where
+  fromSValue (SValue (Table.PText a)) = a
   fromSValue s = throw $ T.DeserializeException $
-    "Can't deserialize the following into 'String':\n  " ++ show s
+    "Can't deserialize the following into 'Text':\n  " ++ show s
+
+instance FromPrim a => FromSValue [a] where
+  -- toSValue t = SValue $ Table.PString $ show $ fmap Table.toPrim $ t
+  fromSValue (SValue (Table.PText a)) =
+    let primList :: [Table.Prim]
+        primList = read $ unpack a
+    in (fmap (fromPrim @a) primList)
+  fromSValue s = throw $ T.DeserializeException $
+    "Can't deserialize the following into '[a]':\n  " ++ show s
 
 instance FromSValue () where
   fromSValue _ = ()

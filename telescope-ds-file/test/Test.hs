@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
@@ -12,12 +13,12 @@ module Main ( main ) where
 import           Control.Concurrent       ( threadDelay )
 import           Control.Concurrent.MVar as MVar
 import           Control.Monad.IO.Class   ( liftIO )
+import           Data.Text                ( Text )
 import           GHC.Generics             ( Generic )
 import qualified Telescope.Ops           as T
 import           Telescope.Table          ( PrimaryKey(..) )
 import           Telescope.DS.File        ( runT )
 import qualified Test.HUnit              as HUnit
-import           Type.Reflection          ( Typeable )
 import qualified System.Exit             as Exit
 
 main :: IO ()
@@ -35,11 +36,11 @@ main = do
 
 -- | Datatype used for testing.
 data Person = Person
-  { name :: String
+  { name :: Text
   , age  :: Int
-  } deriving (Eq, Generic, Show, Typeable)
+  } deriving (Eq, Generic, Show)
 
-instance PrimaryKey Person String where
+instance PrimaryKey Person Text where
   primaryKey = name
 
 john1 :: Person

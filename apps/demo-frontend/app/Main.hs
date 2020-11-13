@@ -50,7 +50,7 @@ viewWidget = do
   el "h3" $ text "viewRx"
   nameDyn   <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
-  personDyn <- T.viewRx $ (\n -> Person{name = unpack n}) <$> nameDyn
+  personDyn <- T.viewRx $ (\name -> Person{..}) <$> nameDyn
   dynText $ pack . (" " ++) . show <$> personDyn
 
 -- | 'T.viewKRx' a Person with user-input name.
@@ -59,7 +59,7 @@ viewKWidget = do
   el "h3" $ text "viewKRx"
   nameDyn   <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
-  personDyn <- T.viewKRx @Person (unpack <$> nameDyn)
+  personDyn <- T.viewKRx @Person nameDyn
   dynText $ pack . (" " ++) . show <$> personDyn
 
 -- | 'T.viewTableRx' the Person table.
@@ -82,7 +82,7 @@ setWidget = do
   ageEiDyn  <- numberInput (pack $ show initialAge) parseAge
   ageDyn    <- holdDyn initialAge $ filterRight $ updated ageEiDyn
   let personDyn = do
-        name <- unpack <$> nameInput ^. textInput_value
+        name <- nameInput ^. textInput_value
         (\age -> Person{..}) <$> ageDyn
   -- Set 'Person' on every click 'Event' (filtered to valid input).
   clickEvn <- disabledButton (isLeft <$> ageEiDyn) "Set Person"
@@ -110,7 +110,7 @@ setTableWidget = do
           nameInput <- el "td" $ textInput $ def & textInputConfig_initialValue .~ initialName
           ageEiDyn  <- el "td" $ numberInput (pack $ show initialAge) parseAge
           dynText =<< (holdDyn "" $ errText <$> updated ageEiDyn)
-          pure $ (\name -> fmap (\age -> (unpack name, age)))
+          pure $ (\name -> fmap (\age -> (name, age)))
             <$> nameInput ^. textInput_value <*> ageEiDyn
       -- Set input table on click.
       let inputEiDyn  = distributeListOverDynWith sequence =<< inputTableDyn
@@ -122,7 +122,7 @@ setTableWidget = do
 rmWidget :: MonadWidget t m => m ()
 rmWidget = do
   el "h3" $ text "rmRx"
-  let toPerson = fmap (\n -> Person{name = unpack n}) . view textInput_value
+  let toPerson = fmap (\name -> Person{..}) . view textInput_value
   personDyn <- toPerson <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
   clickEvn  <- button "Remove"
@@ -132,7 +132,7 @@ rmWidget = do
 rmKWidget :: MonadWidget t m => m ()
 rmKWidget = do
   el "h3" $ text "rmKRx"
-  nameDyn  <- fmap unpack . view textInput_value <$> textInput (def &
+  nameDyn  <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
   clickEvn <- button "Remove"
   T.rmKRx @Person =<< holdDyn "" (tag (current nameDyn) clickEvn)
@@ -170,7 +170,7 @@ personTable people = el "table" $ do
   mapM_ toTableRow people
   where toTableRow :: DomBuilder t m => Person -> m ()
         toTableRow person = el "tr" $ do
-          td $ pack $ name person
+          td $ name person
           td $ pack $ show $ age person
         td :: DomBuilder t m => Text -> m ()
         td text =

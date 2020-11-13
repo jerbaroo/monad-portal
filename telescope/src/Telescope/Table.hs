@@ -12,19 +12,21 @@
 
 module Telescope.Table where
 
-import           Data.Aeson       ( FromJSON, ToJSON )
-import           Data.Map        as Map
-import           Data.Set         ( Set )
-import           Data.Proxy       ( Proxy(..) )
-import           Data.Serialize   ( Serialize )
-import qualified Data.Typeable   as Data
-import           GHC.Generics     ( Generic )
+import           Data.Aeson           ( FromJSON, ToJSON )
+import           Data.Map            as Map
+import           Data.Set             ( Set )
+import           Data.Proxy           ( Proxy(..) )
+import           Data.Serialize       ( Serialize )
+import           Data.Serialize.Text  ()
+import qualified Data.Typeable       as Data
+import           Data.Text            ( Text )
+import           GHC.Generics         ( Generic )
 
 -- | A storable primitive, a cell in a table.
 data Prim =
-    PBool   Bool
-  | PInt    Int
-  | PString String
+    PBool Bool
+  | PInt  Int
+  | PText Text
   | PNull
   deriving (Eq, Ord, Read, Show, Generic, Serialize)
 
@@ -32,8 +34,8 @@ data Prim =
 class ToPrim a where
   toPrim :: a -> Prim
 
-instance ToPrim Int    where toPrim = PInt
-instance ToPrim String where toPrim = PString
+instance ToPrim Int  where toPrim = PInt
+instance ToPrim Text where toPrim = PText
 instance ToPrim a => ToPrim (Maybe a) where
   toPrim Nothing  = PNull
   toPrim (Just a) = toPrim a
@@ -43,8 +45,8 @@ instance ToPrim a => ToPrim (Maybe a) where
 -- Individual keys, and composite keys are supported.
 --
 -- Examples:
---   "foo"             -> KeyOne (PString "foo")
---   (5 :: Int, "foo") -> KeyMore [PInt 5, PString "foo"]
+--   "foo"             -> KeyOne (PText "foo")
+--   (5 :: Int, "foo") -> KeyMore [PInt 5, PText "foo"]
 data Key =
     KeyOne Prim
   | KeyMore [Prim]

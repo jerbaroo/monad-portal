@@ -28,4 +28,4 @@ test-suite telescope-ds-file-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Test.hs
-  build-depends:       base, telescope, telescope-ds-file, HUnit
+  build-depends:       HUnit, base, telescope, telescope-ds-file, text

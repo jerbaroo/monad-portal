@@ -3,9 +3,12 @@
   useWarp = true;
   inherit withHoogle;
   packages = {
-    demo-backend                = ./demos/demo-backend;
-    demo-common                 = ./demos/demo-common;
-    demo-frontend               = ./demos/demo-frontend;
+    demo-backend                = ./apps/demo-backend;
+    demo-common                 = ./apps/demo-common;
+    demo-frontend               = ./apps/demo-frontend;
+    todolist-backend            = ./apps/todolist-backend;
+    todolist-common             = ./apps/todolist-common;
+    todolist-frontend           = ./apps/todolist-frontend;
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
     telescope-ds-reflex-dom     = ./telescope-ds-reflex-dom;

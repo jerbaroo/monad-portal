@@ -1,7 +1,10 @@
  packages:
-   demos/demo-backend/
-   demos/demo-common/
-   demos/demo-frontend/
+   apps/demo-backend/
+   apps/demo-common/
+   apps/demo-frontend/
+   apps/todolist-backend/
+   apps/todolist-common/
+   apps/todolist-frontend/
    telescope/
    telescope-ds-file/
    telescope-ds-reflex-dom/

@@ -32,9 +32,9 @@ An application built with Telescope is..
   communication between client and server, so you can focus on the parts of your
   application that really matter.
 
-What doesn't Telescope do currently?
-- Provide a full-featured database query language.
-- Generate a small file to be sent to web clients.
+What are Telescope's limitations?
+- Does not provide a full-featured database query language.
+- Only supports a limited subset of Haskell data types.
 
 Telescope is particularly well-suited for applications where events are pushed
 by the server e.g. notifications and dashboards. Telescope also handles forms
@@ -47,19 +47,19 @@ Building a reactive web app with Telescope looks something like this:
 **1.** Declare the data types used in your application.
 
 ``` haskell
-data TodoList = TodoList {
-    name  :: String
-  , items :: [String]
+data ToDoList = ToDoList
+  { name  :: Text
+  , items :: [Text]
   } deriving (Generic, Show)
 
-instance PrimaryKey TodoList where
+instance PrimaryKey ToDoList Text where
   primaryKey = name
 ```
 
 **2.** Populate your database with some data.
 
 ``` haskell
-T.set $ TodoList "pancakes" ["eggs", "milk", "flour"]
+T.set $ ToDoList "pancakes" ["eggs", "milk", "flour"]
 ```
 
 **3.** Start the Telescope server.
@@ -181,7 +181,7 @@ storable representation. The following diagram shows this conversion.
 
 ``` haskell
 -- Example of a datatype to be stored.
-data Person { name :: String , age  :: Int } deriving Generic
+data Person { name :: Text, age  :: Int } deriving Generic
 instance PrimaryKey Person where primaryKey = name
   
 -- Diagram showing conversion to/from storable representation.
