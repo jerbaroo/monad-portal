@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
@@ -146,10 +147,8 @@ fieldNames _ = do
 --------------------------------------------------------------------------------
 
 -- | A data type that can be converted to storable representation.
-class (Typeable a, Table.PrimaryKey a k, ToSFields a) => ToSDataType a k where
-  toSDataType :: a -> SDataType
-  toSDataType a = SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)
+type ToSDataType a k = (Typeable a, Table.PrimaryKey a k, ToSFields a)
 
--- | If a data type has a table key, row key, and fields with a storable
--- representation, then it also has a storable representation.
-instance (Typeable a, Table.PrimaryKey a k, ToSFields a) => ToSDataType a k
+-- | Convert a data type to storable representation.
+toSDataType :: forall a k. ToSDataType a k => a -> SDataType
+toSDataType a = SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)

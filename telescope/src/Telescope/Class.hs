@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MonoLocalBinds         #-}
@@ -13,6 +14,9 @@ import qualified Data.Set                as Set
 import           Telescope.Storable.From  ( FromSValues )
 import           Telescope.Storable.To    ( ToSDataType )
 import           Telescope.Table.Types   as Table
+
+-- | A storable datatype (can be serialized and deserialized via Generics).
+type Entity a k = (ToSDataType a k, FromSValues a)
 
 -- | 'Table.Row'-based operations for interacting with a data source.
 class (Applicative f, Monad m) => Telescope m f | m -> f where
@@ -86,7 +90,3 @@ class (Applicative f, Monad m) => Telescope m f | m -> f where
       -> m ()
 
   perform :: f (m ()) -> m ()
-
--- | A storable datatype (can be serialized and deserialized via Generics).
-class    (ToSDataType a k, FromSValues a) => Entity a k where
-instance (ToSDataType a k, FromSValues a) => Entity a k where
