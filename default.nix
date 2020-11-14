@@ -14,6 +14,7 @@
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
     telescope-ds-reflex-dom     = ./telescope-ds-reflex-dom;
+    telescope-ds-test           = ./telescope-ds-test;
     telescope-server            = ./telescope-server;
     telescope-server-api        = ./telescope-server-api;
     telescope-server-api-types  = ./telescope-server-api-types;
@@ -31,6 +32,7 @@
       "telescope"
       "telescope-ds-file"
       "telescope-ds-reflex-dom"
+      "telescope-ds-test"
       "telescope-server"
       "telescope-server-api"
       "telescope-server-api-types"
@@ -44,6 +46,7 @@
       ## Telescope packages ##
       "telescope"
       "telescope-ds-file"
+      "telescope-ds-test"
       "telescope-ds-reflex-dom"
       "telescope-server"
       "telescope-server-api"

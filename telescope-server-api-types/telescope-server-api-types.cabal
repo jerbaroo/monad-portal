@@ -13,7 +13,6 @@ maintainer:          jerbaroo.work@pm.me
 category:            Web
 extra-source-files:  CHANGELOG.md
 
-
 library
   exposed-modules:     Telescope.Server.API.Types
   -- other-modules:

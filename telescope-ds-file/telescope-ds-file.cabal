@@ -13,7 +13,6 @@ maintainer:          jerbaroo.work@pm.me
 category:            Data
 extra-source-files:  CHANGELOG.md
 
-
 library
   exposed-modules:     Telescope.DS.File
   -- other-modules:
@@ -23,10 +22,9 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
 
-
 test-suite telescope-ds-file-test
   default-language:    Haskell2010
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Test.hs
-  build-depends:       HUnit, base, telescope, telescope-ds-file, text
+  build-depends:       base, telescope-ds-file, telescope-ds-test

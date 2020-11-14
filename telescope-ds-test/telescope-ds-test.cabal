@@ -1,23 +1,22 @@
 cabal-version:       2.4
-name:                telescope-server-api
+name:                telescope-ds-test
 version:             0.1.0.0
-synopsis:            API definition for the Telescope framework's server.
+synopsis:            A Test-suite for instance of the Telescope interface.
 -- description:
 homepage:            https://github.com/jerbaroo/telescope
 -- bug-reports:
 license:             BSD-3-Clause
 license-file:        LICENSE
-author:              Jeremy Barisch-Rooney
+author:              jerbaroo
 maintainer:          jerbaroo.work@pm.me
 -- copyright:
-category:            Web
+category:            Testing
 extra-source-files:  CHANGELOG.md
 
 library
-  exposed-modules:     Telescope.Server.API
+  exposed-modules:     Telescope.DS.Test
   -- other-modules:
   -- other-extensions:
-  build-depends:       base, servant, servant-websockets,
-                       telescope-server-api-types
+  build-depends:       HUnit, base, comonad, telescope, text
   hs-source-dirs:      src
   default-language:    Haskell2010

@@ -8,6 +8,7 @@
    telescope/
    telescope-ds-file/
    telescope-ds-reflex-dom/
+   telescope-ds-test/
    telescope-server/
    telescope-server-api/
    telescope-server-api-types/
