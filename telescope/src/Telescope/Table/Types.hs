@@ -14,10 +14,9 @@ import           Data.Aeson           ( FromJSON, ToJSON )
 import           Data.Map            as Map
 import           Data.Set             ( Set )
 import           Data.Proxy           ( Proxy(..) )
-import           Data.Serialize       ( Serialize )
-import           Data.Serialize.Text  ()
 import qualified Data.Typeable       as Data
 import           Data.Text            ( Text )
+import           Flat                 ( Flat )
 import           GHC.Generics         ( Generic )
 
 -- | A storable primitive, a cell in a table.
@@ -26,7 +25,7 @@ data Prim =
   | PInt  Int
   | PText Text
   | PNull
-  deriving (Eq, Ord, Read, Show, Generic, Serialize)
+  deriving (Eq, Ord, Read, Show, Generic, Flat)
 
 -- | A data type that can be converted to a storable primitive.
 class ToPrim a where
@@ -48,7 +47,7 @@ instance ToPrim a => ToPrim (Maybe a) where
 data Key =
     KeyOne Prim
   | KeyMore [Prim]
-  deriving (Eq, Ord, Read, Show, Generic, Serialize)
+  deriving (Eq, Ord, Read, Show, Generic, Flat)
 
 -- | A data type that can be converted to a key.
 --
@@ -70,21 +69,21 @@ instance (ToPrim a, ToPrim b, ToPrim c, ToPrim d) => ToKey (a, b, c, d) where
 -- Derived via 'Typeable' from the type of a data type.
 -- Example: '"Person"' for 'Person { name = "John", age = 21 }'.
 newtype TableKey = TableKey { unTableKey :: String }
-  deriving (Eq, Ord, Read, Show, Generic, Serialize)
+  deriving (Eq, Ord, Read, Show, Generic, Flat)
 
 -- | Unique identifier for a row in a database table.
 --
 -- Corresponds to the primary key of a data type.
 -- Example: '"John"' for 'Person { name = "John", age = 21 }'.
 newtype RowKey = RowKey { unRowKey :: Key }
-  deriving (Eq, Ord, Read, Show, Generic, Serialize)
+  deriving (Eq, Ord, Read, Show, Generic, Flat)
 
 -- | Unique identifier for a column in a database table.
 --
 -- Derived from the name of a field of a data type
 -- Example: '"name"' for 'data Person { name :: String, age :: Int }'.
 newtype ColumnKey = ColumnKey { unColumnKey :: String }
-  deriving (Eq, Ord, Read, Show, Generic, Serialize)
+  deriving (Eq, Ord, Read, Show, Generic, Flat)
 
 -- | Unique identifier for a data type in a database.
 type Ref = (TableKey, RowKey)

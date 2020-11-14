@@ -54,6 +54,7 @@
     ];
   };
   overrides = self: super: {
+    flat               = self.callHackage "flat"               "0.4.4" {};
     servant-websockets = self.callHackage "servant-websockets" "2.0.0" {};
   };
 })

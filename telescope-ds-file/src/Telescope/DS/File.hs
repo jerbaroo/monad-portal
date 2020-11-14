@@ -12,22 +12,23 @@ import           Data.ByteString.Char8    ( pack, unpack )
 import           Data.Either.Extra        ( fromRight' )
 import           Data.Functor.Identity    ( Identity(..) )
 import           Data.List                ( nub )
-import qualified Data.Map               as Map
-import qualified Data.Set               as Set
+import qualified Data.Map                as Map
+import qualified Data.Set                as Set
 import           Data.Maybe               ( catMaybes, fromJust, isJust)
-import           Data.Serialize           ( Serialize, decode, encode )
+import           Flat                     ( Flat )
+import qualified Flat                    as Flat
 import           System.Directory         ( canonicalizePath )
 import           System.FilePath          ( takeDirectory )
 import           System.FSNotify          ( Event (Modified) )
-import qualified System.FSNotify        as FS
+import qualified System.FSNotify         as FS
 import           System.IO.Error          ( isDoesNotExistError )
-import qualified System.IO.Strict       as Strict
+import qualified System.IO.Strict        as Strict
 import           Telescope.Class          ( Telescope(..) )
-import qualified Telescope.Table.Types  as Table
+import qualified Telescope.Table.Types   as Table
 
--------------------------------
--- Types, Instances and runT --
--------------------------------
+--------------------------------------------------------------------------------
+-- Telescope instance and runT -------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | A naive file-backed data source, functional but slow.
 newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
@@ -49,15 +50,15 @@ instance Telescope TFile Identity where
     tablesOnDisk <- mapM readTableOnDisk $ map fst keysTableKeysF
     forM_ (zip tablesOnDisk $ keysTableKeysF) $
       \(tableOnDisk, (tableKey, table)) ->
-        liftIO $ writeFile (tablePath tableKey) $ unpack $ encode $
+        liftIO $ writeFile (tablePath tableKey) $ unpack $ Flat.flat $
           updatedTableOnDisk table tableOnDisk
 
   onChangeRow tableKeyId rowKeyId fId = do
     onChangeRow' (extract tableKeyId) (extract rowKeyId) (extract fId)
 
---------------------------------------
--- TableOnDisk and Helper Functions --
---------------------------------------
+--------------------------------------------------------------------------------
+-- TableOnDisk type and Helper Functions ---------------------------------------
+--------------------------------------------------------------------------------
 
 -- | The current value (if exists) and update count for each row in a table.
 type TableOnDisk = Map.Map Table.RowKey (Maybe Table.Row, Int)
@@ -79,10 +80,10 @@ readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 -- TODO: replace fromRight' with fromRight and raise DecodeError.
 --
 -- In-case of a file-not-found error the default value is returned.
-readOrDefault :: Serialize a => a -> FilePath -> IO a
+readOrDefault :: Flat a => a -> FilePath -> IO a
 readOrDefault default' path =
   flip catch catchDoesNotExistError $ do
-    fromRight' . decode . pack <$> Strict.readFile path
+    fromRight' . Flat.unflat . pack <$> Strict.readFile path
   where catchDoesNotExistError e
           | isDoesNotExistError e = pure default'
           | otherwise             = throwIO e
