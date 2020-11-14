@@ -8,7 +8,7 @@ import           Control.Concurrent.MVar as MVar
 import           Control.Exception        ( catch, throwIO )
 import           Control.Monad            ( forM_, void, when )
 import           Control.Monad.IO.Class   ( MonadIO, liftIO )
-import           Data.ByteString.Char8    ( pack, unpack )
+import qualified Data.ByteString         as BS
 import           Data.Either.Extra        ( fromRight' )
 import           Data.Functor.Identity    ( Identity(..) )
 import           Data.List                ( nub )
@@ -22,7 +22,6 @@ import           System.FilePath          ( takeDirectory )
 import           System.FSNotify          ( Event (Modified) )
 import qualified System.FSNotify         as FS
 import           System.IO.Error          ( isDoesNotExistError )
-import qualified System.IO.Strict        as Strict
 import           Telescope.Class          ( Telescope(..) )
 import qualified Telescope.Table.Types   as Table
 
@@ -50,7 +49,7 @@ instance Telescope TFile Identity where
     tablesOnDisk <- mapM readTableOnDisk $ map fst keysTableKeysF
     forM_ (zip tablesOnDisk $ keysTableKeysF) $
       \(tableOnDisk, (tableKey, table)) ->
-        liftIO $ writeFile (tablePath tableKey) $ unpack $ Flat.flat $
+        liftIO $ BS.writeFile (tablePath tableKey) $ Flat.flat $
           updatedTableOnDisk table tableOnDisk
 
   onChangeRow tableKeyId rowKeyId fId = do
@@ -83,7 +82,7 @@ readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 readOrDefault :: Flat a => a -> FilePath -> IO a
 readOrDefault default' path =
   flip catch catchDoesNotExistError $ do
-    fromRight' . Flat.unflat . pack <$> Strict.readFile path
+    fromRight' . Flat.unflat <$> BS.readFile path
   where catchDoesNotExistError e
           | isDoesNotExistError e = pure default'
           | otherwise             = throwIO e
