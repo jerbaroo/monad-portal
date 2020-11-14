@@ -1,11 +1,9 @@
-{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MonoLocalBinds             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 
 module Telescope.DS.File where
 
-import           Control.Comonad          ( Comonad, extract )
+import           Control.Comonad          ( extract )
 import           Control.Concurrent.MVar as MVar
 import           Control.Exception        ( catch, throwIO )
 import           Control.Monad            ( forM_, void, when )
@@ -37,11 +35,7 @@ newtype TFile a = TFile (IO a) deriving (Functor, Applicative, Monad, MonadIO)
 runT :: MonadIO m => TFile a -> m a
 runT (TFile a) = liftIO a
 
--- | Values are not packed in any special container.
-newtype TFileIdentity a = TFileIdentity (Identity a)
-  deriving (Functor, Applicative, Comonad, Show)
-
-instance Telescope TFile TFileIdentity where
+instance Telescope TFile Identity where
 
   -- For each given 'Table.TableKey', read the table from disk. Then zip the
   -- tables and keys together and return as a 'Map'.
