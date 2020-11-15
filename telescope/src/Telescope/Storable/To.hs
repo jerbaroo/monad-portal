@@ -17,6 +17,7 @@ import qualified Generics.Eot             as Eot
 import qualified Telescope.Exception      as E
 import           Telescope.Storable.Types  ( SDataType(..), SFields(..),
                                              SValue(..) )
+import qualified Telescope.Table.To       as Table
 import qualified Telescope.Table.Types    as Table
 
 -- This module provides functions and type classes for the conversion of data
@@ -34,13 +35,11 @@ import qualified Telescope.Table.Types    as Table
 class ToSValue a where
   toSValue :: a -> SValue
 
--- | A field's value that is an 'Int' primitive.
-instance ToSValue Int  where toSValue a = SValuePrim $ Table.PInt  a
+-- Conversion of primitives:
 
--- | A field's value that is a 'Text' primitive.
-instance ToSValue Text where toSValue a = SValuePrim $ Table.PText a
-
--- | A field's value that is a primitive wrapped in a 'Maybe'.
+instance ToSValue Bool where toSValue = SValuePrim . Table.PBool
+instance ToSValue Int  where toSValue = SValuePrim . Table.PInt
+instance ToSValue Text where toSValue = SValuePrim . Table.PText
 instance Table.ToPrim a => ToSValue (Maybe a) where
   toSValue Nothing  = SValuePrim Table.PNull
   toSValue (Just a) = SValuePrim $ Table.toPrim a

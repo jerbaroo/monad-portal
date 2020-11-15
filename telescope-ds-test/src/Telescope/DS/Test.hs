@@ -18,7 +18,7 @@ import           Data.Text                ( Text )
 import           GHC.Generics             ( Generic )
 import           Telescope.Class          ( Telescope )
 import qualified Telescope.Operations    as T
-import           Telescope.Table.Types    ( PrimaryKey(..) )
+import           Telescope.Table.To      as Table
 import qualified Test.HUnit              as HUnit
 import qualified System.Exit             as Exit
 
@@ -46,7 +46,7 @@ data Person = Person
   , age  :: Int
   } deriving (Eq, Generic, Show)
 
-instance PrimaryKey Person Text where
+instance Table.PrimaryKey Person Text where
   primaryKey = name
 
 john1 :: Person

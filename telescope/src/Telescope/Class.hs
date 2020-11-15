@@ -13,6 +13,7 @@ import           Data.Set                 ( Set )
 import qualified Data.Set                as Set
 import           Telescope.Storable.From  ( FromSValues )
 import           Telescope.Storable.To    ( ToSDataType )
+import           Telescope.Table.To      as Table
 import           Telescope.Table.Types   as Table
 
 -- | A storable datatype (can be serialized and deserialized via Generics).

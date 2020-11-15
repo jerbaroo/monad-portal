@@ -1,18 +1,18 @@
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MonoLocalBinds        #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE MonoLocalBinds       #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
+{-# LANGUAGE TypeApplications     #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- Reconstruction of data types from storable representation via 'Generics.Eot'.
 module Telescope.Storable.From where
 
 import           Control.Exception         ( throw )
-import           Data.Text                 ( Text, unpack )
+import           Data.Text                 ( unpack )
 import qualified Generics.Eot             as Eot
 import qualified Telescope.Exception      as E
 import           Telescope.Storable.Types  ( SValue(..) )
+import qualified Telescope.Table.From     as Table
 import qualified Telescope.Table.Types    as Table
 
 -- This module provides functions and type classes for the reconstruction of
@@ -30,32 +30,22 @@ import qualified Telescope.Table.Types    as Table
 class FromSValue a where
   fromSValue :: SValue -> a
 
-class FromPrim a where
-  fromPrim :: Table.Prim -> a
-
-instance FromPrim Text where
-  fromPrim (Table.PText a) = a
-
--- | A field's value that is an 'Int' primitive.
-instance FromSValue Int where
-  fromSValue (SValuePrim (Table.PInt a)) = a
+-- | A field's value that is a primitive.
+instance {-# OVERLAPPABLE #-} Table.FromPrim a => FromSValue a where
+  fromSValue (SValuePrim tablePrim) = Table.fromPrim tablePrim
   fromSValue s = throw $ E.DeserializeException $
-    "Can't deserialize the following into 'Int':\n  " ++ show s
-
--- | A field's value that is a 'Text' primitive.
-instance FromSValue Text where
-  fromSValue (SValuePrim (Table.PText a)) = a
-  fromSValue s = throw $ E.DeserializeException $
-    "Can't deserialize the following into 'Text':\n  " ++ show s
+    -- TODO: improve message with TypeApplications.
+    "Can't deserialize to 'FromPrim a => SValue a':\n  " ++ show s
 
 -- | A field's value that is a list of primitives.
-instance FromPrim a => FromSValue [a] where
-  fromSValue (SValuePrim (Table.PText a)) =
+instance Table.FromPrim a => FromSValue [a] where
+  fromSValue (SValuePrim (Table.PText x)) =
     let primList :: [Table.Prim]
-        primList = read $ unpack a
-    in (fmap (fromPrim @a) primList)
+        primList = read $ unpack x
+    in fmap (Table.fromPrim @a) primList
   fromSValue s = throw $ E.DeserializeException $
-    "Can't deserialize the following into '[a]':\n  " ++ show s
+    -- TODO: improve message with TypeApplications.
+    "Can't deserialize to 'FromPrim a => SValue [a]':\n  " ++ show s
 
 instance FromSValue () where
   fromSValue _ = ()

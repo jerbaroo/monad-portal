@@ -1,27 +1,43 @@
 {-# LANGUAGE MonoLocalBinds        #-}
 
--- Conversion from table representation to data types.
+-- Conversion from table to storable representation.
 module Telescope.Table.From where
 
 import           Control.Exception         ( throw )
-import           Telescope.Storable.From   ( FromSValues(..) )
+import           Data.Text                as Text
 import qualified Telescope.Exception      as E
+import qualified Telescope.Storable.Types as Storable
 import qualified Telescope.Table.Types    as Table
-import           Telescope.Storable.Types  ( SValue(..) )
-import           Text.Read                 ( readEither )
-
--- | A data type reconstructed from table representation.
-aFromRow :: FromSValues a => Table.Row -> a
-aFromRow = fromSValues . rowToSValues
 
 -- | 'SValue's reconstructed from a row.
-rowToSValues :: Table.Row -> [SValue]
-rowToSValues row = [decodeSValue bs | (_, bs) <- row]
+--
+-- TODO: https://github.com/jerbaroo/new-telescope/issues/17
+-- This conversion only handles 'SValue's that are primitives.
+-- Converstion of nested data types does not yet work.
+rowToSValues :: Table.Row -> [Storable.SValue]
+rowToSValues row = [Storable.SValuePrim prim | (_, prim) <- row]
 
--- | An 'SValue' from a bytestring.
-decodeSValue :: String -> SValue
-decodeSValue prim =
-  case readEither prim of
-    Left  _ -> throw $ E.DeserializeException $
-      "Could not deserialize the following into 'SValue':\n  " ++ show prim
-    Right r -> SValuePrim r
+--------------------------------------------------------------------------------
+-- Conversion of primitives ----------------------------------------------------
+--------------------------------------------------------------------------------
+
+class FromPrim a where
+  fromPrim :: Table.Prim -> a
+
+instance FromPrim Bool where
+  fromPrim (Table.PBool a) = a
+  fromPrim s               = fromPrimErr "Bool" s
+instance FromPrim Int  where
+  fromPrim (Table.PInt  a) = a
+  fromPrim s               = fromPrimErr "Int" s
+instance FromPrim Text where
+  fromPrim (Table.PText a) = a
+  fromPrim s               = fromPrimErr "Text" s
+instance FromPrim a => FromPrim (Maybe a) where
+  fromPrim Table.PNull = Nothing
+  fromPrim a           = Just $ fromPrim a
+
+fromPrimErr :: Show a => String -> a -> e
+fromPrimErr a s = throw $ E.DeserializeException $
+  -- TODO: improve message with TypeApplications.
+  "Can't deserialize FromPrim to " ++ a ++ ":\n  " ++ show s

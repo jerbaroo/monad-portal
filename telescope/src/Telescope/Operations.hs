@@ -11,7 +11,7 @@ import           Data.Proxy               ( Proxy(..) )
 import qualified Data.Map                as Map
 import           Telescope.Class          ( Entity, Telescope )
 import qualified Telescope.Class         as Class
-import qualified Telescope.Table.From    as Table
+import qualified Telescope.Convert       as Convert
 import qualified Telescope.Table.To      as Table
 import qualified Telescope.Table.Types   as Table
 
@@ -41,7 +41,7 @@ viewKRx primaryKeyF = do
   Class.viewRow
     (pure $ Table.tableKey @a)
     (Table.RowKey . Table.toKey <$> primaryKeyF)
-  >>= pure . (fmap $ fmap Table.aFromRow)
+  >>= pure . (fmap $ fmap Convert.aFromRow)
 
 -- | View all entities in a table in a data source.
 viewTable :: forall a k m f. (Entity a k, Telescope m f, Comonad f) => m [a]
@@ -52,7 +52,7 @@ viewTableRx :: forall a k m f. (Entity a k, Telescope m f)
   => f (Proxy a) -> m (f [a])
 viewTableRx proxyF =
   Class.viewTable (const (Table.tableKey @a) <$> proxyF)
-  >>= pure . (fmap $ fmap Table.aFromRow . Map.elems)
+  >>= pure . (fmap $ fmap Convert.aFromRow . Map.elems)
 
 ---------
 -- set --
@@ -68,7 +68,7 @@ set = setRx . pure
 
 -- | Like 'set' but a reactive version.
 setRx :: (Entity a k, Telescope m f) => f a -> m ()
-setRx aF = Class.setRows $ Table.aToRows <$> aF
+setRx aF = Class.setRows $ Convert.aToRows <$> aF
 
 -- | Set a table in a data source to ONLY the given entities.
 --
@@ -93,7 +93,7 @@ setTableRx :: forall a k m f. (Entity a k, Telescope m f) => f [a] -> m ()
 setTableRx asF = do
   -- Convert each 'a' into 1 or more rows across 1 or more tables and then
   -- combine these rows per 'a' into a single data structure 'tableMap'.
-  let tableMap = Map.unionsWith Map.union . map Table.aToRows <$> asF
+  let tableMap = Map.unionsWith Map.union . map Convert.aToRows <$> asF
   -- Set the table that was requested to be set..
   Class.setTable (pure $ Table.tableKey @a) $ maybe Map.empty id <$>
     (Map.lookup (Table.tableKey @a) <$> tableMap)
@@ -188,4 +188,4 @@ onChangeRx kF fF =
   Class.onChangeRow
     (pure $ Table.tableKey @a)
     (Table.RowKey . Table.toKey <$> kF)
-    ((. fmap Table.aFromRow) <$> fF)
+    ((. fmap Convert.aFromRow) <$> fF)
