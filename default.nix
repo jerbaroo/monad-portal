@@ -45,11 +45,8 @@
       "testing-frontend"
       ## Telescope packages ##
       "telescope"
-      "telescope-ds-file"
       "telescope-ds-test"
       "telescope-ds-reflex-dom"
-      "telescope-server"
-      "telescope-server-api"
       "telescope-server-api-types"
     ];
   };
