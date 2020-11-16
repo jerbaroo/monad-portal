@@ -1,6 +1,7 @@
 <div align="center">
 
 # Telescope
+[![Build Status](https://img.shields.io/github/workflow/status/jerbaroo/telescope/Test)]()
 
 </div>
 
