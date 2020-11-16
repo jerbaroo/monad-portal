@@ -14,5 +14,6 @@ jobs:
     - uses: cachix/cachix-action@v8
       with:
         name: jerbaroo 
+        extraPullNames: 'https://nixcache.reflex-frp.org'
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
     - run: nix-build -A ghc.telescope
