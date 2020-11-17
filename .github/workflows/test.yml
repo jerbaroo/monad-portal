@@ -15,17 +15,4 @@ jobs:
       with:
         name: jerbaroo 
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix-build
-      -A ghc.todolist-backend
-      -A ghc.todolist-common
-      -A ghc.todolist-frontend
-      -A ghc.testing-backend
-      -A ghc.testing-common
-      -A ghc.testing-frontend
-      -A ghc.telescope
-      -A ghc.telescope-ds-file
-      -A ghc.telescope-ds-reflex-dom
-      -A ghc.telescope-ds-test
-      -A ghc.telescope-ds-server
-      -A ghc.telescope-ds-server-api
-      -A ghc.telescope-ds-server-types
+    - run: nix-build -A ghc.telescope -A ghc.telescope-ds-test
