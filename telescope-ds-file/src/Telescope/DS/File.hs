@@ -4,7 +4,7 @@
 module Telescope.DS.File where
 
 import           Control.Comonad          ( extract )
-import           Control.Concurrent.MVar as MVar
+import qualified Control.Concurrent.MVar as MVar
 import           Control.Exception        ( catch, throwIO )
 import           Control.Monad            ( forM_, void, when )
 import           Control.Monad.IO.Class   ( MonadIO, liftIO )
@@ -22,7 +22,8 @@ import           System.FilePath          ( takeDirectory )
 import           System.FSNotify          ( Event (Modified) )
 import qualified System.FSNotify         as FS
 import           System.IO.Error          ( isDoesNotExistError )
-import           Telescope.Class          ( Telescope(..) )
+import           Telescope.Class          ( Telescope )
+import qualified Telescope.Class         as Class
 import qualified Telescope.Table.Types   as Table
 
 --------------------------------------------------------------------------------
@@ -37,12 +38,14 @@ runT (TFile a) = liftIO a
 
 instance Telescope TFile Identity where
 
-  -- For each given 'Table.TableKey', read the table from disk. Then zip the
-  -- tables and keys together and return as a 'Map'.
+  viewRows = Class.viewRowsCheap
+
   viewTables tableKeysSetF = do
     let tableKeysF = Set.toList <$> tableKeysSetF -- Order for zipping.
     tables <- fmap toNormalTable <$> (mapM readTableOnDisk $ extract tableKeysF)
     pure $ pure $ Map.fromList $ zip (extract tableKeysF) tables
+
+  setRows = Class.setRowsCheap
 
   setTables tablesF = do
     let keysTableKeysF = Map.toList $ extract tablesF -- Order for zipping.
@@ -52,8 +55,12 @@ instance Telescope TFile Identity where
         liftIO $ BS.writeFile (tablePath tableKey) $ Flat.flat $
           updatedTableOnDisk table tableOnDisk
 
-  onChangeRow tableKeyId rowKeyId fId = do
-    onChangeRow' (extract tableKeyId) (extract rowKeyId) (extract fId)
+  rmRows = Class.rmRowsCheap
+
+  updateable = pure False
+
+  onChangeRow keysF fF = do
+    onChangeRow' (fst $ extract keysF) (snd $ extract keysF) (extract fF)
 
 --------------------------------------------------------------------------------
 -- TableOnDisk type and Helper Functions ---------------------------------------

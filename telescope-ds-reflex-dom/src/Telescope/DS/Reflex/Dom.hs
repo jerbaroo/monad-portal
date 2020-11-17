@@ -11,7 +11,7 @@ module Telescope.DS.Reflex.Dom where
 import           Control.Monad               ( void )
 import           Control.Monad.IO.Class      ( liftIO )
 import qualified Data.Map                   as Map
-import           Data.Text                   ( Text )
+import           Data.Text                   ( Text, pack )
 import           Reflex.Dom
 import           Telescope.Server.API.Types as API
 import           Telescope.Class             ( Telescope(..) )
@@ -21,8 +21,6 @@ rootURL = "http://localhost:3002"
 
 instance
   ( Functor m
-  , Applicative m
-  , Monad m
   , MonadWidget t m
   , Applicative (Dynamic t)
   , Reflex t
@@ -68,14 +66,19 @@ instance
     void $ performRequestAsync $ toRequest <$> updated tableKeysDyn
     logEvent (updated tableKeysDyn) $ \t -> "DOM-rmTables: " ++ show t
 
-  --  -- dyn :: Dynamic t (m a) -> m (Event t a)
-  -- perform aMDyn = do
-  --   -- Event of set actions.
-  --   let aMEvn = updated aMDyn
-  --   logEvent (const "About to setRow" <$> aMEvn) show
-  --   widgetHold_ (pure ()) aMEvn
-  --   -- dyn aMDyn
-  --   -- performEvent_ $ (PerformEventT) <$> aMEvn
+  updateable = pure True
+
+  -- TODO: \o c -> o
+  update original changes = pure $ zipDynWith (\o c -> o) original changes
+
+  watchRow keysF = do
+    logEvent (updated $ snd <$> keysF) $ \r -> "WS row: " ++ show r
+    let messageF = updated $ (\(tk, rk) -> [pack $ show tk ++ show rk]) <$> keysF
+    logEvent (messageF) $ \m -> "WS message: " ++ show m
+    ws <- webSocket "ws://localhost:3002/watch" $ def
+      & webSocketConfig_send .~ messageF
+    logEvent (_webSocket_recv ws) $ \r -> "WS received: " ++ show r
+    pure $ pure Nothing
 
 -- | Logs a string to the console when an event fires.
 --

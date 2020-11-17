@@ -10,19 +10,18 @@
 -- | A Test-suite for instance of the Telescope interface.
 module Telescope.DS.Test where
 
-import           Control.Comonad          ( Comonad )
 import           Control.Concurrent       ( threadDelay )
-import           Control.Concurrent.MVar as MVar
+import qualified Control.Concurrent.MVar as MVar
 import           Control.Monad.IO.Class   ( MonadIO, liftIO )
 import           Data.Text                ( Text )
 import           GHC.Generics             ( Generic )
-import           Telescope.Class          ( Telescope )
+import           Telescope.Class          ( Box, Telescope )
 import qualified Telescope.Operations    as T
-import           Telescope.Table.To      as Table
+import qualified Telescope.Table.To      as Table
 import qualified Test.HUnit              as HUnit
 import qualified System.Exit             as Exit
 
-runTestSuite :: (Telescope m f, Comonad f, MonadIO m)
+runTestSuite :: (Telescope m f, Box f, MonadIO m)
   => (forall a. m a -> IO a) -> IO ()
 runTestSuite run = do
   results <- HUnit.runTestTT $ testList run
@@ -30,7 +29,7 @@ runTestSuite run = do
   then Exit.exitWith   Exit.ExitSuccess
   else Exit.exitWith $ Exit.ExitFailure 1
 
-testList :: (Telescope m f, Comonad f, MonadIO m)
+testList :: (Telescope m f, Box f, MonadIO m)
   => (forall a. m a -> IO a) -> HUnit.Test
 testList run = HUnit.TestList
     [ testSetView           run
@@ -64,8 +63,7 @@ equalTablesMsg = "Viewed table not equal to set table"
 equalUsersMsg :: String
 equalUsersMsg = "Viewed 'User' not equal to set 'User'"
 
-testSetView :: (Telescope m f, Comonad f) =>
-  (forall a. m a -> IO a) -> HUnit.Test
+testSetView :: (Telescope m f, Box f) => (forall a. m a -> IO a) -> HUnit.Test
 testSetView run = HUnit.TestCase $ do
   run $ T.rmTable @Person -- Test setup.
 
@@ -78,12 +76,12 @@ testSetView run = HUnit.TestCase $ do
   johnMay <- run $ T.view john1
   HUnit.assertEqual equalUsersMsg (Just john1) johnMay
 
-  -- View John after setting john2.
+  -- View John after overwriting john1.
   run $ T.set john2
   johnMay <- run $ T.view john2
   HUnit.assertEqual equalUsersMsg (Just john2) johnMay
 
-testSetTableViewTable :: (Telescope m f, Comonad f) =>
+testSetTableViewTable :: (Telescope m f, Box f) =>
   (forall a. m a -> IO a) -> HUnit.Test
 testSetTableViewTable run = HUnit.TestCase $ do
   run $ T.rmTable @Person -- Test setup.
@@ -124,8 +122,7 @@ testSetTableViewTable run = HUnit.TestCase $ do
 --   steveMay <- run $ T.viewK Person{} "Steve"
 --   HUnit.assertEqual equalUsersMsg (Just Person { name = "Steve", age = 21 }) steveMay
 
-testRmRmTable :: (Telescope m f, Comonad f) =>
-  (forall a. m a -> IO a) -> HUnit.Test
+testRmRmTable :: (Telescope m f, Box f) => (forall a. m a -> IO a) -> HUnit.Test
 testRmRmTable run = HUnit.TestCase $ do
   run $ T.rmTable @Person -- Test setup.
 
@@ -147,7 +144,7 @@ testRmRmTable run = HUnit.TestCase $ do
   table <- run $ T.viewTable
   HUnit.assertEqual equalTablesMsg [mary] table
 
-testOnChange :: (Telescope m f, Comonad f, MonadIO m) =>
+testOnChange :: (Telescope m f, Box f, MonadIO m) =>
   (forall a. m a -> IO a) -> HUnit.Test
 testOnChange run = HUnit.TestCase $ do
   run $ T.rmTable @Person -- Test setup.

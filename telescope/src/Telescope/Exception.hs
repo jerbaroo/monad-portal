@@ -16,6 +16,8 @@ data TelescopeException =
   | DeserializeException String
     -- Could not serialize a primitive.
   | SerializeException String
+    -- Telescope type class instance badly implemented.
+  | InstanceException String
   deriving Show
 
 instance Exception TelescopeException

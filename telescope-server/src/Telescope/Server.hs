@@ -81,12 +81,11 @@ watchHandler conn = do
         confirmation = "WebSocket: new subscription for " ++ show (tk, rk)
     WebSocket.sendTextData conn $ pack confirmation
     putStrLn $ confirmation
-    runT $ Class.onChangeRow
-      (pure tableKey) (pure rowKey) $ pure $
-        \maybeRow -> runT $ liftIO $ do
-          putStrLn $ show $ maybeRow
-          WebSocket.sendTextData conn $ pack $ show $ maybeRow
-          putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
+    runT $ Class.onChangeRow (pure (tableKey, rowKey)) $ pure $
+      \maybeRow -> runT $ liftIO $ do
+        putStrLn $ show $ maybeRow
+        WebSocket.sendTextData conn $ pack $ show $ maybeRow
+        putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
 
 server :: Servant.Server API.API
 server =
