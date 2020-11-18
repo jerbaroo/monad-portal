@@ -4,12 +4,12 @@
   inherit withHoogle;
   packages = {
     ## Apps ##
-    todolist-backend            = ./apps/todolist-backend;
-    todolist-common             = ./apps/todolist-common;
-    todolist-frontend           = ./apps/todolist-frontend;
     testing-backend             = ./apps/testing-backend;
     testing-common              = ./apps/testing-common;
     testing-frontend            = ./apps/testing-frontend;
+    todolist-backend            = ./apps/todolist-backend;
+    todolist-common             = ./apps/todolist-common;
+    todolist-frontend           = ./apps/todolist-frontend;
     ## Telescope packages ##
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
@@ -21,13 +21,13 @@
   };
   shells = {
     ghc = [
-    ## Apps ##
-      "todolist-backend"
-      "todolist-common"
-      "todolist-frontend"
+      ## Apps ##
       "testing-backend"
       "testing-common"
       "testing-frontend"
+      "todolist-backend"
+      "todolist-common"
+      "todolist-frontend"
       ## Telescope packages ##
       "telescope"
       "telescope-ds-file"
@@ -39,10 +39,10 @@
     ];
     ghcjs = [
       ## Apps ##
-      "todolist-common"
-      "todolist-frontend"
       "testing-common"
       "testing-frontend"
+      "todolist-common"
+      "todolist-frontend"
       ## Telescope packages ##
       "telescope"
       "telescope-ds-test"
