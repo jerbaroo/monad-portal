@@ -34,7 +34,7 @@ testList :: (Telescope m f, Box f, MonadIO m)
 testList run = HUnit.TestList
     [ testSetView           run
     , testSetTableViewTable run
-    -- , testOver           run
+    , testOver              run
     , testRmRmTable         run
     , testOnChange          run
     ]
@@ -100,27 +100,31 @@ testSetTableViewTable run = HUnit.TestCase $ do
   table <- run $ T.viewTable
   HUnit.assertEqual equalTablesMsg [john2, mary] table
 
--- testOver :: (forall a m. MonadIO m => m a -> m a) -> HUnit.Test
--- testOver run = HUnit.TestCase $ do
---   run $ T.rmTable @Person -- Test setup.
+testOver :: (Telescope m f, Box f) => (forall a. m a -> IO a) -> HUnit.Test
+testOver run = HUnit.TestCase $ do
+  run $ T.rmTable @Person -- Test setup.
 
---   -- View John after modifying non-existing user.
---   run $ T.over john1 (\p -> p { age = 21 })
---   johnMay <- run $ T.view john1
---   HUnit.assertEqual equalUsersMsg Nothing johnMay
+  -- View John after modifying non-existing user.
+  johnOver <- run $ T.over john1 (\p -> p { age = 21 })
+  johnMay  <- run $ T.view john1
+  HUnit.assertEqual equalUsersMsg Nothing johnMay
+  HUnit.assertEqual equalUsersMsg johnOver johnMay -- Check view and over equal.
 
---   -- View John after modifying age.
---   run $ T.set john1
---   run $ T.over john1 (\p -> p { age = 21 })
---   johnMay <- run $ T.view john1
---   HUnit.assertEqual equalUsersMsg (Just Person { name = "John", age = 21 }) johnMay
+  -- View John after modifying age.
+  run $ T.set john1 -- First set a value to modify..
+  johnOver <- run $ T.over john1 (\p -> p { age = 21 }) -- ..then modify age.
+  johnMay  <- run $ T.view john1
+  HUnit.assertEqual equalUsersMsg (Just Person { name = "John", age = 21 }) johnMay
+  HUnit.assertEqual equalUsersMsg johnOver johnMay -- Check view and over equal.
 
---   -- View new user after modifying name.
---   run $ T.over john1 (\p -> p { name = "Steve" })
---   johnMay <- run $ T.view john1
---   HUnit.assertEqual equalUsersMsg Nothing johnMay
---   steveMay <- run $ T.viewK Person{} "Steve"
---   HUnit.assertEqual equalUsersMsg (Just Person { name = "Steve", age = 21 }) steveMay
+  -- View new user after modifying name.
+  johnOver <- run $ T.over john1 (\p -> p { name = "Steve" })
+  johnMay  <- run $ T.view john1
+  HUnit.assertEqual equalUsersMsg Nothing johnMay
+  HUnit.assertBool "'over' did not return modified value"
+    (johnOver /= johnMay) -- Check view and over NOT equal.
+  steveMay <- run $ T.viewK @Person "Steve"
+  HUnit.assertEqual equalUsersMsg (Just Person { name = "Steve", age = 21 }) steveMay
 
 testRmRmTable :: (Telescope m f, Box f) => (forall a. m a -> IO a) -> HUnit.Test
 testRmRmTable run = HUnit.TestCase $ do

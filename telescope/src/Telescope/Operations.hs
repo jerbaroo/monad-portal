@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE TypeFamilies        #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
@@ -6,9 +7,14 @@
 -- Operations on entities in a data source.
 module Telescope.Operations where
 
+
+import           Control.Bool             ( guard' )
 import           Control.Comonad          ( extract )
+import           Control.Monad            ( join, when )
 import           Data.Proxy               ( Proxy(Proxy) )
 import qualified Data.Map                as Map
+import           Data.Witherable          ( Filterable )
+import qualified Data.Witherable         as Witherable
 import           Telescope.Class          ( Box, Entity, Telescope )
 import qualified Telescope.Class         as Class
 import qualified Telescope.Convert       as Convert
@@ -100,50 +106,46 @@ setTableRx asF = do
   -- ..and set any rows in any other tables.
   Class.setRows $ Map.delete (Table.tableKey @a) <$> tableMap
 
--- ----------
--- -- over --
--- ----------
+----------
+-- over --
+----------
 
--- -- -- | Modify an entity in a data source.
--- -- over :: (Entity a, PrimaryKey a k, Telescope m f)
--- --   => a -> (a -> a) -> m (Maybe a)
--- -- over a f = overK a (Table.primaryKey a) f
+-- | Apply a function over an entity in a data source.
+over :: (Entity a k, Telescope m f, Box f) => a -> (a -> a) -> m (Maybe a)
+over a func = overK (Table.primaryKey a) func
 
--- -- -- | Like 'over' but a reactive version.
--- -- overRx :: (Entity a, PrimaryKey a k, Telescope m f)
--- --   => f a -> f (a -> a) -> m (f (Maybe a))
--- -- overRx aF fF = overKRx aF (Table.primaryKey <$> aF) fF
+-- | Like 'over' but a reactive version.
+overRx :: (Entity a k, Telescope m f, Filterable f) =>
+  f a -> (a -> a) -> m (f (Maybe a))
+overRx aF func = overKRx (Table.primaryKey <$> aF) func
 
--- -- -- | Like 'over' but row key is passed separately.
--- -- overK :: (Entity a, PrimaryKey a k, Telescope m f)
--- --   => a -> k -> (a -> a) -> m (Maybe a)
--- -- overK aType primaryKey f =
--- --   overKRx (Class.toF aType) (Class.toF primaryKey) (Class.toF f)
--- --   >>= pure . Class.fromF
+-- | Like 'over' but row key is passed separately.
+overK :: forall a k m f. (Entity a k, Telescope m f, Box f) =>
+  k -> (a -> a) -> m (Maybe a)
+overK primaryKey func = do
+  oldAMay <- viewK primaryKey
+  case oldAMay of
+    Nothing   -> pure Nothing
+    Just oldA -> do
+      when (Table.rowKey oldA /= Table.rowKey (func oldA)) $ rm oldA
+      set  $ func oldA
+      pure $ Just $ func oldA
 
--- -- -- | Like 'overK' but a reactive version.
--- -- overKRx :: forall a k f m. (Entity a, PrimaryKey a k, Telescope m f)
--- --   => f a -> f k -> f (a -> a) -> m (f (Maybe a))
--- -- overKRx aTypeF primaryKeyF funcF = do
--- --   oldAMayF <- viewKRx aTypeF primaryKeyF
--- --       -- Modify the function to return (old value, new value)..
--- --   let funcF' :: f (a -> (a, a))
--- --       funcF' = (\func a -> (a, func a)) <$> funcF
--- --       -- ..and apply this function over the "viewed" entity.
--- --       oldNewAMayF :: f (Maybe (a, a))
--- --       oldNewAMayF = fmap <$> funcF' <*> oldAMayF
--- --   -- Whenever the entity changes, apply the function and "set" the update. In
--- --   -- addition, if the primary key has changed, the old entity is "rm"ed.
--- --   _ <- join $ Class.escape $ oldNewAMayF <&> \case
--- --     Nothing           -> pure ()
--- --     Just (oldA, newA) -> do
--- --       when (Table.rowKey oldA /= Table.rowKey newA) $ rm oldA
--- --       set newA
--- --   pure $ fmap snd <$> oldNewAMayF
+-- | Like 'overK' but a reactive version.
+overKRx :: forall a k m f. (Entity a k, Telescope m f, Filterable f)
+  => f k -> (a -> a) -> m (f (Maybe a))
+overKRx primaryKeyF func = do
+  oldAMayF <- viewKRx primaryKeyF
+  let newAMayF  = fmap func <$> oldAMayF
+      toRmMay a = guard' (Table.rowKey a == Table.rowKey (func a)) a
+      rmAMayF   = Witherable.catMaybes $ join . fmap toRmMay <$> oldAMayF
+  setRx $ Witherable.catMaybes newAMayF
+  rmRx rmAMayF
+  pure newAMayF
 
--- --------
--- -- rm --
--- --------
+--------
+-- rm --
+--------
 
 -- | Remove an entity in a data source.
 rm :: forall a k m f. (Entity a k, Telescope m f, Box f) => a -> m ()
@@ -171,9 +173,9 @@ rmTable = rmTableRx $ Class.box $ Proxy @a
 rmTableRx :: forall a k m f. (Entity a k, Telescope m f) => f (Proxy a) -> m ()
 rmTableRx proxyF = Class.rmTable $ const (Table.tableKey @a) <$> proxyF
 
--- --------------
--- -- onChange --
--- --------------
+--------------
+-- onChange --
+--------------
 
 -- | Run a function when an entity in a data source changes.
 onChange :: forall a k m f. (Entity a k, Telescope m f, Box f)
