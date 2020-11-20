@@ -15,4 +15,4 @@ jobs:
       with:
         name: jerbaroo 
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: ./scripts/test/suite.sh
+    - run: ./scripts/test/ci.sh
