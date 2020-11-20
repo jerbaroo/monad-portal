@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z "$1" ]]; then
-  PORT=3001
+  PORT=5000
 else
   PORT="$1"
 fi

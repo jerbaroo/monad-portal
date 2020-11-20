@@ -3,13 +3,6 @@
   useWarp = true;
   inherit withHoogle;
   packages = {
-    ## Apps ##
-    testing-backend             = ./apps/testing-backend;
-    testing-common              = ./apps/testing-common;
-    testing-frontend            = ./apps/testing-frontend;
-    todolist-backend            = ./apps/todolist-backend;
-    todolist-common             = ./apps/todolist-common;
-    todolist-frontend           = ./apps/todolist-frontend;
     ## Telescope packages ##
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
@@ -18,16 +11,16 @@
     telescope-server            = ./telescope-server;
     telescope-server-api        = ./telescope-server-api;
     telescope-server-api-types  = ./telescope-server-api-types;
+    ## Apps ##
+    testing-backend             = ./apps/testing-backend;
+    testing-common              = ./apps/testing-common;
+    testing-frontend            = ./apps/testing-frontend;
+    todolist-backend            = ./apps/todolist-backend;
+    todolist-common             = ./apps/todolist-common;
+    todolist-frontend           = ./apps/todolist-frontend;
   };
   shells = {
-    ghc = [
-      ## Apps ##
-      "testing-backend"
-      "testing-common"
-      "testing-frontend"
-      "todolist-backend"
-      "todolist-common"
-      "todolist-frontend"
+    ghc = [ ## BEGIN-GHC ##
       ## Telescope packages ##
       "telescope"
       "telescope-ds-file"
@@ -36,19 +29,26 @@
       "telescope-server"
       "telescope-server-api"
       "telescope-server-api-types"
-    ];
-    ghcjs = [
       ## Apps ##
+      "testing-backend"
       "testing-common"
       "testing-frontend"
+      "todolist-backend"
       "todolist-common"
       "todolist-frontend"
+    ]; ## END-GHC ##
+    ghcjs = [ ## BEGIN-GHCJS ##
       ## Telescope packages ##
       "telescope"
       "telescope-ds-test"
       "telescope-ds-reflex-dom"
       "telescope-server-api-types"
-    ];
+      ## Apps ##
+      "testing-common"
+      "testing-frontend"
+      "todolist-common"
+      "todolist-frontend"
+    ]; ## END-GHCJS ##
   };
   overrides = self: super: {
     flat               = self.callHackage "flat"               "0.4.4" {};

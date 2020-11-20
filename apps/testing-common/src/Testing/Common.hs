@@ -8,8 +8,8 @@ import           Data.Text       ( Text )
 import           GHC.Generics    ( Generic )
 import           Telescope.Class ( PrimaryKey(..) )
 
-data Person = Person {
-    name :: Text
+data Person = Person
+  { name :: Text
   , age  :: Int
   } deriving (Generic, Show)
 

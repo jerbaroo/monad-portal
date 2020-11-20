@@ -8,10 +8,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
 
+import           Control.Bool             ( guard' )
 import           Control.Lens             ( (^.), view )
 import           Control.Monad            ( void, when )
 import           Data.Bool                ( bool )
 import           Data.Either              ( isLeft )
+import           Data.Either.Combinators  ( rightToMaybe )
+import           Data.Functor             ( (<&>) )
 import qualified Data.Map                as Map
 import           Data.Proxy               ( Proxy(Proxy) )
 import           Data.Text.Encoding       ( encodeUtf8 )
@@ -23,13 +26,9 @@ import           Telescope.DS.Reflex.Dom  ()
 import           Testing.Common           ( Person(..) )
 import           Text.Read                ( readMaybe )
 
--- | Default Person's name for input fields.
-initialName :: Text
-initialName = "John"
-
--- | Default Person's age for input fields.
-initialAge :: Int
-initialAge = 21
+-- | Initial value's for input fields.
+initPerson :: Person
+initPerson = Person "John" 21
 
 -- | Widget's to test different server endpoints.
 main :: IO ()
@@ -50,8 +49,8 @@ viewWidget = do
   el "h3" $ text "viewRx"
   nameDyn   <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
-  personDyn <- T.viewRx $ (\name -> Person{..}) <$> nameDyn
-  dynText $ pack . (" " ++) . show <$> personDyn
+  personEvn <- T.viewRx $ updated $ (\name -> Person{..}) <$> nameDyn
+  dynText =<< holdDyn "Waiting on input" (pack . (" " ++) . show <$> personEvn)
 
 -- | 'T.viewKRx' a Person with user-input name.
 viewKWidget :: MonadWidget t m => m ()
@@ -59,8 +58,8 @@ viewKWidget = do
   el "h3" $ text "viewKRx"
   nameDyn   <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
-  personDyn <- T.viewKRx @Person nameDyn
-  dynText $ pack . (" " ++) . show <$> personDyn
+  personEvn <- T.viewKRx @Person $ updated nameDyn
+  dynText =<< holdDyn "Waiting on input" (pack . (" " ++) . show <$> personEvn)
 
 -- | 'T.viewTableRx' the Person table.
 viewTableWidget :: MonadWidget t m => m ()
@@ -69,8 +68,8 @@ viewTableWidget = do
   rec viewingDyn <- toggle False clickEvn
       clickEvn   <- domEvent Click . fst <$> el' "button" (dynText
         $ bool "View Table" "Hide Table" <$> viewingDyn)
-  peopleDyn <- T.viewTableRx =<<
-    holdDyn (Proxy @Person) (const (Proxy @Person) <$> clickEvn)
+  let clickWhenViewing = attachPromptlyDynWithMaybe guard' viewingDyn clickEvn
+  peopleDyn <- holdDyn [] =<< (T.viewTableRx $ const (Proxy @Person) <$> clickWhenViewing)
   void $ dyn $ zipDynWith (bool $ text "") (personTable <$> peopleDyn) viewingDyn
 
 -- | 'T.setRx' a Person.
@@ -78,15 +77,13 @@ setWidget :: MonadWidget t m => m ()
 setWidget = do
   el "h3" $ text "setRx"
   -- User input, converted to a 'Dynamic t Person'.
-  nameInput <- textInput $ def & textInputConfig_initialValue .~ initialName
-  ageEiDyn  <- numberInput (pack $ show initialAge) parseAge
-  ageDyn    <- holdDyn initialAge $ filterRight $ updated ageEiDyn
-  let personDyn = do
-        name <- nameInput ^. textInput_value
-        (\age -> Person{..}) <$> ageDyn
+  nameInput <- textInput $ def & textInputConfig_initialValue .~ name initPerson
+  ageEiDyn  <- numberInput (pack $ show $ age initPerson) parseAge
+  let personEiDyn = zipDynWith (\name ageEi -> ageEi <&> (\age -> Person {..}))
+        (nameInput ^. textInput_value) ageEiDyn
   -- Set 'Person' on every click 'Event' (filtered to valid input).
-  clickEvn <- disabledButton (isLeft <$> ageEiDyn) "Set Person"
-  T.setRx =<< holdDyn Person{} (tag (current personDyn) clickEvn)
+  clickEvn <- disabledButton (isLeft <$> personEiDyn) "Set Person"
+  T.setRx $ attachPromptlyDynWithMaybe (const . rightToMaybe) personEiDyn clickEvn
   dynText =<< (holdDyn "" $ errText <$> updated ageEiDyn)
 
 -- | 'T.setTableRx' a table of Person.
@@ -104,19 +101,20 @@ setTableWidget = do
       numRowsDyn <- foldDyn countRows minRows $
         alignEventWithMaybe Just countNEvn countPEvn
       -- The input table.
+      -- TODO: factor out into 'personTable'.
       inputTableDyn <- el "table" $ do
         el "tr" $ (el "td" $ text "Name") >> (el "td" $ text "Age")
         simpleList ((\a -> [(1::Int)..a]) <$> numRowsDyn) $ const $ el "tr" $ do
-          nameInput <- el "td" $ textInput $ def & textInputConfig_initialValue .~ initialName
-          ageEiDyn  <- el "td" $ numberInput (pack $ show initialAge) parseAge
+          nameInput <- el "td" $ textInput $ def & textInputConfig_initialValue .~ name initPerson
+          ageEiDyn  <- el "td" $ numberInput (pack $ show $ age initPerson) parseAge
           dynText =<< (holdDyn "" $ errText <$> updated ageEiDyn)
           pure $ (\name -> fmap (\age -> (name, age)))
             <$> nameInput ^. textInput_value <*> ageEiDyn
       -- Set input table on click.
       let inputEiDyn  = distributeListOverDynWith sequence =<< inputTableDyn
           peopleEiDyn = (fmap $ map $ \(name, age) -> Person{..}) <$> inputEiDyn
-  peopleDyn <- holdDyn [] $ filterRight $ (updated peopleEiDyn)
-  T.setTableRx =<< holdDyn [Person{}] (tag (current peopleDyn) setEvn)
+  peopleBhv <- hold [] $ filterRight $ (updated peopleEiDyn)
+  T.setTableRx $ tag peopleBhv setEvn
 
 -- | 'T.rmRx' a Person with user-input name.
 rmWidget :: MonadWidget t m => m ()
@@ -126,7 +124,7 @@ rmWidget = do
   personDyn <- toPerson <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
   clickEvn  <- button "Remove"
-  T.rmRx =<< holdDyn Person{} (tag (current personDyn) clickEvn)
+  T.rmRx $ tag (current personDyn) clickEvn
 
 -- | 'T.viewKRx' a Person with user-input name.
 rmKWidget :: MonadWidget t m => m ()
@@ -135,14 +133,14 @@ rmKWidget = do
   nameDyn  <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "Person's name"))
   clickEvn <- button "Remove"
-  T.rmKRx @Person =<< holdDyn "" (tag (current nameDyn) clickEvn)
+  T.rmKRx @Person $ tag (current nameDyn) clickEvn
 
 -- | 'T.rmTableRx' the Person table.
 rmTableWidget :: MonadWidget t m => m ()
 rmTableWidget = do
   el "h3" $ text "rmTableRx"
   clickEvn <- button "Remove"
-  T.rmTableRx =<< holdDyn (Proxy @Person) (const (Proxy @Person) <$> clickEvn)
+  T.rmTableRx (const (Proxy @Person) <$> clickEvn)
 
 webSocketWidget :: MonadWidget t m => m ()
 webSocketWidget = do

@@ -15,4 +15,4 @@ jobs:
       with:
         name: jerbaroo 
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix-build -A ghc.telescope -A ghc.telescope-ds-test
+    - run: ./scripts/test/suite.sh

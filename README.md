@@ -194,16 +194,18 @@ Person "john" 70     <--->     "Person"
 <!-- TODO: example that results in two rows. -->
 
 ## Contributing
-Install the [Nix](https://nixos.org/download.html) package manager, clone this
-repository (with submodules) and change in to the `telescope` directory. If
-you’ve never built a project with `reflex-platform` before you'll also need to
-run a configuration step. Please note that initial builds may take a long time.
+These instruction will help you get started if you want to contribute to this
+project. Install [Nix](https://nixos.org/download.html) the package manager, and
+[Cachix](https://docs.cachix.org/) to make use of our binary cache. Then clone
+this repository (with submodules) and change in to the `telescope` directory.
+Now run the build step, using Cachix to download pre-built binaries:
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh
+nix-env -iA cachix -f https://cachix.org/api/v1/install
 git clone --recurse-submodules https://github.com/jerbaroo/telescope
 cd telescope
-./reflex-platform/try-reflex  # Configure reflex-platform.
+./scripts/cachix/use.sh
 ```
 
 Development commands for the Telescope framework:
@@ -211,31 +213,33 @@ Development commands for the Telescope framework:
 ``` bash
 # Type-check (with GHCID) the package passed as first argument.
 ./scripts/check.sh telescope
-# Run tests for all Telescope packages.
-./scripts/test.sh
-# Start a Hoogle server (optional port argument).
+# Run all test suites with Cabal.
+./scripts/test/suite.sh
+# Build all packages with Nix (GHC & GHCJS) and run test suites.
+./scripts/test/full.sh
+# Start a Hoogle server (optional port argument, default=5000).
 ./scripts/hoogle.sh 5000
 ```
 
-Development commands for the testing application:
+Development commands for the "testing" app:
 
 ``` bash
-# Run a server for testing-backend, server restarts on file change.
+# Run the testing-backend server, server restarts on file change.
 ./scripts/run/dev.sh testing-backend
-# Run a server for testing-frontend, server restarts on file change.
+# Run the testing-frontend server, server restarts on file change.
 ./scripts/run/dev.sh testing-frontend
-# Enter a REPL for interacting with the testing's database.
+# Enter a REPL for interacting with the testing's database. TODO: FIX.
 ./scripts/repl.sh testing-backend
 ```
 
-Production commands for the testing application:
+Production commands for the "testing" app:
 
 ``` bash 
 # Build the testing-backend server.
 ./scripts/build/prod.sh testing-backend
-# Generate testing-frontend static files.
+# Generate the testing-frontend static files.
 ./scripts/build/prod.sh testing-frontend
-# Run a server for testing-backend.
+# Run the testing-backend server.
 ./scripts/run/prod.sh testing-backend
 ```
 

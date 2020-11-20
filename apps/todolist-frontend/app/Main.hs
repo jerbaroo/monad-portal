@@ -18,7 +18,8 @@ import           ToDoList.Common          ( ToDoList(..) )
 -- | Widget's to test different server endpoints.
 main :: IO ()
 main = mainWidget $ el "div" $ do
-  nameDyn   <- view textInput_value <$> textInput (def &
+  nameDyn        <- view textInput_value <$> textInput (def &
     textInputConfig_attributes .~ (pure $ "placeholder" =: "List name"))
-  toDoListDyn <- T.viewRx $ (\name -> ToDoList{..}) <$> nameDyn
-  dynText $ pack . (" " ++) . show <$> toDoListDyn
+  toDoListEvn    <- T.viewRx $ (\name -> ToDoList{..}) <$> updated nameDyn
+  toDoListMayDyn <- holdDyn Nothing $ Just <$> toDoListEvn
+  dynText $ (maybe "" (pack . show)) <$> toDoListMayDyn
