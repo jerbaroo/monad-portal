@@ -131,11 +131,11 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
   -- | Watch one row in a data source for changes.
   watchRow :: f Table.Ref -> m (f (Maybe Table.Row))
 
--- | A simple container. See the 'Telescope' type class for details.
+-- | A container type for synchronous 'Telescope' instances.
 class Comonad f => Box f where
   box :: a -> f a
 
--- | 'Identity' is a simple container that can be used by 'Telescope' intances.
+-- | A container type readily-available for synchronous 'Telescope' intances.
 instance Box Identity where
   box = Identity
 

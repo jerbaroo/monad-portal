@@ -7,15 +7,23 @@
 
 module Telescope.DS.Reflex.Dom where
 
+import           Control.Bool                ( guard' )
 import           Control.Monad               ( void )
 import           Control.Monad.IO.Class      ( liftIO )
-import           Data.Text                   ( Text, pack )
+import           Data.Text                   ( Text, pack, unpack )
+import qualified Data.Text.Encoding         as Text
 import           Reflex.Dom
 import qualified Telescope.Server.API.Types as API
 import           Telescope.Class             ( Telescope(..) )
 
-rootURL :: Text
-rootURL = "http://localhost:3002"
+import qualified Telescope.Table.Types      as Table
+
+rootURL   :: Text
+wsRootURL :: Text
+
+rootURL     = "http://localhost:3002"
+wsRootURL   = "ws://localhost:3002"
+watchRowURL = wsRootURL <> "/watch"
 
 instance ( Functor m , MonadWidget t m , Reflex t )
   => Telescope m (Event t) where
@@ -64,14 +72,17 @@ instance ( Functor m , MonadWidget t m , Reflex t )
 
   update original changes = pure $ leftmost [original, changes]
 
-  watchRow keysF = do
-    logEvent (snd <$> keysF) $ \r -> "WS row: " ++ show r
-    let messageF = (\(tk, rk) -> [pack $ show tk ++ show rk]) <$> keysF
-    logEvent (messageF) $ \m -> "WS message: " ++ show m
-    ws <- webSocket "ws://localhost:3002/watch" $ def
-      & webSocketConfig_send .~ messageF
-    logEvent (_webSocket_recv ws) $ \r -> "WS received: " ++ show r
-    pure $ const Nothing <$> keysF
+  watchRow keysEvn = do
+    -- Send subscription request over WebSocket..
+    ws <- webSocket watchRowURL $ def & webSocketConfig_send .~
+      ((\(tk, rk) -> [pack $ show (tk, rk)]) <$> keysEvn)
+    let updates = read . unpack . Text.decodeUtf8 <$> _webSocket_recv ws
+    -- And filter out any out-of-date responses..
+    keysDyn <- current <$> holdDyn Nothing (Just <$> keysEvn)
+    pure $ snd <$> attachWithMaybe
+      (\refMay response -> maybe (Just response)
+        (\ref -> guard' (snd ref == fst response) response) refMay)
+      keysDyn updates
 
 -- | Logs a string to the console when an event fires.
 --

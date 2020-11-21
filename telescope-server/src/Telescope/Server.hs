@@ -69,23 +69,19 @@ rmTablesHandler apiTableKeys = do
   runT $ Class.rmTables $ pure $ API.from apiTableKeys
   pure Servant.NoContent
 
-type Sub = (Table.TableKey, Table.RowKey)
-
 watchHandler :: WebSocket.Connection -> Servant.Handler ()
 watchHandler conn = do
-  liftIO $ putStrLn "Websocket: connection opened"
+  liftIO $ putStrLn "Server: WebSocket connection opened"
   liftIO $ void $ forever $ do
     message <- WebSocket.receiveData conn :: IO ByteString
-    let (tableKey, rowKey) = read . unpack $ message :: Sub
+    let (tableKey, rowKey) = read . unpack $ message :: Table.Ref
         (Table.TableKey tk, Table.RowKey rk) = (tableKey, rowKey)
-        confirmation = "WebSocket: new subscription for " ++ show (tk, rk)
-    WebSocket.sendTextData conn $ pack confirmation
-    putStrLn $ confirmation
+    putStrLn $ "Server: WebSocket subscription for " ++ show (tk, rk)
     runT $ Class.onChangeRow (pure (tableKey, rowKey)) $ pure $
       \maybeRow -> runT $ liftIO $ do
         putStrLn $ show $ maybeRow
-        WebSocket.sendTextData conn $ pack $ show $ maybeRow
-        putStrLn $ "WebSocket: update sent for " ++ show (tk, rk)
+        WebSocket.sendTextData conn $ pack $ show $ (rowKey, maybeRow)
+        putStrLn $ "Server: WebSocket update sent for " ++ show (tk, rk)
 
 server :: Servant.Server API.API
 server =
