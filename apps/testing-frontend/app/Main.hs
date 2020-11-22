@@ -1,23 +1,16 @@
-{-# OPTIONS_GHC -fno-warn-missing-fields #-}
-
-{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE MonoLocalBinds      #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE RecursiveDo         #-}
 {-# LANGUAGE RecordWildCards     #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
 
-import           Control.Bool             ( guard' )
 import           Control.Lens             ( (^.), view )
 import           Control.Monad            ( void, when )
-import           Data.Bool                ( bool )
 import           Data.Either              ( isLeft )
 import           Data.Either.Combinators  ( rightToMaybe )
 import           Data.Functor             ( (<&>) )
 import qualified Data.Map                as Map
 import           Data.Proxy               ( Proxy(Proxy) )
-import           Data.Text.Encoding       ( encodeUtf8 )
 import           Data.Text                ( Text, pack, unpack )
 import           Data.These               ( These(..) )
 import           Reflex.Dom
@@ -41,7 +34,6 @@ main = mainWidget $ el "div" $ do
   rmWidget
   rmKWidget
   rmTableWidget
-  -- webSocketWidget
 
 -- | 'T.viewRx' a Person with user-input name.
 viewWidget :: MonadWidget t m => m ()
@@ -138,19 +130,6 @@ rmTableWidget = do
   clickEvn <- button "Remove"
   T.rmTableRx (const (Proxy @Person) <$> clickEvn)
 
-webSocketWidget :: MonadWidget t m => m ()
-webSocketWidget = do
-  el "p" $ text "Watch database"
-  rec table  <- inputElement def
-      rowKey <- inputElement def
-      watch  <- button "Watch"
-      let newMessage = fmap ((:[]) . encodeUtf8)
-            $ tag (current $ zipDynWith (<>) (value table) (value rowKey))
-            $ watch
-  ws <- webSocket "ws://localhost:3002/watch" $ def
-    & webSocketConfig_send .~ newMessage
-  pure ()
-
 ----------------------
 -- HELPER FUNCTIONS --
 ----------------------
@@ -207,26 +186,3 @@ disabledButton disabledDyn s = do
   return $ domEvent Click e
   where disabledAttr True = [("disabled", "")]
         disabledAttr _    = []
-
-{-
-
-To test websocket in a browser:
-
-function newws() {
-  var ws = new WebSocket("ws://localhost:3001/update");
-  ws.onopen = function() { console.log("Opened"); };
-  ws.onmessage = function (evt) {
-     var received_msg = evt.data;
-     console.log("Message received...");
-     console.log(received_msg);
-  };
-  ws.onclose = function() {
-     // websocket is closed.
-     console.log("Connection closed");
-  };
-  return ws;
-};
-var ws = newws();
-ws.send("(TableKey \"Person\",RowKey (KeyOne (PString \"John\")))");
-
--}
