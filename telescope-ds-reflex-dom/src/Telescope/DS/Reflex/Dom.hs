@@ -23,7 +23,8 @@ wsRootURL :: Text
 
 rootURL     = "http://localhost:3002"
 wsRootURL   = "ws://localhost:3002"
-watchRowURL = wsRootURL <> "/watch"
+watchRowURL = wsRootURL <> "/watchRow"
+watchTableURL = wsRootURL <> "/watchTable"
 
 instance ( Functor m , MonadWidget t m , Reflex t )
   => Telescope m (Event t) where
@@ -35,58 +36,65 @@ instance ( Functor m , MonadWidget t m , Reflex t )
     -- ..and decode responses.
     let apiTables :: Event t (API.Tables)
         apiTables = mapMaybe id $ decodeXhrResponse <$> responseEvent
-    logEvent apiTables $ \t -> "DOM-viewRows: " ++ show t
     pure $ API.from <$> apiTables
 
-  viewTables tableKeysEvn = do
+  viewTables tableKeyEvn = do
     -- Perform XHR requests..
     let toRequest = postJson (rootURL <> "/viewTables") . API.to
-    responseEvent <- performRequestAsync $ toRequest <$> tableKeysEvn
+    responseEvent <- performRequestAsync $ toRequest <$> tableKeyEvn
     -- ..and decode responses.
     let apiTables :: Event t (API.Tables)
         apiTables = mapMaybe id $ decodeXhrResponse <$> responseEvent
-    logEvent apiTables $ \t -> "DOM-viewTables: " ++ show t
     pure $ API.from <$> apiTables
 
   setRows rowsEvn = do
     let toRequest = postJson (rootURL <> "/setRows") . API.to
     void $ performRequestAsync $ toRequest <$> rowsEvn
-    logEvent rowsEvn $ \t -> "DOM-setRows: " ++ show t
 
   setTables tablesEvn = do
     let toRequest = postJson (rootURL <> "/setTables") . API.to
     void $ performRequestAsync $ toRequest <$> tablesEvn
-    logEvent tablesEvn $ \t -> "DOM-setTables: " ++ show t
 
   rmRows rowsIndexEvn = do
     let toRequest = postJson (rootURL <> "/rmRows") . API.to
     void $ performRequestAsync $ toRequest <$> rowsIndexEvn
-    logEvent rowsIndexEvn $ \t -> "DOM-rmRows: " ++ show t
 
-  rmTables tableKeysEvn = do
+  rmTables tableKeyEvn = do
     let toRequest = postJson (rootURL <> "/rmTables") . API.to
-    void $ performRequestAsync $ toRequest <$> tableKeysEvn
-    logEvent tableKeysEvn $ \t -> "DOM-rmTables: " ++ show t
+    void $ performRequestAsync $ toRequest <$> tableKeyEvn
 
   updateable = pure True
 
   update original changes = pure $ leftmost [original, changes]
 
-  watchRow keysEvn = do
+  watchRow refEvn = do
     -- Send subscription request over WebSocket..
     ws <- webSocket watchRowURL $ def & webSocketConfig_send .~
-      ((\(tk, rk) -> [pack $ show (tk, rk)]) <$> keysEvn)
-    let updates = read . unpack . Text.decodeUtf8 <$> _webSocket_recv ws
+      ((\(tk, rk) -> [pack $ show (tk, rk)]) <$> refEvn)
+    let responses = read . unpack . Text.decodeUtf8 <$> _webSocket_recv ws
     -- And filter out any out-of-date responses..
-    keysDyn <- current <$> holdDyn Nothing (Just <$> keysEvn)
+    refMayDyn <- current <$> holdDyn Nothing (Just <$> refEvn)
     pure $ snd <$> attachWithMaybe
       (\refMay response -> maybe (Just response)
         (\ref -> guard' (snd ref == fst response) response) refMay)
-      keysDyn updates
+      refMayDyn responses
+
+  watchTable tableKeyEvn = do
+    -- Send subscription request over WebSocket..
+    ws <- webSocket watchTableURL $ def & webSocketConfig_send .~
+      ((\tk -> [pack $ show tk]) <$> tableKeyEvn)
+    let responses = read . unpack . Text.decodeUtf8 <$> _webSocket_recv ws
+    -- And filter out any out-of-date responses..
+    logEvent responses $ \t -> "Received watchTables update: " ++ show t
+    tableKeyMayDyn <- current <$> holdDyn Nothing (Just <$> tableKeyEvn)
+    pure $ snd <$> attachWithMaybe
+      (\tableKeyMay response -> maybe (Just response)
+        (\tableKey -> guard' (tableKey == fst response) response) tableKeyMay)
+      tableKeyMayDyn responses
 
 -- | Logs a string to the console when an event fires.
 --
 -- Differs slightly from 'Reflex.traceEvent' because it will print even if the
--- event is otherwise unused. from the reflex-dom-contrib package.
+-- event is otherwise unused. Copied from the reflex-dom-contrib package.
 logEvent :: MonadWidget t m => Event t a -> (a -> String) -> m ()
 logEvent e mkStr = performEvent_ (liftIO . putStrLn . mkStr <$> e)

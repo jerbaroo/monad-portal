@@ -33,15 +33,15 @@ type Entity a k = (ToSDataType a k, FromSValues a)
 -- support both synchronous and reactive 'Telescope' instances. For instances of
 -- this type class that support the synchronous API, 'f' might be the 'Identity'
 -- functor. However for instances that support a reactive API (e.g. an instance
--- used in a Reflex-DOM application) 'f' might represent a stream of values.
+-- used in a Reflex-DOM application) 'f' might be an 'Event' (stream of values).
 class (Functor f, Monad m) => Telescope m f | m -> f where
 
   -- | View one row in a data source.
   viewRow :: f Table.Ref -> m (f (Maybe Table.Row))
-  viewRow keysF = do
+  viewRow refF = do
     rowsF <- viewRows $
-      (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> keysF
-    updateMaybe (toMaybeRow <$> rowsF) $ watchRow keysF
+      (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> refF
+    updateMaybe (toMaybeRow <$> rowsF) $ watchRow refF
     where toMaybeRow :: Table.Tables -> Maybe Table.Row
           toMaybeRow tables =
             case Map.elems tables of
@@ -61,7 +61,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
   viewTable :: f Table.TableKey -> m (f Table.Table)
   viewTable tableKeyF = do
     tablesF <- viewTables $ Set.singleton <$> tableKeyF
-    pure $ toTable <$> tablesF
+    updateMaybe (toTable <$> tablesF) $ watchTable tableKeyF
     where toTable :: Table.Tables -> Table.Table
           toTable tables =
             case Map.elems tables of
@@ -75,8 +75,8 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
 
   -- | Set one row in a data source.
   setRow :: f (Table.TableKey, Table.RowKey, Table.Row) -> m ()
-  setRow keysF =
-    setRows $ (\(tk, rk, r) -> Map.singleton tk $ Map.singleton rk r) <$> keysF
+  setRow refF =
+    setRows $ (\(tk, rk, r) -> Map.singleton tk $ Map.singleton rk r) <$> refF
 
   -- | Set multiple rows in a data source.
   setRows :: f Table.Tables -> m ()
@@ -90,8 +90,8 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
 
   -- | Remove one row from a data source.
   rmRow :: f Table.Ref -> m ()
-  rmRow keysF =
-    rmRows $ (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> keysF
+  rmRow refF =
+    rmRows $ (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> refF
 
   -- | Remove multiple rows from a data source.
   rmRows :: f Table.RowsIndex -> m ()
@@ -128,14 +128,20 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
   -- | Run a function when a row in a data source changes.
   onChangeRow :: f Table.Ref -> f (Maybe Table.Row -> m ()) -> m ()
 
+  -- | Run a function when a row in a data source changes.
+  onChangeTable :: f Table.TableKey -> f (Table.Table -> m ()) -> m ()
+
   -- | Watch one row in a data source for changes.
   watchRow :: f Table.Ref -> m (f (Maybe Table.Row))
 
--- | A container type for synchronous 'Telescope' instances.
+  -- | Watch on table in a data source for changes.
+  watchTable :: f Table.TableKey -> m (f Table.Table)
+
+-- | A container for synchronous 'Telescope' instances.
 class Comonad f => Box f where
   box :: a -> f a
 
--- | A container type readily-available for synchronous 'Telescope' intances.
+-- | A container readily-available for synchronous 'Telescope' intances.
 instance Box Identity where
   box = Identity
 

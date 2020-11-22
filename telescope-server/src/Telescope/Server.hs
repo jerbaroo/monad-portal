@@ -27,36 +27,21 @@ import qualified Telescope.Server.API.Types  as API
 viewRowsHandler :: API.RowsIndex -> Servant.Handler API.Tables
 viewRowsHandler apiRowsIndex = do
   rowsF <- runT $ Class.viewRows $ pure $ API.from apiRowsIndex
-  liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRowsIndex
   pure $ API.to $ extract rowsF
 
 viewTablesHandler :: [API.TableKey] -> Servant.Handler API.Tables
 viewTablesHandler apiTableKeys = do
-  let tableKeys = API.from apiTableKeys
-  tablesF <- runT $ Class.viewTables $ pure $ tableKeys
-  liftIO $ putStrLn $ "\nServer: viewTables: " ++ show (extract tablesF)
+  tablesF <- runT $ Class.viewTables $ pure $ API.from apiTableKeys
   pure $ API.to $ extract tablesF
 
 setRowsHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setRowsHandler apiRows = do
-
-  -- BEGIN FOR DEBUGGGING
-  let tables :: Table.Tables
-      tables = API.from apiRows
-      tableKeys :: Set Table.TableKey
-      tableKeys = Set.fromList $ Map.keys tables
-  tablesF <- runT $ Class.viewTables $ pure tableKeys
-  liftIO $ putStrLn $ "\nServer: setTables: (viewed) " ++ show (extract tablesF)
-  -- END FOR DEBUGGGING
-
   runT $ Class.setRows $ pure $ API.from apiRows
-  liftIO $ putStrLn $ "\nServer: setRows: " ++ show apiRows
   pure Servant.NoContent
 
 setTablesHandler :: API.Tables -> Servant.Handler Servant.NoContent
 setTablesHandler apiTables = do
   runT $ Class.setTables $ pure $ API.from apiTables
-  liftIO $ putStrLn $ "\nServer: setTables: (toSet)" ++ show apiTables
   pure Servant.NoContent
 
 rmRowsHandler :: API.RowsIndex -> Servant.Handler Servant.NoContent
@@ -69,30 +54,38 @@ rmTablesHandler apiTableKeys = do
   runT $ Class.rmTables $ pure $ API.from apiTableKeys
   pure Servant.NoContent
 
-watchHandler :: WebSocket.Connection -> Servant.Handler ()
-watchHandler conn = do
-  liftIO $ putStrLn "Server: WebSocket connection opened"
+watchRowHandler :: WebSocket.Connection -> Servant.Handler ()
+watchRowHandler conn = do
   liftIO $ void $ forever $ do
-    message <- WebSocket.receiveData conn :: IO ByteString
+    message <- WebSocket.receiveData conn
     let (tableKey, rowKey) = read . unpack $ message :: Table.Ref
-        (Table.TableKey tk, Table.RowKey rk) = (tableKey, rowKey)
-    putStrLn $ "Server: WebSocket subscription for " ++ show (tk, rk)
     runT $ Class.onChangeRow (pure (tableKey, rowKey)) $ pure $
       \maybeRow -> runT $ liftIO $ do
-        putStrLn $ show $ maybeRow
+        putStrLn $ show maybeRow
         WebSocket.sendTextData conn $ pack $ show $ (rowKey, maybeRow)
-        putStrLn $ "Server: WebSocket update sent for " ++ show (tk, rk)
+
+watchTableHandler :: WebSocket.Connection -> Servant.Handler ()
+watchTableHandler conn = do
+  liftIO $ void $ forever $ do
+    message <- WebSocket.receiveData conn
+    let tableKey = read . unpack $ message :: Table.TableKey
+    runT $ Class.onChangeTable (pure tableKey) $ pure $
+      \table -> runT $ liftIO $ do
+        WebSocket.sendTextData conn $ pack $ show $ (tableKey, table)
 
 server :: Servant.Server API.API
 server =
-  (    viewRowsHandler
-  :<|> viewTablesHandler
-  :<|> setRowsHandler
-  :<|> setTablesHandler
-  :<|> rmRowsHandler
-  :<|> rmTablesHandler
-  )
-  :<|> watchHandler
+    (    viewRowsHandler
+    :<|> viewTablesHandler
+    :<|> setRowsHandler
+    :<|> setTablesHandler
+    :<|> rmRowsHandler
+    :<|> rmTablesHandler
+    )
+  :<|>
+    (    watchRowHandler
+    :<|> watchTableHandler
+    )
   :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
 
 ------------------
@@ -101,7 +94,7 @@ server =
 
 type Port = Int
 
--- | CORS policy useful when using a separate frontend server.
+-- | CORS policy useful when using separate backend and frontend servers.
 developmentCors :: Middleware
 developmentCors = Cors.cors $ const $ Just Cors.simpleCorsResourcePolicy
   { Cors.corsMethods        = ["OPTIONS", "POST"]

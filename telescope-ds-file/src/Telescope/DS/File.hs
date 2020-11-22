@@ -62,6 +62,9 @@ instance Telescope TFile Identity where
   onChangeRow keysF fF = do
     onChangeRow' (fst $ extract keysF) (snd $ extract keysF) (extract fF)
 
+  onChangeTable tableKeyF fF =
+    onChangeTable' (extract tableKeyF) (extract fF . toNormalTable)
+
 --------------------------------------------------------------------------------
 -- TableOnDisk type and Helper Functions ---------------------------------------
 --------------------------------------------------------------------------------
@@ -108,7 +111,10 @@ updatedTableOnDisk table onDisk = do
   Map.fromList $ zip keys $ catMaybes combined
 
 -- | Combine a table row with an existing row on disk.
-combine :: Maybe Table.Row -> Maybe (Maybe Table.Row, Int) -> Maybe (Maybe Table.Row, Int)
+combine
+  :: Maybe Table.Row
+  -> Maybe (Maybe Table.Row, Int)
+  -> Maybe (Maybe Table.Row, Int)
 -- Row to save, row also on disk.
 combine (Just row) (Just (Just oldRow, ident))
   | row == oldRow                          = Just (Just row, ident    )
@@ -125,7 +131,8 @@ combine Nothing    (Just (Nothing, ident)) = Just (Nothing, ident     )
 combine Nothing    Nothing                 = Nothing
 
 -- | Run a function when a value on disk has changed.
-onChangeRow' :: Table.TableKey -> Table.RowKey -> (Maybe Table.Row -> TFile ()) -> TFile ()
+onChangeRow'
+  :: Table.TableKey -> Table.RowKey -> (Maybe Table.Row -> TFile ()) -> TFile ()
 onChangeRow' tableKey rowKey f = liftIO $ do
   -- MVar with row's last update ID.
   tableOnDisk <- runT $ readTableOnDisk tableKey
@@ -147,3 +154,22 @@ onChangeRow' tableKey rowKey f = liftIO $ do
           lastId <- liftIO $ MVar.swapMVar lastIdMVar newId
           -- ..if an update has occured since, run the function.
           when (newId > lastId) (f maybeRow)
+
+-- | Run a function when a value on disk has changed.
+onChangeTable' :: Table.TableKey -> (TableOnDisk -> TFile ()) -> TFile ()
+onChangeTable' tableKey f = liftIO $ do
+  -- MVar with last table.
+  tableOnDisk         <- runT $ readTableOnDisk tableKey
+  lastTableOnDiskMVar <- MVar.newMVar tableOnDisk
+  -- Watch the file for changes.
+  path <- canonicalizePath $ tablePath tableKey
+  let moddedFile (Modified moddedPath _ _) = path == moddedPath
+      moddedFile _                         = False
+  manager     <- FS.startManager
+  -- Each time the file has changed check for updates.
+  void $ FS.watchDir manager (takeDirectory path) moddedFile $ const $ do
+    runT $ do
+      newTableOnDisk  <- readTableOnDisk tableKey
+      lastTableOnDisk <- liftIO $ MVar.swapMVar lastTableOnDiskMVar newTableOnDisk
+      when (Map.toList newTableOnDisk /= Map.toList tableOnDisk) $ do
+        f newTableOnDisk

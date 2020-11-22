@@ -65,12 +65,8 @@ viewKWidget = do
 viewTableWidget :: MonadWidget t m => m ()
 viewTableWidget = do
   el "h3" $ text "viewTableRx"
-  rec viewingDyn <- toggle False clickEvn
-      clickEvn   <- domEvent Click . fst <$> el' "button" (dynText
-        $ bool "View Table" "Hide Table" <$> viewingDyn)
-  let clickWhenViewing = attachPromptlyDynWithMaybe guard' viewingDyn clickEvn
-  peopleDyn <- holdDyn [] =<< (T.viewTableRx $ const (Proxy @Person) <$> clickWhenViewing)
-  void $ dyn $ zipDynWith (bool $ text "") (personTable <$> peopleDyn) viewingDyn
+  peopleEvn <- T.viewTableRx . fmap (const (Proxy @Person)) =<< now
+  void . dyn . fmap personTable =<< holdDyn [] peopleEvn
 
 -- | 'T.setRx' a Person.
 setWidget :: MonadWidget t m => m ()
