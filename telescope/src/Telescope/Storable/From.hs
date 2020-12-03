@@ -39,7 +39,7 @@ instance {-# OVERLAPPABLE #-} Table.FromPrim a => FromSValue a where
 
 -- | A field's value that is a list of primitives.
 instance Table.FromPrim a => FromSValue [a] where
-  fromSValue (SValuePrim (Table.PText x)) =
+  fromSValue (SValuePrim (Table.PrimNotNull (Table.PrimText x))) =
     let primList :: [Table.Prim]
         primList = read $ unpack x
     in fmap (Table.fromPrim @a) primList

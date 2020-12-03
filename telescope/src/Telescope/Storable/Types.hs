@@ -6,10 +6,10 @@ module Telescope.Storable.Types where
 import           GHC.Generics           ( Generic )
 import           Telescope.Table.Types as Table
 
--- This module provides an intermediate storable representation of a data type.
--- This representation is converted to table representation by the Telescope
--- framework when writing a data type to a data source, and converted from table
--- representation when reading a data type from a data source.
+-- This module defines an intermediate storable representation of a data type.
+-- This representation is converted to table representation by the 'Telescope'
+-- typeclass when writing a data type to a data source, and reconstructed from
+-- table representation when reading a data type from a data source.
 --
 --   data type <--> storable representation <--> table representation
 --

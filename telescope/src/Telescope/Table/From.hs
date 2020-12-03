@@ -25,17 +25,17 @@ class FromPrim a where
   fromPrim :: Table.Prim -> a
 
 instance FromPrim Bool where
-  fromPrim (Table.PBool a) = a
-  fromPrim s               = fromPrimErr "Bool" s
+  fromPrim (Table.PrimNotNull (Table.PrimBool a)) = a
+  fromPrim s                                      = fromPrimErr "Bool" s
 instance FromPrim Int  where
-  fromPrim (Table.PInt  a) = a
-  fromPrim s               = fromPrimErr "Int" s
+  fromPrim (Table.PrimNotNull (Table.PrimInt a))  = a
+  fromPrim s                                      = fromPrimErr "Int" s
 instance FromPrim Text where
-  fromPrim (Table.PText a) = a
-  fromPrim s               = fromPrimErr "Text" s
+  fromPrim (Table.PrimNotNull (Table.PrimText a)) = a
+  fromPrim s                                      = fromPrimErr "Text" s
 instance FromPrim a => FromPrim (Maybe a) where
-  fromPrim Table.PNull = Nothing
-  fromPrim a           = Just $ fromPrim a
+  fromPrim Table.PrimNull                         = Nothing
+  fromPrim a                                      = Just $ fromPrim a
 
 fromPrimErr :: Show a => String -> a -> e
 fromPrimErr a s = throw $ E.DeserializeException $

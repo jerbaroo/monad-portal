@@ -35,18 +35,15 @@ import qualified Telescope.Table.Types    as Table
 class ToSValue a where
   toSValue :: a -> SValue
 
--- Conversion of primitives:
-
-instance ToSValue Bool where toSValue = SValuePrim . Table.PBool
-instance ToSValue Int  where toSValue = SValuePrim . Table.PInt
-instance ToSValue Text where toSValue = SValuePrim . Table.PText
-instance Table.ToPrim a => ToSValue (Maybe a) where
-  toSValue Nothing  = SValuePrim Table.PNull
-  toSValue (Just a) = SValuePrim $ Table.toPrim a
+instance                   ToSValue Bool      where toSValue = SValuePrim . Table.toPrim
+instance                   ToSValue Int       where toSValue = SValuePrim . Table.toPrim
+instance                   ToSValue Text      where toSValue = SValuePrim . Table.toPrim
+instance Table.ToPrim a => ToSValue (Maybe a) where toSValue = SValuePrim . Table.toPrim
 
 -- | A field's value that is a list of primitives.
 instance Table.ToPrim a => ToSValue [a] where
-  toSValue t = SValuePrim $ Table.PText $ pack $ show $ fmap Table.toPrim $ t
+  toSValue t = SValuePrim $
+    Table.PrimNotNull $ Table.PrimText $ pack $ show $ fmap Table.toPrim $ t
 
 -- | A field's value that is one or more storable data types.
 instance {-# OVERLAPPABLE #-} ToSDataTypes a => ToSValue a where

@@ -19,15 +19,23 @@ import qualified Telescope.Table.Types    as Table
 -- Primitives ------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+-- | A data type that can be converted to a non-null storable primitive.
+class ToPrimNotNull a where
+  toPrimNotNull :: a -> Table.PrimNotNull
+
+instance ToPrimNotNull Bool where toPrimNotNull = Table.PrimBool
+instance ToPrimNotNull Int  where toPrimNotNull = Table.PrimInt
+instance ToPrimNotNull Text where toPrimNotNull = Table.PrimText
+
 -- | A data type that can be converted to a storable primitive.
 class ToPrim a where
   toPrim :: a -> Table.Prim
 
-instance ToPrim Bool where toPrim = Table.PBool
-instance ToPrim Int  where toPrim = Table.PInt
-instance ToPrim Text where toPrim = Table.PText
+instance ToPrim Bool where toPrim = Table.PrimNotNull . toPrimNotNull
+instance ToPrim Int  where toPrim = Table.PrimNotNull . toPrimNotNull
+instance ToPrim Text where toPrim = Table.PrimNotNull . toPrimNotNull
 instance ToPrim a => ToPrim (Maybe a) where
-  toPrim Nothing  = Table.PNull
+  toPrim Nothing  = Table.PrimNull
   toPrim (Just a) = toPrim a
 
 -- | A data type that can be converted to a key.
@@ -36,14 +44,14 @@ instance ToPrim a => ToPrim (Maybe a) where
 class ToKey a where
   toKey :: a -> Table.Key
 
-instance ToPrim a => ToKey a where
-  toKey a = Table.KeyOne $ toPrim a
-instance (ToPrim a, ToPrim b) => ToKey (a, b) where
-  toKey (a, b) = Table.KeyMore [toPrim a, toPrim b]
-instance (ToPrim a, ToPrim b, ToPrim c) => ToKey (a, b, c) where
-  toKey (a, b, c) = Table.KeyMore [toPrim a, toPrim b, toPrim c]
-instance (ToPrim a, ToPrim b, ToPrim c, ToPrim d) => ToKey (a, b, c, d) where
-  toKey (a, b, c, d) = Table.KeyMore [toPrim a, toPrim b, toPrim c, toPrim d]
+instance ToPrimNotNull a => ToKey a where
+  toKey a = Table.KeyOne $ toPrimNotNull a
+instance (ToPrimNotNull a, ToPrimNotNull b) => ToKey (a, b) where
+  toKey (a, b) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b]
+instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c) => ToKey (a, b, c) where
+  toKey (a, b, c) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b, toPrimNotNull c]
+instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c, ToPrimNotNull d) => ToKey (a, b, c, d) where
+  toKey (a, b, c, d) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b, toPrimNotNull c, toPrimNotNull d]
 
 --------------------------------------------------------------------------------
 -- Key types -------------------------------------------------------------------
