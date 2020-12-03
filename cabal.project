@@ -1,4 +1,7 @@
  packages:
+   apps/chatroom-backend/
+   apps/chatroom-common/
+   apps/chatroom-frontend/
    apps/testing-backend/
    apps/testing-common/
    apps/testing-frontend/

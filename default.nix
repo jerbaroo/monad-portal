@@ -12,6 +12,9 @@
     telescope-server-api        = ./telescope-server-api;
     telescope-server-api-types  = ./telescope-server-api-types;
     ## Apps ##
+    chatroom-backend            = ./apps/chatroom-backend;
+    chatroom-common             = ./apps/chatroom-common;
+    chatroom-frontend           = ./apps/chatroom-frontend;
     testing-backend             = ./apps/testing-backend;
     testing-common              = ./apps/testing-common;
     testing-frontend            = ./apps/testing-frontend;
@@ -30,6 +33,9 @@
       "telescope-server-api"
       "telescope-server-api-types"
       ## Apps ##
+      "chatroom-backend"
+      "chatroom-common"
+      "chatroom-frontend"
       "testing-backend"
       "testing-common"
       "testing-frontend"
@@ -44,6 +50,8 @@
       "telescope-ds-reflex-dom"
       "telescope-server-api-types"
       ## Apps ##
+      "chatroom-common"
+      "chatroom-frontend"
       "testing-common"
       "testing-frontend"
       "todolist-common"

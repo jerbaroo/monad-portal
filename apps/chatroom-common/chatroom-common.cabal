@@ -1,7 +1,7 @@
 cabal-version:       2.4
-name:                todolist-frontend
+name:                chatroom-common
 version:             0.1.0.0
-synopsis:            Frontend code for Telescope framework to-do list application.
+synopsis:            Common code for Telescope framework chat room application.
 -- description:
 homepage:            https://github.com/jerbaroo/telescope
 -- bug-reports:
@@ -13,12 +13,10 @@ maintainer:          jerbaroo.work@pm.me
 category:            Web
 extra-source-files:  CHANGELOG.md
 
-executable todolist-frontend
-  main-is:             Main.hs
+library
+  exposed-modules:     ChatRoom.Common
   -- other-modules:
   -- other-extensions:
-  build-depends:       base, composition-extra, containers, control-bool, extra,
-                       generic-lens, lens, reflex-dom, telescope,
-                       telescope-ds-reflex-dom, text, todolist-common
-  hs-source-dirs:      app
+  build-depends:       base, telescope, text
+  hs-source-dirs:      src
   default-language:    Haskell2010
