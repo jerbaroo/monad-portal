@@ -38,23 +38,8 @@ instance ToPrim a => ToPrim (Maybe a) where
   toPrim Nothing  = Table.PrimNull
   toPrim (Just a) = toPrim a
 
--- | A data type that can be converted to a key.
---
--- Currently only simple data types and tuples thereof are supported.
-class ToKey a where
-  toKey :: a -> Table.Key
-
-instance ToPrimNotNull a => ToKey a where
-  toKey a = Table.KeyOne $ toPrimNotNull a
-instance (ToPrimNotNull a, ToPrimNotNull b) => ToKey (a, b) where
-  toKey (a, b) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b]
-instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c) => ToKey (a, b, c) where
-  toKey (a, b, c) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b, toPrimNotNull c]
-instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c, ToPrimNotNull d) => ToKey (a, b, c, d) where
-  toKey (a, b, c, d) = Table.KeyMore [toPrimNotNull a, toPrimNotNull b, toPrimNotNull c, toPrimNotNull d]
-
 --------------------------------------------------------------------------------
--- Key types -------------------------------------------------------------------
+-- To Key types ----------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 -- | A 'TableKey' for a data type.
@@ -62,12 +47,27 @@ tableKey :: forall a. Typeable a => Table.TableKey
 tableKey = Table.TableKey $ show $ typeRep $ Proxy @a
 
 -- | A data type that has a primary key.
-class (Eq k, ToKey k) => PrimaryKey a k | a -> k where
+class (Eq k, ToRowKey k) => PrimaryKey a k | a -> k where
   primaryKey :: a -> k
+
+-- | A data type that can be converted to a key.
+--
+-- Currently only simple data types and tuples thereof are supported.
+class ToRowKey a where
+  toRowKey :: a -> Table.RowKey
+
+instance ToPrimNotNull a => ToRowKey a where
+  toRowKey a = Table.RowKey (toPrimNotNull a) []
+instance (ToPrimNotNull a, ToPrimNotNull b) => ToRowKey (a, b) where
+  toRowKey (a, b) = Table.RowKey (toPrimNotNull a) [toPrimNotNull b]
+instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c) => ToRowKey (a, b, c) where
+  toRowKey (a, b, c) = Table.RowKey (toPrimNotNull a) [toPrimNotNull b, toPrimNotNull c]
+instance (ToPrimNotNull a, ToPrimNotNull b, ToPrimNotNull c, ToPrimNotNull d) => ToRowKey (a, b, c, d) where
+  toRowKey (a, b, c, d) = Table.RowKey (toPrimNotNull a) [toPrimNotNull b, toPrimNotNull c, toPrimNotNull d]
 
 -- | 'RowKey' for a data type with a primary key.
 rowKey :: PrimaryKey a k => a -> Table.RowKey
-rowKey = Table.RowKey . toKey . primaryKey
+rowKey = toRowKey . primaryKey
 
 --------------------------------------------------------------------------------
 -- From storable representation ------------------------------------------------

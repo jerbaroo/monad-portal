@@ -9,17 +9,17 @@ import qualified Data.Set              as Set
 import           Data.Set               ( Set )
 import qualified Telescope.Table.Types as Table'
 
-type RowsIndex = [(TableKey, [Table'.RowKey])]
-type TableKey  = String
-type Table     = (TableKey, [(Table'.RowKey, Table'.Row)])
-type Tables    = [Table]
+type RowIndices = [(TableKey, [Table'.RowKey])]
+type TableKey   = String
+type Table      = (TableKey, [(Table'.RowKey, Table'.Row)])
+type Tables     = [Table]
 
 -- | A datatype that can be converted to/from API format.
 class APIFormat a b | a -> b, b -> a where
   to   :: a -> b
   from :: b -> a
 
-instance APIFormat Table'.RowsIndex RowsIndex where
+instance APIFormat Table'.RowIndices RowIndices where
   to   = map (first Table'.unTableKey . second Set.toList) . Map.toList
   from = Map.fromList . map (first Table'.TableKey . second Set.fromList)
 

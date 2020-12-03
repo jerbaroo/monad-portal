@@ -55,7 +55,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
                   "viewRow: too many tables returned by 'viewRows'"
 
   -- | View multiple rows in a data source.
-  viewRows :: f Table.RowsIndex -> m (f (Table.Tables))
+  viewRows :: f Table.RowIndices -> m (f (Table.Tables))
 
   -- | View one table in a data source.
   viewTable :: f Table.TableKey -> m (f Table.Table)
@@ -94,7 +94,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
     rmRows $ (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> refF
 
   -- | Remove multiple rows from a data source.
-  rmRows :: f Table.RowsIndex -> m ()
+  rmRows :: f Table.RowIndices -> m ()
 
   -- | Remove one table from a data source.
   rmTable :: f Table.TableKey -> m ()
@@ -147,7 +147,7 @@ instance Box Identity where
 
 -- | A poor performing default implementation of 'viewRows' using 'Applicative'.
 viewRowsCheap :: (Applicative f, Telescope m f)
-  => f Table.RowsIndex -> m (f (Table.Tables))
+  => f Table.RowIndices -> m (f (Table.Tables))
 viewRowsCheap rowKeysMapF = do
   tablesF <- viewTables $ Set.fromList . Map.keys <$> rowKeysMapF
   pure $ Map.intersectionWith Map.restrictKeys <$> tablesF <*> rowKeysMapF
@@ -159,7 +159,7 @@ setRowsCheap newRowsMapF = do
   setTables $ Map.unionWith Map.union <$> newRowsMapF <*> tablesF
 
 -- | A poor performing default implementation of 'rmRows' using 'Applicative'.
-rmRowsCheap :: (Applicative f, Telescope m f) => f Table.RowsIndex -> m ()
+rmRowsCheap :: (Applicative f, Telescope m f) => f Table.RowIndices -> m ()
 rmRowsCheap rowKeysMapF = do
     tablesF <- viewTables $ Set.fromList . Map.keys <$> rowKeysMapF
     setTables $ Map.intersectionWith Map.withoutKeys <$> tablesF <*> rowKeysMapF

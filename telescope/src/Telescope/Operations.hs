@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE TypeFamilies        #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE TypeApplications    #-}
 
 -- Operations on entities in a data source.
@@ -19,11 +20,10 @@ import           Telescope.Class          ( Box, Entity, Telescope )
 import qualified Telescope.Class         as Class
 import qualified Telescope.Convert       as Convert
 import qualified Telescope.Table.To      as Table
-import qualified Telescope.Table.Types   as Table
 
-----------
--- view --
-----------
+--------------------------------------------------------------------------------
+-- view ------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | View an entity in a data source.
 view :: (Entity a k, Telescope m f, Box f) => a -> m (Maybe a)
@@ -44,8 +44,7 @@ viewK primaryKey = pure . extract =<< viewKRx (Class.box primaryKey)
 -- | Like 'viewK' but a reactive version.
 viewKRx :: forall a k m f. (Entity a k, Telescope m f) => f k -> m (f (Maybe a))
 viewKRx primaryKeyF = do
-  Class.viewRow $
-    (\pk -> (Table.tableKey @a, Table.RowKey $ Table.toKey pk)) <$> primaryKeyF
+  Class.viewRow $ (Table.tableKey @a,) . Table.toRowKey <$> primaryKeyF
   >>= pure . (fmap $ fmap Convert.aFromRow)
 
 -- | View all entities in a table in a data source.
@@ -59,9 +58,9 @@ viewTableRx proxyF =
   Class.viewTable (const (Table.tableKey @a) <$> proxyF)
   >>= pure . (fmap $ fmap Convert.aFromRow . Map.elems)
 
----------
--- set --
----------
+--------------------------------------------------------------------------------
+-- set -------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | Set an entity in a data source.
 set :: (Entity a k, Telescope m f, Box f) => a -> m ()
@@ -106,9 +105,9 @@ setTableRx asF = do
   -- ..and set any rows in any other tables.
   Class.setRows $ Map.delete (Table.tableKey @a) <$> tableMap
 
-----------
--- over --
-----------
+--------------------------------------------------------------------------------
+-- over ------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | Apply a function over an entity in a data source.
 over :: (Entity a k, Telescope m f, Box f) => a -> (a -> a) -> m (Maybe a)
@@ -143,9 +142,9 @@ overKRx primaryKeyF func = do
   rmRx rmAMayF
   pure newAMayF
 
---------
--- rm --
---------
+--------------------------------------------------------------------------------
+-- rm --------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | Remove an entity in a data source.
 rm :: forall a k m f. (Entity a k, Telescope m f, Box f) => a -> m ()
@@ -162,8 +161,7 @@ rmK = rmKRx @a . Class.box
 -- | Like 'rmK' but a reactive version.
 rmKRx :: forall a k m f. (Entity a k, Telescope m f) => f k -> m ()
 rmKRx primaryKeyF =
-  Class.rmRow $
-    (\pk -> (Table.tableKey @a, Table.RowKey $ Table.toKey pk)) <$> primaryKeyF
+  Class.rmRow $ (Table.tableKey @a,) . Table.toRowKey <$> primaryKeyF
 
 -- | Remove a table in a data source.
 rmTable :: forall a k m f. (Entity a k, Telescope m f, Box f) => m ()
@@ -173,19 +171,19 @@ rmTable = rmTableRx $ Class.box $ Proxy @a
 rmTableRx :: forall a k m f. (Entity a k, Telescope m f) => f (Proxy a) -> m ()
 rmTableRx proxyF = Class.rmTable $ const (Table.tableKey @a) <$> proxyF
 
---------------
--- onChange --
---------------
+--------------------------------------------------------------------------------
+-- onChange --------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- | Run a function when an entity in a data source changes.
 onChange :: forall a k m f. (Entity a k, Telescope m f, Box f)
   => k -> (Maybe a -> m ()) -> m ()
-onChange k f = onChangeRx @a (Class.box k) (Class.box f)
+onChange primaryKey f = onChangeRx @a (Class.box primaryKey) (Class.box f)
 
 -- | Like 'onChange' but a reacive version.
 onChangeRx :: forall a k m f. (Entity a k, Telescope m f) =>
   f k -> f (Maybe a -> m ()) -> m ()
-onChangeRx kF fF =
+onChangeRx primaryKeyF fF =
   Class.onChangeRow
-    ((\k -> (Table.tableKey @a, Table.RowKey $ Table.toKey k)) <$> kF)
+    ((Table.tableKey @a,) . Table.toRowKey <$> primaryKeyF)
     ((. fmap Convert.aFromRow) <$> fF)

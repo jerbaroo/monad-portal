@@ -38,9 +38,7 @@ testPrims = HUnit.TestCase $ do
   -- Conversion of primitives to storable representation.
   let john = Person { name = "John", age = 70, cycles = True }
       johnStorable = Storable.SDataType
-        ( Table.TableKey "Person"
-        , Table.RowKey $ Table.KeyOne $ Table.PrimText "John"
-        )
+        (Table.TableKey "Person", Table.RowKey (Table.PrimText "John") [])
         $ Storable.SFields
           [ (Table.ColumnKey "name"  , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimText "John"))
           , (Table.ColumnKey "age"   , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimInt  70    ))
@@ -53,7 +51,7 @@ testPrims = HUnit.TestCase $ do
   let johnTable = Map.fromList
         [ ( Table.TableKey "Person"
           , Map.fromList
-            [ ( Table.RowKey $ Table.KeyOne $ Table.PrimText "John"
+            [ ( Table.RowKey (Table.PrimText "John") []
               , [ (Table.ColumnKey "name"  , Table.PrimNotNull $ Table.PrimText "John")
                 , (Table.ColumnKey "age"   , Table.PrimNotNull $ Table.PrimInt  70    )
                 , (Table.ColumnKey "cycles", Table.PrimNotNull $ Table.PrimBool True  )
@@ -67,7 +65,7 @@ testPrims = HUnit.TestCase $ do
 
   -- Reconstruction of primitives from table representation.
   let johnRow = johnTable Map.! Table.TableKey "Person" Map.!
-        (Table.RowKey $ Table.KeyOne $ Table.PrimText "John")
+        (Table.RowKey (Table.PrimText "John") [])
   HUnit.assertEqual "Primitives reconstruction from table representation failed"
     john $ Convert.aFromRow johnRow
 
@@ -81,7 +79,7 @@ testMaybe = HUnit.TestCase $ do
   -- Conversion of 'Just' to storable representation.
   let just = May { be = Just 21, foo = 70 }
       justStorable = Storable.SDataType
-        (Table.TableKey "May" , Table.RowKey $ Table.KeyOne $ Table.PrimInt 70)
+        (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
         $ Storable.SFields
           [ (Table.ColumnKey "be" , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 21)
           , (Table.ColumnKey "foo", Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70)
@@ -92,7 +90,7 @@ testMaybe = HUnit.TestCase $ do
   -- Conversion of 'Nothing' to storable representation.
   let nothing = May { be = Nothing, foo = 70 }
       nothingStorable = Storable.SDataType
-        (Table.TableKey "May" , Table.RowKey $ Table.KeyOne $ Table.PrimInt 70)
+        (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
         $ Storable.SFields
           [ (Table.ColumnKey "be" , Storable.SValuePrim $ Table.PrimNull                      )
           , (Table.ColumnKey "foo", Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70)
@@ -104,7 +102,7 @@ testMaybe = HUnit.TestCase $ do
   let justTable = Map.fromList
         [ ( Table.TableKey "May"
           , Map.fromList
-            [ ( Table.RowKey $ Table.KeyOne $ Table.PrimInt 70
+            [ ( Table.RowKey (Table.PrimInt 70) []
               , [ (Table.ColumnKey "be" , Table.PrimNotNull $ Table.PrimInt 21)
                 , (Table.ColumnKey "foo", Table.PrimNotNull $ Table.PrimInt 70)
                 ]
@@ -119,7 +117,7 @@ testMaybe = HUnit.TestCase $ do
   let nothingTable = Map.fromList
         [ ( Table.TableKey "May"
           , Map.fromList
-            [ ( Table.RowKey $ Table.KeyOne $ Table.PrimInt 70
+            [ ( Table.RowKey (Table.PrimInt 70) []
               , [ (Table.ColumnKey "be" , Table.PrimNull                      )
                 , (Table.ColumnKey "foo", Table.PrimNotNull $ Table.PrimInt 70)
                 ]
@@ -132,13 +130,13 @@ testMaybe = HUnit.TestCase $ do
 
   -- Reconstruction of 'Just' from table representation.
   let justRow = justTable Map.! Table.TableKey "May" Map.!
-        (Table.RowKey $ Table.KeyOne $ Table.PrimInt 70)
+        (Table.RowKey (Table.PrimInt 70) [])
   HUnit.assertEqual "'Just' reconstruction from table representation failed"
     just $ Convert.aFromRow justRow
 
   -- Reconstruction of 'Nothing' from table representation.
   let nothingRow = nothingTable Map.! Table.TableKey "May" Map.!
-        (Table.RowKey $ Table.KeyOne $ Table.PrimInt 70)
+        (Table.RowKey (Table.PrimInt 70) [])
   HUnit.assertEqual "'Nothing' reconstruction from table representation failed"
     nothing $ Convert.aFromRow nothingRow
 
@@ -153,9 +151,7 @@ testList = HUnit.TestCase $ do
   -- Conversion of list to storable representation.
   let list = List 1 [2, 3]
       listStorable = Storable.SDataType
-        ( Table.TableKey "List"
-        , Table.RowKey $ Table.KeyOne $ Table.PrimInt 1
-        )
+        (Table.TableKey "List", Table.RowKey (Table.PrimInt 1) [])
         $ Storable.SFields
           [ (Table.ColumnKey "bar", Storable.SValuePrim
               (Table.PrimNotNull $ Table.PrimInt  1))
@@ -170,7 +166,7 @@ testList = HUnit.TestCase $ do
   let listTable = Map.fromList
         [ ( Table.TableKey "List"
           , Map.fromList
-            [ ( Table.RowKey $ Table.KeyOne $ Table.PrimInt 1
+            [ ( Table.RowKey (Table.PrimInt 1) []
               , [ (Table.ColumnKey "bar", Table.PrimNotNull $ Table.PrimInt 1                 )
                 , (Table.ColumnKey "car", Table.PrimNotNull $ Table.PrimText
                     "[PrimNotNull (PrimInt 2),PrimNotNull (PrimInt 3)]")
@@ -184,6 +180,6 @@ testList = HUnit.TestCase $ do
 
   -- Reconstruction of 'Nothing' from table representation.
   let listRow = listTable Map.! Table.TableKey "List" Map.!
-        (Table.RowKey $ Table.KeyOne $ Table.PrimInt 1)
+        (Table.RowKey (Table.PrimInt 1) [])
   HUnit.assertEqual "List reconstruction from table representation failed"
     list $ Convert.aFromRow listRow

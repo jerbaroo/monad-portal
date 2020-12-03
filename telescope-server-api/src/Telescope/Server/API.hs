@@ -6,11 +6,11 @@ module Telescope.Server.API where
 import           Servant.API                ( (:<|>), (:>), JSON, NoContent,
                                               PostNoContent, Raw, ReqBody, Post )
 import           Servant.API.WebSocket      ( WebSocket )
-import           Telescope.Server.API.Types ( RowsIndex, TableKey, Tables )
+import           Telescope.Server.API.Types ( RowIndices, TableKey, Tables )
 
 type RestAPI =
   "viewRows"
-    :> ReqBody       '[JSON] RowsIndex
+    :> ReqBody       '[JSON] RowIndices
     :> Post          '[JSON] Tables
   :<|>
   "viewTables"
@@ -26,7 +26,7 @@ type RestAPI =
     :> PostNoContent '[JSON] NoContent
   :<|>
   "rmRows"
-    :> ReqBody       '[JSON] RowsIndex
+    :> ReqBody       '[JSON] RowIndices
     :> PostNoContent '[JSON] NoContent
   :<|>
   "rmTables"

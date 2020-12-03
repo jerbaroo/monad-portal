@@ -24,9 +24,9 @@ import           Telescope.DS.File            ( runT )
 import qualified Telescope.Server.API        as API
 import qualified Telescope.Server.API.Types  as API
 
-viewRowsHandler :: API.RowsIndex -> Servant.Handler API.Tables
-viewRowsHandler apiRowsIndex = do
-  rowsF <- runT $ Class.viewRows $ pure $ API.from apiRowsIndex
+viewRowsHandler :: API.RowIndices -> Servant.Handler API.Tables
+viewRowsHandler apiRowIndices = do
+  rowsF <- runT $ Class.viewRows $ pure $ API.from apiRowIndices
   pure $ API.to $ extract rowsF
 
 viewTablesHandler :: [API.TableKey] -> Servant.Handler API.Tables
@@ -44,9 +44,9 @@ setTablesHandler apiTables = do
   runT $ Class.setTables $ pure $ API.from apiTables
   pure Servant.NoContent
 
-rmRowsHandler :: API.RowsIndex -> Servant.Handler Servant.NoContent
-rmRowsHandler apiRowsIndex = do
-  runT $ Class.rmRows $ pure $ API.from apiRowsIndex
+rmRowsHandler :: API.RowIndices -> Servant.Handler Servant.NoContent
+rmRowsHandler apiRowIndices = do
+  runT $ Class.rmRows $ pure $ API.from apiRowIndices
   pure Servant.NoContent
 
 rmTablesHandler :: [API.TableKey] -> Servant.Handler Servant.NoContent
