@@ -86,7 +86,7 @@ server =
     (    watchRowHandler
     :<|> watchTableHandler
     )
-  :<|> serveDirectoryFileServer "build/demo-frontend/bin/demo-frontend.jsexe"
+  :<|> serveDirectoryFileServer "build/todolist-frontend/bin/todolist-frontend.jsexe"
 
 ------------------
 -- RUN A SERVER --

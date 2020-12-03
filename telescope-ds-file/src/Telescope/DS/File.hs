@@ -90,7 +90,8 @@ readTableOnDisk tableKey = liftIO $ readOrDefault Map.empty $ tablePath tableKey
 --
 -- In-case of a file-not-found error the default value is returned.
 readOrDefault :: Flat a => a -> FilePath -> IO a
-readOrDefault default' path =
+readOrDefault default' path = do
+  liftIO . print =<< canonicalizePath path
   flip catch catchDoesNotExistError $ do
     fromRight' . Flat.unflat <$> BS.readFile path
   where catchDoesNotExistError e
@@ -171,5 +172,5 @@ onChangeTable' tableKey f = liftIO $ do
     runT $ do
       newTableOnDisk  <- readTableOnDisk tableKey
       lastTableOnDisk <- liftIO $ MVar.swapMVar lastTableOnDiskMVar newTableOnDisk
-      when (Map.toList newTableOnDisk /= Map.toList tableOnDisk) $ do
+      when (Map.toList newTableOnDisk /= Map.toList lastTableOnDisk) $ do
         f newTableOnDisk

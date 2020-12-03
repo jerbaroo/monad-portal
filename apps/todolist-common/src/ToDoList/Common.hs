@@ -11,7 +11,7 @@ import           Telescope.Class ( PrimaryKey(..) )
 data ToDoList = ToDoList
   { name  :: Text
   , items :: [Text]
-  } deriving (Generic, Show)
+  } deriving (Eq, Ord, Generic, Show)
 
 instance PrimaryKey ToDoList Text where
   primaryKey = name
