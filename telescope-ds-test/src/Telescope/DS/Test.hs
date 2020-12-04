@@ -41,21 +41,25 @@ testList run = HUnit.TestList
 
 -- | Data type used for testing.
 data Person = Person
-  { name :: Text
-  , age  :: Int
+  { name    :: Text
+  , age     :: Int
+  , hobbies :: [Text]
   } deriving (Eq, Generic, Show)
 
 instance Table.PrimaryKey Person Text where
   primaryKey = name
 
+hobbies' :: [Text]
+hobbies' = ["Cycling", "Watching,\\\"Rugby"]
+
 john1 :: Person
-john1 = Person "John" 69
+john1 = Person "John" 69 hobbies'
 
 john2 :: Person
-john2 = Person "John" 70
+john2 = Person "John" 70 hobbies'
 
 mary :: Person
-mary = Person "Mary" 70
+mary = Person "Mary" 70 hobbies'
 
 equalTablesMsg :: String
 equalTablesMsg = "Viewed table not equal to set table"
@@ -114,7 +118,8 @@ testOver run = HUnit.TestCase $ do
   run $ T.set john1 -- First set a value to modify..
   johnOver <- run $ T.over john1 (\p -> p { age = 21 }) -- ..then modify age.
   johnMay  <- run $ T.view john1
-  HUnit.assertEqual equalUsersMsg (Just Person { name = "John", age = 21 }) johnMay
+  HUnit.assertEqual equalUsersMsg
+    (Just Person { name = "John", age = 21, hobbies = hobbies' }) johnMay
   HUnit.assertEqual equalUsersMsg johnOver johnMay -- Check view and over equal.
 
   -- View new user after modifying name.
@@ -124,7 +129,8 @@ testOver run = HUnit.TestCase $ do
   HUnit.assertBool "'over' did not return modified value"
     (johnOver /= johnMay) -- Check view and over NOT equal.
   steveMay <- run $ T.viewK @Person "Steve"
-  HUnit.assertEqual equalUsersMsg (Just Person { name = "Steve", age = 21 }) steveMay
+  HUnit.assertEqual equalUsersMsg
+    (Just Person { name = "Steve", age = 21, hobbies = hobbies' }) steveMay
 
 testRmRmTable :: (Telescope m f, Box f) => (forall a. m a -> IO a) -> HUnit.Test
 testRmRmTable run = HUnit.TestCase $ do

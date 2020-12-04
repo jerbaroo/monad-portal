@@ -40,9 +40,15 @@ testPrims = HUnit.TestCase $ do
       johnStorable = Storable.SDataType
         (Table.TableKey "Person", Table.RowKey (Table.PrimText "John") [])
         $ Storable.SFields
-          [ (Table.ColumnKey "name"  , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimText "John"))
-          , (Table.ColumnKey "age"   , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimInt  70    ))
-          , (Table.ColumnKey "cycles", Storable.SValuePrim (Table.PrimNotNull $ Table.PrimBool True  ))
+          [ ( Table.ColumnKey "name"
+            , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimText "John")
+            )
+          , ( Table.ColumnKey "age"
+            , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimInt  70    )
+            )
+          , ( Table.ColumnKey "cycles"
+            , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimBool True  )
+            )
           ]
   HUnit.assertEqual "To storable representation of primitives failed"
     johnStorable $ Storable.toSDataType john
@@ -52,9 +58,15 @@ testPrims = HUnit.TestCase $ do
         [ ( Table.TableKey "Person"
           , Map.fromList
             [ ( Table.RowKey (Table.PrimText "John") []
-              , [ (Table.ColumnKey "name"  , Table.PrimNotNull $ Table.PrimText "John")
-                , (Table.ColumnKey "age"   , Table.PrimNotNull $ Table.PrimInt  70    )
-                , (Table.ColumnKey "cycles", Table.PrimNotNull $ Table.PrimBool True  )
+              , [ ( Table.ColumnKey "name"
+                  , Table.PrimNotNull $ Table.PrimText "John"
+                  )
+                , ( Table.ColumnKey "age"
+                  , Table.PrimNotNull $ Table.PrimInt  70
+                  )
+                , ( Table.ColumnKey "cycles"
+                  , Table.PrimNotNull $ Table.PrimBool True
+                  )
                 ]
               )
             ]
@@ -81,8 +93,12 @@ testMaybe = HUnit.TestCase $ do
       justStorable = Storable.SDataType
         (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
         $ Storable.SFields
-          [ (Table.ColumnKey "be" , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 21)
-          , (Table.ColumnKey "foo", Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70)
+          [ ( Table.ColumnKey "be"
+            , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 21
+            )
+          , ( Table.ColumnKey "foo"
+            , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70
+            )
           ]
   HUnit.assertEqual "To storable representation of 'Just' failed"
     justStorable $ Storable.toSDataType just
@@ -92,8 +108,12 @@ testMaybe = HUnit.TestCase $ do
       nothingStorable = Storable.SDataType
         (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
         $ Storable.SFields
-          [ (Table.ColumnKey "be" , Storable.SValuePrim $ Table.PrimNull                      )
-          , (Table.ColumnKey "foo", Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70)
+          [ ( Table.ColumnKey "be"
+            , Storable.SValuePrim $ Table.PrimNull
+            )
+          , ( Table.ColumnKey "foo"
+            , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70
+            )
           ]
   HUnit.assertEqual "To storable representation of 'Nothing' failed"
     nothingStorable $ Storable.toSDataType nothing
@@ -153,11 +173,13 @@ testList = HUnit.TestCase $ do
       listStorable = Storable.SDataType
         (Table.TableKey "List", Table.RowKey (Table.PrimInt 1) [])
         $ Storable.SFields
-          [ (Table.ColumnKey "bar", Storable.SValuePrim
-              (Table.PrimNotNull $ Table.PrimInt  1))
-          , (Table.ColumnKey "car", Storable.SValuePrim
-              (Table.PrimNotNull $ Table.PrimText
-               "[PrimNotNull (PrimInt 2),PrimNotNull (PrimInt 3)]"))
+          [ ( Table.ColumnKey "bar"
+            , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt  1
+            )
+          , ( Table.ColumnKey "car"
+            , Storable.SValuePrim $
+              Table.PrimNotNull $ Table.PrimText "[\"I2\",\"I3\"]"
+            )
           ]
   HUnit.assertEqual "To storable representation of list failed"
     listStorable $ Storable.toSDataType list
@@ -167,9 +189,12 @@ testList = HUnit.TestCase $ do
         [ ( Table.TableKey "List"
           , Map.fromList
             [ ( Table.RowKey (Table.PrimInt 1) []
-              , [ (Table.ColumnKey "bar", Table.PrimNotNull $ Table.PrimInt 1                 )
-                , (Table.ColumnKey "car", Table.PrimNotNull $ Table.PrimText
-                    "[PrimNotNull (PrimInt 2),PrimNotNull (PrimInt 3)]")
+              , [ ( Table.ColumnKey "bar"
+                  , Table.PrimNotNull $ Table.PrimInt 1
+                  )
+                , ( Table.ColumnKey "car"
+                  , Table.PrimNotNull $ Table.PrimText "[\"I2\",\"I3\"]"
+                  )
                 ]
               )
             ]

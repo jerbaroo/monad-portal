@@ -40,8 +40,10 @@ instance {-# OVERLAPPABLE #-} Table.FromPrim a => FromSValue a where
 -- | A field's value that is a list of primitives.
 instance Table.FromPrim a => FromSValue [a] where
   fromSValue (SValuePrim (Table.PrimNotNull (Table.PrimText x))) =
-    let primList :: [Table.Prim]
-        primList = read $ unpack x
+    let strList :: [String]
+        strList = read $ unpack x
+        primList :: [Table.Prim]
+        primList = fmap Table.primRead strList
     in fmap (Table.fromPrim @a) primList
   fromSValue s = throw $ E.DeserializeException $
     -- TODO: improve message with TypeApplications.

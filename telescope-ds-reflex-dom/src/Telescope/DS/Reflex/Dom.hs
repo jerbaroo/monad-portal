@@ -81,7 +81,7 @@ instance (Functor m, MonadWidget t m, Reflex t) => Telescope m (Event t) where
 
   watchRow refEvn = do
     -- Send subscription request over WebSocket..
-    ws <- webSocket (wsRootURL <> "/watchRow")$ def & webSocketConfig_send .~
+    ws <- webSocket (wsRootURL <> "/watchRow") $ def & webSocketConfig_send .~
       ((\(tk, rk) -> [pack $ show (tk, rk)]) <$> refEvn)
     let responses = read . unpack . Text.decodeUtf8 <$> _webSocket_recv ws
     -- And filter out any out-of-date responses..

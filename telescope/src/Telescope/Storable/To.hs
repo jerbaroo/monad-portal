@@ -42,8 +42,8 @@ instance Table.ToPrim a => ToSValue (Maybe a) where toSValue = SValuePrim . Tabl
 
 -- | A field's value that is a list of primitives.
 instance Table.ToPrim a => ToSValue [a] where
-  toSValue t = SValuePrim $
-    Table.PrimNotNull $ Table.PrimText $ pack $ show $ fmap Table.toPrim $ t
+  toSValue t = SValuePrim $ Table.PrimNotNull $
+    Table.PrimText $ pack $ show $ fmap (Table.primShow . Table.toPrim) $ t
 
 -- | A field's value that is one or more storable data types.
 instance {-# OVERLAPPABLE #-} ToSDataTypes a => ToSValue a where
