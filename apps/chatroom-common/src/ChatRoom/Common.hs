@@ -4,9 +4,9 @@
 
 module ChatRoom.Common where
 
-import           Data.Text       ( Text )
-import           GHC.Generics    ( Generic )
-import           Telescope.Class ( PrimaryKey(..) )
+import           Data.Text    ( Text )
+import           GHC.Generics ( Generic )
+import           Telescope    ( PrimaryKey(..) )
 
 data Message = Message
   { mId      :: Int

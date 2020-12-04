@@ -3,10 +3,10 @@
 
 module Main where
 
-import qualified Telescope.Operations as T
-import qualified Telescope.Server     as Server
-import           Telescope.DS.File     ( runT )
-import           Testing.Common        ( Person(..) )
+import qualified Telescope         as T
+import qualified Telescope.Server  as Server
+import           Telescope.DS.File ( runT )
+import           Testing.Common    ( Person(..) )
 
 main :: IO ()
 main = do

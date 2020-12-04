@@ -14,8 +14,8 @@ import           Data.Text                ( Text )
 import           Data.Tuple.Extra         ( dupe, fst3, snd3, thd3 )
 import           Data.Generics.Labels     ()
 import           Reflex.Dom
+import qualified Telescope               as T
 import           Telescope.DS.Reflex.Dom  ( filterSetView )
-import qualified Telescope.Operations    as T
 import           ToDoList.Common          ( ToDoList(..) )
 
 main :: IO ()

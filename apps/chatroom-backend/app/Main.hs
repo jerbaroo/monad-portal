@@ -3,11 +3,11 @@
 
 module Main where
 
-import           ChatRoom.Common       ( Message(..) )
-import           Telescope.Class       ( primaryKey )
-import qualified Telescope.Operations as T
-import qualified Telescope.Server     as Server
-import           Telescope.DS.File     ( runT )
+import           ChatRoom.Common    ( Message(..) )
+import           Telescope          ( primaryKey )
+import qualified Telescope         as T
+import qualified Telescope.Server  as Server
+import           Telescope.DS.File  ( runT )
 
 main :: IO ()
 main = do

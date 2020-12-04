@@ -4,9 +4,9 @@
 
 module ToDoList.Common where
 
-import           Data.Text       ( Text )
-import           GHC.Generics    ( Generic )
-import           Telescope.Class ( PrimaryKey(..) )
+import           Data.Text    ( Text )
+import           GHC.Generics ( Generic )
+import           Telescope    ( PrimaryKey(..) )
 
 data ToDoList = ToDoList
   { name  :: Text

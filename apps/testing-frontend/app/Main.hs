@@ -14,7 +14,7 @@ import           Data.Proxy               ( Proxy(Proxy) )
 import           Data.Text                ( Text, pack, unpack )
 import           Data.These               ( These(..) )
 import           Reflex.Dom
-import qualified Telescope.Operations    as T
+import qualified Telescope               as T
 import           Telescope.DS.Reflex.Dom  ()
 import           Testing.Common           ( Person(..) )
 import           Text.Read                ( readMaybe )

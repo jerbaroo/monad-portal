@@ -3,13 +3,13 @@
 {-# LANGUAGE TypeApplications  #-}
 {-# LANGUAGE TypeFamilies      #-}
 
+import           ChatRoom.Common          ( Message(..) )
 import           Control.Lens             ( (^.) )
 import           Data.Proxy               ( Proxy(..) )
 import           Reflex.Dom
 import           Safe.Foldable            ( maximumMay )
+import qualified Telescope               as T
 import           Telescope.DS.Reflex.Dom  ()
-import qualified Telescope.Operations    as T
-import           ChatRoom.Common          ( Message(..) )
 
 main :: IO ()
 main = mainWidget $ do
