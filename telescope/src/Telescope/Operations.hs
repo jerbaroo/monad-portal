@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE TypeFamilies        #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections       #-}
@@ -7,7 +6,6 @@
 
 -- Operations on entities in a data source.
 module Telescope.Operations where
-
 
 import           Control.Bool             ( guard' )
 import           Control.Comonad          ( extract )
