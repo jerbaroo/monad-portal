@@ -5,8 +5,8 @@
 {-# LANGUAGE MonoLocalBinds         #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
--- | The important user-facing type classes.
-module Telescope.Class (module Telescope.Class, Table.PrimaryKey(..)) where
+-- | The 'Telescope' typeclass.
+module Telescope.Class where
 
 import           Control.Comonad          ( Comonad )
 import           Control.Exception        ( throw )
@@ -17,7 +17,6 @@ import qualified Data.Set                as Set
 import qualified Telescope.Exception     as Exc
 import           Telescope.Storable.From  ( FromSValues )
 import           Telescope.Storable.To    ( ToSDataType )
-import qualified Telescope.Table.To      as Table
 import qualified Telescope.Table.Types   as Table
 
 -- | A storable data type (can be serialized and deserialized via Generics).
@@ -25,13 +24,13 @@ type Entity a k = (ToSDataType a k, FromSValues a)
 
 -- | 'Table.Row'-based operations for interacting with a data source.
 --
--- Instances of this type class are the engines behind 'Telescope.Operations'.
+-- Instances of this typeclass are the engines behind 'Telescope.Operations'.
 --
--- This class has two type variables, 'm' and 'f'. 'm' is the monad which the
+-- This typeclass has two type variables, 'm' and 'f'. 'm' is the monad that
 -- operations will run in. 'f' is a container type, which all input and output
--- values will be wrapped in. The type variable 'f' enables this type class to
+-- values will be wrapped in. The type variable 'f' enables this typeclass to
 -- support both synchronous and reactive 'Telescope' instances. For instances of
--- this type class that support the synchronous API, 'f' might be the 'Identity'
+-- this typeclass that support the synchronous API, 'f' might be the 'Identity'
 -- functor. However for instances that support a reactive API (e.g. an instance
 -- used in a Reflex-DOM application) 'f' might be an 'Event' (stream of values).
 class (Functor f, Monad m) => Telescope m f | m -> f where

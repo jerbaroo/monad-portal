@@ -8,7 +8,7 @@ module Main ( main ) where
 import           Data.Text                 ( Text )
 import qualified Data.Map                 as Map
 import           GHC.Generics              ( Generic )
-import           Telescope.Class           ( PrimaryKey(..) )
+import           Telescope                 ( PrimaryKey(..) )
 import qualified Telescope.Convert        as Convert
 import qualified Telescope.Storable.To    as Storable
 import qualified Telescope.Storable.Types as Storable
@@ -33,8 +33,18 @@ data Person = Person { name :: Text, age :: Int, cycles :: Bool }
 
 instance PrimaryKey Person Text where primaryKey = name
 
+data Hello a = Hello { hello :: Text, world :: a }
+  deriving (Eq, Generic, Show)
+
+instance PrimaryKey (Hello a) Text where primaryKey = hello
+
 testPrims :: HUnit.Test
 testPrims = HUnit.TestCase $ do
+
+  -- Conversion of primitives to storable representation.
+  let jim = Hello { hello = "John", world = (5 :: Int) }
+  putStrLn $ show $ Storable.toSDataType jim
+
   -- Conversion of primitives to storable representation.
   let john = Person { name = "John", age = 70, cycles = True }
       johnStorable = Storable.SDataType

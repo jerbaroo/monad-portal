@@ -13,4 +13,4 @@ module Telescope
   ) where
 
 import Telescope.Operations
-import Telescope.Class      ( PrimaryKey, primaryKey )
+import Telescope.Table.To   ( PrimaryKey, primaryKey )
