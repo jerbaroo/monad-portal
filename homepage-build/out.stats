@@ -5,7 +5,7 @@ bytestring-0.10.8.2-FBklFuapa1a7kq4yflY7Bt:115682
 containers-0.6.0.1-BAqcfV1UBBeCIRjPbUYeSG:234414
 dependent-map-0.4.0.0-HwGiJuxuaA1Hs7rssJJeli:87600
 dependent-sum-0.7.1.0-1NR4dI7IA8mRIWPPEwMig:948
-ghc-prim:                70115
+ghc-prim:                70601
 ghcjs-base-0.2.0.0-1ZwpBn3jHwIJYg96SPVRhj:3611
 ghcjs-dom-jsffi-0.9.4.0-Cc7XgCWMiStoAYSbjWadi:132269
 ghcjs-prim-0.1.1.0-EXzjGVHQlAS2XAXcu0iCbS:10157
@@ -19,7 +19,7 @@ reflex-dom-core-0.6.1.0-JPPCRTYeanG9GevHKN08v:1852027
 some-1.0.1-DqCZuqmqycKFlyafXlZ9Rp:7610
 text-1.2.3.0-BEe1j41q4GDJqgEvxRtnar:11738
 these-1.0.1-G8l77w8Aesy4GRXllqUtuN:11773
-transformers-0.5.6.2-KaPP0fdMTwBF02jPgfEE5s:426977
+transformers-0.5.6.2-KaPP0fdMTwBF02jPgfEE5s:427463
 
 
 code size per module:
@@ -117,7 +117,7 @@ ghc-prim
     GHC.Classes:                        139
     GHC.IntWord64:                      3052
     GHC.Tuple:                          4081
-    GHC.Types:                          47979
+    GHC.Types:                          48465
 
 ghcjs-base-0.2.0.0-1ZwpBn3jHwIJYg96SPVRhj
     Data.JSString:                      1506
@@ -210,7 +210,7 @@ these-1.0.1-G8l77w8Aesy4GRXllqUtuN
 
 transformers-0.5.6.2-KaPP0fdMTwBF02jPgfEE5s
     Control.Monad.Trans.Reader:         5314
-    Control.Monad.Trans.State.Strict:   421663
+    Control.Monad.Trans.State.Strict:   422149
 
 
 

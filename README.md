@@ -2,7 +2,9 @@
 
 # Telescope
 [![Build Status](https://img.shields.io/github/workflow/status/jerbaroo/telescope/Test)](https://github.com/jerbaroo/telescope/actions?query=workflow%3ATest)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/b42ff31b-1036-424b-8f24-419de5b62549/deploy-status)](https://app.netlify.com/sites/youthful-yalow-b03a23/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b42ff31b-1036-424b-8f24-419de5b62549/deploy-status)](https://app.netlify.com/sites/telescope-hs/deploys)
+[![Homepage](https://img.shields.io/badge/-homepage-blue)](https://telescope-hs.netlify.app)
+[![GitHub Stars](https://img.shields.io/github/stars/jerbaroo/telescope?style=social)](https://github.com/jerbaroo/telescope)
 
 </div>
 
@@ -78,5 +80,4 @@ main = mainWidget $ el "div" $ do
 **5.** Open the app in two browser tabs. Edit one to-do-list and watch the other
 one react!
 
-A full tutorial and demo application are available TODO.
-<!-- TODO: links to reflex-platform and other doc in demo/README.md -->
+A full tutorial is available on the [homepage](https://telescope-hs.netlify.app/).
