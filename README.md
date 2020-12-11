@@ -2,6 +2,7 @@
 
 # Telescope
 [![Build Status](https://img.shields.io/github/workflow/status/jerbaroo/telescope/Test)](https://github.com/jerbaroo/telescope/actions?query=workflow%3ATest)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b42ff31b-1036-424b-8f24-419de5b62549/deploy-status)](https://app.netlify.com/sites/youthful-yalow-b03a23/deploys)
 
 </div>
 
