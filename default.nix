@@ -4,8 +4,8 @@
   inherit withHoogle;
   packages = {
     ## Telescope packages ##
-    homepage                    = ./homepage;
-    homepage-frontend           = ./homepage-frontend;
+    homepage                    = ./homepage/homepage;
+    homepage-frontend           = ./homepage/homepage-frontend;
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
     telescope-ds-reflex-dom     = ./telescope-ds-reflex-dom;

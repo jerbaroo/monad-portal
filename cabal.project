@@ -8,8 +8,8 @@ packages:
   apps/todolist-backend/
   apps/todolist-common/
   apps/todolist-frontend/
-  homepage/
-  homepage-frontend/
+  homepage/homepage/
+  homepage/homepage-frontend/
   telescope/
   telescope-ds-file/
   telescope-ds-reflex-dom/

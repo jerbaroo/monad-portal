@@ -2,13 +2,13 @@
 
 . scripts/util.sh
 
-cp README.md homepage
-mkdir -p homepage/docs
-cp docs/*.md homepage/docs
+cp README.md homepage/homepage
+mkdir -p homepage/homepage/docs
+cp docs/*.md homepage/homepage/docs
 rm headers.txt highlight.css markdown.html
 nix-shell -A shells.ghc --run "cabal new-clean && cabal new-run $(flags) homepage"
 
-cp {headers.txt,highlight.css,markdown.html} homepage-frontend
+cp {headers.txt,highlight.css,markdown.html} homepage/homepage-frontend
 ./scripts/build/prod.sh homepage-frontend
 
 rm -rf homepage-build
