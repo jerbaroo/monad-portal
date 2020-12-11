@@ -4,6 +4,8 @@
   inherit withHoogle;
   packages = {
     ## Telescope packages ##
+    homepage                    = ./homepage;
+    homepage-frontend           = ./homepage-frontend;
     telescope                   = ./telescope;
     telescope-ds-file           = ./telescope-ds-file;
     telescope-ds-reflex-dom     = ./telescope-ds-reflex-dom;
@@ -25,6 +27,8 @@
   shells = {
     ghc = [ ## BEGIN-GHC ##
       ## Telescope packages ##
+      "homepage"
+      "homepage-frontend"
       "telescope"
       "telescope-ds-file"
       "telescope-ds-reflex-dom"
@@ -45,6 +49,7 @@
     ]; ## END-GHC ##
     ghcjs = [ ## BEGIN-GHCJS ##
       ## Telescope packages ##
+      "homepage-frontend"
       "telescope"
       "telescope-ds-test"
       "telescope-ds-reflex-dom"

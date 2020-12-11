@@ -1,0 +1,60 @@
+body {
+  color: #08090C;
+  display: flex;
+  font-family: sans-serif;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+    background-color: #ffb4a2;
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    font-family: monospace;
+    height: 100%;
+    line-height: 2;
+    overflow-y: scroll;
+    padding: 20px;
+}
+
+@media (max-width:600px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.content {
+  background-color: #faf7f5;
+  flex: 1;
+  line-height: 1.5;
+  overflow-y: scroll;
+  padding: 40px;
+}
+
+.headers {
+  flex: 1;
+}
+
+.headers h4 {
+  padding-left: 15px;
+}
+
+.headers a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.headers a:hover {
+  text-decoration: underline;
+}
+
+.github {
+  text-align: center;
+}
+
+.github img {
+  max-width: 100px;
+  padding-bottom: 20px;
+}
