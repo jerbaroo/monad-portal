@@ -4,7 +4,7 @@
 {-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE TypeApplications    #-}
 
--- Operations on entities in a data source.
+{-| Operations on entities in a data source. -}
 module Telescope.Operations where
 
 import           Control.Bool             ( guard' )
@@ -19,9 +19,9 @@ import qualified Telescope.Class         as Class
 import qualified Telescope.Convert       as Convert
 import qualified Telescope.Table.To      as Table
 
---------------------------------------------------------------------------------
--- view ------------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- View
+--
+-- $view
 
 -- | View an entity in a data source.
 view :: (Entity a k, Telescope m f, Box f) => a -> m (Maybe a)
@@ -56,9 +56,9 @@ viewTableRx proxyF =
   Class.viewTable (const (Table.tableKey @a) <$> proxyF)
   >>= pure . (fmap $ fmap Convert.aFromRow . Map.elems)
 
---------------------------------------------------------------------------------
--- set -------------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- Set
+--
+-- $set
 
 -- | Set an entity in a data source.
 set :: (Entity a k, Telescope m f, Box f) => a -> m ()
@@ -103,9 +103,9 @@ setTableRx asF = do
   -- ..and set any rows in any other tables.
   Class.setRows $ Map.delete (Table.tableKey @a) <$> tableMap
 
---------------------------------------------------------------------------------
--- over ------------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- Over
+--
+-- $over
 
 -- | Apply a function over an entity in a data source.
 over :: (Entity a k, Telescope m f, Box f) => a -> (a -> a) -> m (Maybe a)
@@ -140,9 +140,9 @@ overKRx primaryKeyF func = do
   rmRx rmAMayF
   pure newAMayF
 
---------------------------------------------------------------------------------
--- rm --------------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- Rm
+--
+-- $rm
 
 -- | Remove an entity in a data source.
 rm :: forall a k m f. (Entity a k, Telescope m f, Box f) => a -> m ()
@@ -169,9 +169,9 @@ rmTable = rmTableRx $ Class.box $ Proxy @a
 rmTableRx :: forall a k m f. (Entity a k, Telescope m f) => f (Proxy a) -> m ()
 rmTableRx proxyF = Class.rmTable $ const (Table.tableKey @a) <$> proxyF
 
---------------------------------------------------------------------------------
--- onChange --------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- OnChange
+--
+-- $onChange
 
 -- | Run a function when an entity in a data source changes.
 onChange :: forall a k m f. (Entity a k, Telescope m f, Box f)

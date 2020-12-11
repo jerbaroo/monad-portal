@@ -5,7 +5,10 @@
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
--- Conversion to table representation.
+{- | Conversion to table representation.
+
+See "Telescope.Storable.Types" for context.
+-}
 module Telescope.Table.To where
 
 import qualified Data.Map                 as Map
@@ -16,8 +19,9 @@ import qualified Telescope.Storable.Types as Storable
 import qualified Telescope.Table.Types    as Table
 
 --------------------------------------------------------------------------------
--- Primitives ------------------------------------------------------------------
---------------------------------------------------------------------------------
+-- * Conversion to Primitive Values
+--
+-- $conversionToPrimitiveValues
 
 -- | A data type that can be converted to a non-null storable primitive.
 class ToPrimNotNull a where
@@ -39,8 +43,9 @@ instance ToPrim a => ToPrim (Maybe a) where
   toPrim (Just a) = toPrim a
 
 --------------------------------------------------------------------------------
--- To Key types ----------------------------------------------------------------
---------------------------------------------------------------------------------
+-- * Conversion to Table Keys
+--
+-- $conversionToTableKeys
 
 -- | A 'TableKey' for a data type.
 tableKey :: forall a. Typeable a => Table.TableKey
@@ -70,8 +75,9 @@ rowKey :: PrimaryKey a k => a -> Table.RowKey
 rowKey = toRowKey . primaryKey
 
 --------------------------------------------------------------------------------
--- From storable representation ------------------------------------------------
---------------------------------------------------------------------------------
+-- * Conversion from Storable Representation
+--
+-- $conversionFromStorableRepresentation
 
 -- | Convert from storable to table representation.
 sToRows :: Storable.SDataType -> Table.Tables

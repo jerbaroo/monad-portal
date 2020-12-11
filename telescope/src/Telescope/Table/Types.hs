@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
--- The table representation of data types.
+{- | Table representation of data types.
+
+See "Telescope.Storable.Types" for context. -}
 module Telescope.Table.Types where
 
 import           Control.Exception    ( throw )
@@ -58,6 +60,7 @@ type Tables = Map TableKey Table
 -- | Indices into a number of rows across tables.
 type RowIndices = Map TableKey (Set RowKey)
 
+--------------------------------------------------------------------------------
 -- * JSON Instances
 --
 -- $JSONInstances
@@ -75,9 +78,6 @@ instance ToJSON RowKey
 instance ToJSON TableKey
 
 --------------------------------------------------------------------------------
--- Conversion of lists to/from table representation ----------------------------
---------------------------------------------------------------------------------
-
 -- * Lists of Primitives
 --
 -- $listsOfPrimitives

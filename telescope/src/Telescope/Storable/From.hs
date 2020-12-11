@@ -4,7 +4,10 @@
 {-# LANGUAGE TypeApplications     #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- Reconstruction of data types from storable representation via 'Generics.Eot'.
+{- | Reconstruct data types from storable representation via "Generics.Eot".
+
+See "Telescope.Convert" for context. Intended for internal use only.
+-}
 module Telescope.Storable.From where
 
 import           Control.Exception         ( throw )
@@ -15,16 +18,12 @@ import           Telescope.Storable.Types  ( SValue(..) )
 import qualified Telescope.Table.From     as Table
 import qualified Telescope.Table.Types    as Table
 
--- This module provides functions and type classes for the reconstruction of
--- data types from storable representation. This conversion is accomplished via
--- the 'Generics.Eot' library. See 'Telescope.Storable' for a description of the
--- storable representation used by the Telescope framework.
-
 --------------------------------------------------------------------------------
--- FromSValue ------------------------------------------------------------------
---------------------------------------------------------------------------------
--- Reconstruction of a fields's value from storable representation. ------------
---------------------------------------------------------------------------------
+-- * FromSValue
+--
+-- $fromSValue
+--
+-- Reconstruct a fields's value from storable representation.
 
 -- | A field's value that can be reconstructed from storable representation.
 class FromSValue a where
@@ -53,10 +52,11 @@ instance FromSValue () where
   fromSValue _ = ()
 
 --------------------------------------------------------------------------------
--- FromSValues -----------------------------------------------------------------
---------------------------------------------------------------------------------
--- Reconstruction of a data type from storable representation. -----------------
---------------------------------------------------------------------------------
+-- * FromSValues
+--
+-- $ fromSValues
+--
+-- Reconstruct a data type from storable representation.
 
 -- | A data type that can be reconstructed from storable representation.
 class FromSValues a where

@@ -6,7 +6,10 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
--- Conversion of data types to storable representation via 'Generics.Eot'.
+{- | Conversion of data types to storable representation via "Generics.Eot".
+
+See "Telescope.Convert" for context. Intended for internal use only.
+-}
 module Telescope.Storable.To where
 
 import           Control.Exception         ( throw )
@@ -20,16 +23,12 @@ import           Telescope.Storable.Types  ( SDataType(..), SFields(..),
 import qualified Telescope.Table.To       as Table
 import qualified Telescope.Table.Types    as Table
 
--- This module provides functions and type classes for the conversion of data
--- types to storable representation. This conversion is accomplished via the
--- 'Generics.Eot' library. See 'Telescope.Storable' for a description of the
--- storable representation used by the Telescope framework.
-
 --------------------------------------------------------------------------------
--- ToSValue --------------------------------------------------------------------
---------------------------------------------------------------------------------
--- Conversion of a field's value to storable representation. -------------------
---------------------------------------------------------------------------------
+-- * ToSValue
+--
+-- $toSValue
+--
+-- Conversion of a field's value to storable representation.
 
 -- | A field's value that can be converted to storable representation.
 class ToSValue a where
@@ -67,10 +66,11 @@ instance {-# OVERLAPPABLE #-} ToSDataType a k => ToSDataTypes [a] where
   toSDataTypes = map toSDataType
 
 --------------------------------------------------------------------------------
--- ToSValues -------------------------------------------------------------------
---------------------------------------------------------------------------------
--- Conversion of all a data type's field's values to storable representation. --
---------------------------------------------------------------------------------
+-- * ToSValues
+--
+-- $toSValues
+--
+-- Conversion of all a data type's field's values to storable representation.
 
 -- | A data type with all field's values convertable to storable representation.
 class ToSValues a where
@@ -109,10 +109,11 @@ instance EotSValues Eot.Void where
   eotSValues = Eot.absurd
 
 --------------------------------------------------------------------------------
--- ToSFields -------------------------------------------------------------------
---------------------------------------------------------------------------------
--- Conversion of all a data type's fields to storable representation. ----------
---------------------------------------------------------------------------------
+-- * ToSFields
+--
+-- $toSFields
+--
+-- Conversion of all a data type's fields to storable representation.
 
 -- | A data type with all field's convertable to storable representation.
 class ToSFields a where
@@ -137,10 +138,11 @@ fieldNames _ = do
     _ -> throw E.MultipleConstructorsException
 
 --------------------------------------------------------------------------------
--- ToSDataType -----------------------------------------------------------------
---------------------------------------------------------------------------------
--- Conversion of a data type to storable representation. -----------------------
---------------------------------------------------------------------------------
+-- * ToSDataType
+--
+-- $toSDataType
+--
+-- Conversion of a data type to storable representation.
 
 -- | A data type that can be converted to storable representation.
 type ToSDataType a k = (Typeable a, Table.PrimaryKey a k, ToSFields a)

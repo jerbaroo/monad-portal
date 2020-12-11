@@ -1,3 +1,4 @@
+{-| Errors in Telescope execution. -}
 module Telescope.Exception where
 
 import Control.Exception ( Exception )

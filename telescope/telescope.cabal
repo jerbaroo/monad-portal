@@ -1,7 +1,7 @@
 cabal-version:       2.4
 name:                telescope
 version:             0.1.0.0
-synopsis:            Build reactive web apps with Haskell, fast!
+synopsis:            Rapidly develop reactive web apps with Haskell.
 -- description:
 homepage:            https://github.com/barischrooneyj/telescope
 -- bug-reports:
