@@ -5,7 +5,7 @@ CACHIX_USER='jerbaroo'
 # > echo $(packages 'ghc')
 # telescope telescope-ds-file etc.
 packages () {
-  echo $(sed "/## BEGIN-$1 ##/  ,/## END-$1 ##/!d" default.nix | sed  '/##/d' | sed 's/"//g')
+  echo $(sed "/## BEGIN-$1 ##/  ,/## END-$1 ##/!d" default.nix | sed '/homepage/d' | sed  '/##/d' | sed 's/"//g')
 }
 
 # Two arrays of packages for compilation with GHC or GHCJS respectively.
