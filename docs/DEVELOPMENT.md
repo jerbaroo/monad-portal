@@ -1,10 +1,8 @@
 # Development Instructions
-Suggestions and contributions are very welcome! The following instructions will
-help you get started if you feel like hacking on this project. First install
-[Nix](https://nixos.org/download.html) the package manager, and also install
-[Cachix](https://docs.cachix.org/) to make use of our binary cache. Then clone
-this repository (with submodules) and change in to the `telescope` directory.
-Now you can run the build step, using Cachix to download pre-built binaries:
+First install [Nix](https://nixos.org/download.html) the package manager, and
+install [Cachix](https://docs.cachix.org/) to make use of our binary cache. Then
+clone this repo (with submodules) and change in to the `telescope` directory.
+Then download pre-built binaries with Cachix, and perform an initial build.
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh

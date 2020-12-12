@@ -8,15 +8,16 @@ body {
 }
 
 .sidebar {
-    background-color: #ffb4a2;
-    display: flex;
-    flex: 0 1 auto;
-    flex-direction: column;
-    font-family: monospace;
-    height: 100%;
-    line-height: 2;
-    overflow-y: scroll;
-    padding: 20px;
+  background-color: #ffb4a2;
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  font-family: monospace;
+  height: 100%;
+  line-height: 2;
+  overflow-y: scroll;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 @media (max-width:600px) {
@@ -27,10 +28,20 @@ body {
 
 .content {
   background-color: #faf7f5;
+  display: flex;
   flex: 1;
+  justify-content: center;
   line-height: 1.5;
   overflow-y: scroll;
   padding: 40px;
+}
+
+.content > div {
+  max-width: min(800px, 80vw);
+}
+
+.content img {
+  max-width: min(800px, 80vw);
 }
 
 .headers {
