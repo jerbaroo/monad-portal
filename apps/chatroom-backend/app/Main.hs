@@ -11,7 +11,7 @@ import           Telescope.DS.File  ( runT )
 
 main :: IO ()
 main = do
-  let message = Message 1 "main" "john" "Hello everyone"
-  _ <- runT $ T.rmTable @Message >> T.set message
-  print =<< runT (T.viewK @Message $ primaryKey message)
+  let msg = Message 1 "main" "john" "Hello everyone"
+  _ <- runT $ T.rmTable @Message >> T.set msg
+  print =<< runT (T.viewK @Message $ primaryKey msg)
   Server.run 3002 Server.developmentCors

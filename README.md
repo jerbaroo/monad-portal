@@ -8,13 +8,14 @@
 
 </div>
 
-# Introduction
+## Introduction
 *Minimum viable product. Not production ready.*
 
-Telescope is a Haskell framework for building reactive applications. Telescope
-abstracts away the common tasks you undertake when developing an application,
-**allowing you to focus on your business logic** and **reducing the time you
-need to build your app**!
+Telescope is a Haskell framework for building reactive applications. Apps built
+with Telescope react to changes in your database, so they are always up-to-date.
+The Telescope framework abstracts away some of the common tasks when developing
+an application, **allowing you to focus on your business logic** and **reducing
+the time you need to build your reactive app**!
 
 An application built with Telescope is..
 - **Reactive:** don't worry about keeping client-side and server-side data in
@@ -36,54 +37,83 @@ by the server e.g. notifications and dashboards. Telescope also handles forms
 and input-validation very well. On the flip-side, applications with heavy
 client-side computation such as animations are not well-suited for Telescope.
 
-## Getting Started
-Building a reactive web app with Telescope looks something like this:
+In short the way Telescope works: A schema is derived for your data types via
+`Generics`. The `Telescope` typeclass provides functions to interact with your
+database, including watching for changes. `Telescope` exports an extensible
+server that acts as a proxy to your database. The `Telescope` instance which is
+available client-side in Reflex-DOM applications interacts with the database via
+the server. It should be noted that Telescope is not specific to any database
+(e.g. MongoDB) or frontend library (e.g. Reflex-DOM).
 
-**1.** Declare the data types used in your application.
+## Getting Started
+To see what building a reactive application with Telescope looks like, we will
+build a simple, yet functional, public chat room. Currently Telescope only has
+support for [Reflex-DOM](https://reflex-frp.org/) as a frontend, though support
+for [reflex-vty](https://hackage.haskell.org/package/reflex-vty) is planned.
+
+**1.** Define the data types used in your application.
 
 ``` haskell
-data ToDoList = ToDoList
-  { name  :: Text
-  , items :: [Text]
-  } deriving (Generic, Show)
+data Message = Message
+  { time     :: Int
+  , room     :: Text
+  , username :: Text
+  , message  :: Text
+  } deriving (Eq, Ord, Generic, Show)
 
-instance PrimaryKey ToDoList Text where
-  primaryKey = name
+instance PrimaryKey Message Int where primaryKey = time
 ```
 
 **2.** Populate your database with some data.
 
 ``` haskell
-T.set $ ToDoList "pancakes" ["eggs", "milk", "flour"]
+T.set $ Message 1 "main" "John" "Hello everyone"
 ```
 
-**3.** Start the Telescope server.
+**3.** Write your frontend with [Reflex-DOM](https://reflex-frp.org/)!
+
+``` haskell
+main = mainWidget $ do
+  -- A text field to enter chat room name and username.
+  (roomNameDyn, usernameDyn) <- do
+    roomNameInput <- textInputPlaceholder "Chat Room"
+    usernameInput <- textInputPlaceholder "Username"
+    pure (roomNameInput ^. textInput_value, usernameInput ^. textInput_value)
+  -- View messages live from the database.
+  dbMessagesEvn <- T.viewTableRx $ const (Proxy @Message) <$> updated roomNameDyn
+  -- Filter messages to the current chat room.
+  roomMessagesDyn <- holdDyn [] $ attachPromptlyDynWith
+    (\rn ms -> [m | m <- ms, room m == rn]) roomNameDyn dbMessagesEvn
+  -- Display messages for the current chat room.
+  _ <- el "ul" $ simpleList roomMessagesDyn $ el "li" . dynText . fmap
+    (\m -> "“" <> username m <> "”: " <> message m)
+  -- A text field for entering messages, and button to send the message.
+  messageTextDyn <- (^. textInput_value) <$> textInputPlaceholder "Enter Message"
+  timeEvn        <- fmap (fmap round) . tagTime =<< button "Send"
+  -- Construct a 'Message' from user input, and send on button click.
+  let messageToSendDyn = (\room username message time -> Message {..})
+        <$> roomNameDyn <*> usernameDyn <*> messageTextDyn
+      messageToSendEvn = attachPromptlyDynWith ($) messageToSendDyn timeEvn
+  T.setRx messageToSendEvn
+  -- Factor out text input construction.
+  where textInputPlaceholder placeholder = textInput $ def
+          & textInputConfig_attributes .~ pure ("placeholder" =: placeholder)
+```
+
+**4.** Run the Telescope server in your `main`.
 
 ``` haskell
 Server.run port
 ```
 
-**4.** Write the frontend of your reactive web app with
-[Reflex-DOM](https://reflex-frp.org/)!
+**5.** Build and run the application. Then open the app in two browser tabs,
+interact with one and watch the other react!
 
-``` haskell
--- NOTE: work in progress.
-main = mainWidget $ el "div" $ do
-  el "h3" $ text "View a todo list"
-  inputDyn <- textInput def
-  list <- flip T.viewKRx
-    (unpack <$> inputDyn ^. textInput_value)
-    (const TodoList{} <$> (inputDyn ^. textInput_value))
-  dynText $ fmap (pack . show) people
-```
-
-**5.** Open the app in two browser tabs. Edit one to-do-list and watch the other
-one react!
-
-A full tutorial is available in the
-[documentation](https://telescope-hs.netlify.app/#Tutorial).
+A full tutorial is available [here](https://telescope-hs.netlify.app/#Tutorial).
+The tutorial includes a runnable example and introduces more complex features of
+the Telescope framework.
 
 ## Contributing
-Suggestions and contributions are very welcome! The instructions
+Feedback, questions and contributions are very very welcome! The instructions
 [here](https://github.com/jerbaroo/telescope/blob/master/docs/DEVELOPMENT.md)
-will help you get started if you feel like hacking on this project.
+will help get you started if you feel like hacking on this project.

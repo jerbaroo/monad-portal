@@ -4,7 +4,6 @@ body {
   font-family: sans-serif;
   height: 100vh;
   margin: 0;
-  overflow: hidden;
 }
 
 .sidebar {
@@ -15,9 +14,15 @@ body {
   font-family: monospace;
   height: 100%;
   line-height: 2;
-  overflow-y: scroll;
+  overflow-y: auto;
   padding-left: 20px;
   padding-right: 20px;
+}
+
+pre.sourceCode {
+  border: 1px solid #08090C;
+  border-radius: 5px;
+  padding: 10px;
 }
 
 @media (max-width:600px) {
@@ -37,11 +42,11 @@ body {
 }
 
 .content > div {
-  max-width: min(800px, 80vw);
+  max-width: min(700px, 85vw);
 }
 
 .content img {
-  max-width: min(800px, 80vw);
+  max-width: min(700px, 85vw);
 }
 
 .headers {

@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Telescope.Server where
@@ -7,9 +5,7 @@ module Telescope.Server where
 import           Control.Comonad              ( extract )
 import           Control.Monad                ( forever, void )
 import           Control.Monad.IO.Class       ( liftIO )
-import           Data.ByteString.Char8        ( ByteString, pack, unpack )
-import           Data.Map                   as Map
-import           Data.Set                   as Set
+import           Data.ByteString.Char8        ( pack, unpack )
 import           Data.Proxy                   ( Proxy(..) )
 import           Network.Wai                  ( Middleware )
 import qualified Network.Wai.Handler.Warp    as Warp
@@ -23,6 +19,11 @@ import qualified Telescope.Table.Types       as Table
 import           Telescope.DS.File            ( runT )
 import qualified Telescope.Server.API        as API
 import qualified Telescope.Server.API.Types  as API
+
+--------------------------------------------------------------------------------
+-- * Handlers
+--
+-- $handlers
 
 viewRowsHandler :: API.RowIndices -> Servant.Handler API.Tables
 viewRowsHandler apiRowIndices = do
@@ -86,11 +87,12 @@ server =
     (    watchRowHandler
     :<|> watchTableHandler
     )
-  :<|> serveDirectoryFileServer "build/todolist-frontend/bin/todolist-frontend.jsexe"
+  :<|> serveDirectoryFileServer "build/chatroom-frontend/bin/chatroom-frontend.jsexe"
 
-------------------
--- RUN A SERVER --
-------------------
+--------------------------------------------------------------------------------
+-- * Run a Server
+--
+-- $runAServer
 
 type Port = Int
 
@@ -105,6 +107,4 @@ developmentCors = Cors.cors $ const $ Just Cors.simpleCorsResourcePolicy
 run :: Port -> Middleware -> IO ()
 run port middleware = do
   putStrLn $ "Running Telescope server on port " ++ show port
-  Warp.run port
-    $ middleware
-    $ Servant.serve (Proxy :: Proxy API.API) server
+  Warp.run port $ middleware $ Servant.serve (Proxy :: Proxy API.API) server

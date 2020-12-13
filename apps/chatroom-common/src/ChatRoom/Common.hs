@@ -9,11 +9,10 @@ import           GHC.Generics ( Generic )
 import           Telescope    ( PrimaryKey(..) )
 
 data Message = Message
-  { mId      :: Int
+  { time     :: Int
   , room     :: Text
   , username :: Text
   , message  :: Text
   } deriving (Eq, Ord, Generic, Show)
 
-instance PrimaryKey Message Int where
-  primaryKey = mId
+instance PrimaryKey Message Int where primaryKey = time
