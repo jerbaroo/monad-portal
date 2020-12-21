@@ -18,7 +18,7 @@ headers      = read $(embedStringFile "headers.txt")
 highlightCss =      $(embedFile       "highlight.css")
 homepageCss  =      $(embedFile       "homepage.css" )
 markdownHtml =      $(embedStringFile "markdown.html")
-css = Text.decodeUtf8 $ highlightCss <> homepageCss
+css          = Text.decodeUtf8 $ highlightCss <> homepageCss
 
 main :: IO ()
 main = do

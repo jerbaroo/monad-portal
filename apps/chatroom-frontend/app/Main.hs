@@ -21,28 +21,22 @@ main = mainWidget $ do
     roomNameInput <- textInputPlaceholder "Chat Room"
     usernameInput <- textInputPlaceholder "Username"
     pure (roomNameInput ^. textInput_value, usernameInput ^. textInput_value)
-
   -- View messages live from the database.
   dbMessagesEvn <- T.viewTableRx $ const (Proxy @Message) <$> updated roomNameDyn
-
   -- Filter messages to the current chat room.
   roomMessagesDyn <- holdDyn [] $ attachPromptlyDynWith
     (\rn ms -> [m | m <- ms, room m == rn]) roomNameDyn dbMessagesEvn
-
   -- Display messages for the current chat room.
   _ <- el "ul" $ simpleList roomMessagesDyn $ el "li" . dynText . fmap
     (\m -> "“" <> username m <> "”: " <> message m)
-
   -- A text field for entering messages, and button to send the message.
   messageTextDyn <- (^. textInput_value) <$> textInputPlaceholder "Enter Message"
   timeEvn        <- fmap (fmap round) . tagTime =<< button "Send"
-
   -- Construct a 'Message' from user input, and send on button click.
   let messageToSendDyn = (\room username message time -> Message {..})
         <$> roomNameDyn <*> usernameDyn <*> messageTextDyn
       messageToSendEvn = attachPromptlyDynWith ($) messageToSendDyn timeEvn
   T.setRx messageToSendEvn
-
   -- Factor out text input construction.
   where textInputPlaceholder placeholder = textInput $ def
           & textInputConfig_attributes .~ pure ("placeholder" =: placeholder)

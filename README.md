@@ -64,10 +64,10 @@ data Message = Message
 instance PrimaryKey Message Int where primaryKey = time
 ```
 
-**2.** Populate your database with some data.
+**2.** Run the Telescope server in your `main` function.
 
 ``` haskell
-T.set $ Message 1 "main" "John" "Hello everyone"
+Server.run port id
 ```
 
 **3.** Write your frontend with [Reflex-DOM](https://reflex-frp.org/)!
@@ -100,20 +100,15 @@ main = mainWidget $ do
           & textInputConfig_attributes .~ pure ("placeholder" =: placeholder)
 ```
 
-**4.** Run the Telescope server in your `main`.
-
-``` haskell
-Server.run port
-```
-
-**5.** Build and run the application. Then open the app in two browser tabs,
-interact with one and watch the other react!
+**4.** Build and run the application. Then open the app in two browser tabs,
+interact with the app in one tab and watch the other app react!
 
 A full tutorial is available [here](https://telescope-hs.netlify.app/#Tutorial).
-The tutorial includes a runnable example and introduces more complex features of
-the Telescope framework.
+In the tutorial we will develop a more full-featured chat room that utilizes
+some additional features of the Telescope framework.
 
 ## Contributing
-Feedback, questions and contributions are very very welcome! The instructions
+Feedback, questions and contributions are all very welcome! The instructions
 [here](https://github.com/jerbaroo/telescope/blob/master/docs/DEVELOPMENT.md)
-will help get you started if you feel like hacking on this project.
+should contain all the commands you need to get started hacking on this project.
+If you want to open an issue you can do that [here](https://github.com/jerbaroo/telescope/issues/new).

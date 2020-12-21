@@ -2,14 +2,16 @@
 First install [Nix](https://nixos.org/download.html) the package manager, and
 install [Cachix](https://docs.cachix.org/) to make use of our binary cache. Then
 clone this repo (with submodules) and change in to the `telescope` directory.
-Then download pre-built binaries with Cachix, and perform an initial build.
+You will also want to configure use of the Reflex-FRP cache, follow step 2
+[here](https://github.com/obsidiansystems/obelisk#installing-obelisk). Finally
+download pre-built binaries with Cachix, and perform an initial build:
 
 ``` bash
 curl -L https://nixos.org/nix/install | sh
 nix-env -iA cachix -f https://cachix.org/api/v1/install
 git clone --recurse-submodules https://github.com/jerbaroo/telescope
 cd telescope
-./scripts/cachix/use.sh
+./scripts/cachix/use.sh # Will take a long time the first time.
 ```
 
 Development commands for the Telescope framework:

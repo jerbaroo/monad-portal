@@ -13,10 +13,10 @@ body {
   flex-direction: column;
   font-family: monospace;
   height: 100%;
-  line-height: 2;
+  line-height: 1;
   overflow-y: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 
 pre.sourceCode {
@@ -38,24 +38,27 @@ pre.sourceCode {
   justify-content: center;
   line-height: 1.5;
   overflow-y: scroll;
-  padding: 40px;
+  padding: 1em;
 }
 
+.content h1 { padding-top: 2em; }
+.content h2 { padding-top: 1em; }
+
 .content > div {
-  max-width: min(700px, 85vw);
+  max-width: min(700px, 100%);
 }
 
 .content img {
-  max-width: min(700px, 85vw);
+  max-width: min(700px, 100%);
 }
 
 .headers {
   flex: 1;
-  padding-top: 20px;
+  padding-top: 1em;
 }
 
 .headers h4 {
-  padding-left: 15px;
+  padding-left: 1em;
 }
 
 .headers a {
@@ -72,6 +75,6 @@ pre.sourceCode {
 }
 
 .github img {
-  max-width: 100px;
-  padding-bottom: 20px;
+  max-width: 6em;
+  padding-bottom: 1em;
 }

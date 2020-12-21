@@ -75,10 +75,10 @@ body {
   flex-direction: column;
   font-family: monospace;
   height: 100%;
-  line-height: 2;
+  line-height: 1;
   overflow-y: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 
 pre.sourceCode {
@@ -100,24 +100,27 @@ pre.sourceCode {
   justify-content: center;
   line-height: 1.5;
   overflow-y: scroll;
-  padding: 40px;
+  padding: 1em;
 }
 
+.content h1 { padding-top: 2em; }
+.content h2 { padding-top: 1em; }
+
 .content > div {
-  max-width: min(700px, 85vw);
+  max-width: min(700px, 100%);
 }
 
 .content img {
-  max-width: min(700px, 85vw);
+  max-width: min(700px, 100%);
 }
 
 .headers {
   flex: 1;
-  padding-top: 20px;
+  padding-top: 1em;
 }
 
 .headers h4 {
-  padding-left: 15px;
+  padding-left: 1em;
 }
 
 .headers a {
@@ -134,10 +137,10 @@ pre.sourceCode {
 }
 
 .github img {
-  max-width: 100px;
-  padding-bottom: 20px;
+  max-width: 6em;
+  padding-bottom: 1em;
 }
-</style><meta content="width=device-width, initial-scale=1" name="viewport" /></head><body><div class="sidebar"><div class="headers"><a href="#Telescope"><h3>Telescope</h3></a><a href="#Introduction"><h4>Introduction</h4></a><a href="#Getting Started"><h4>Getting Started</h4></a><a href="#Contributing"><h4>Contributing</h4></a><a href="#About Telescope"><h3>About Telescope</h3></a><a href="#Application Architecture"><h4>Application Architecture</h4></a><a href="#Another Web Framework?"><h4>Another Web Framework?</h4></a><a href="#Technical Details"><h4>Technical Details</h4></a><a href="#Tutorial"><h3>Tutorial</h3></a><a href="#FAQ"><h3>FAQ</h3></a><a href="#Why the Name Telescope?"><h4>Why the Name Telescope?</h4></a></div><div class="github"><a href="https://github.com/jerbaroo/telescope"><img src="diagram/GitHub_Logo.png" /></a></div></div><div class="content"><div><div align="center">
+</style><meta content="width=device-width, initial-scale=1" name="viewport" /></head><body><div class="sidebar"><div class="headers"><a href="#Telescope"><h3>Telescope</h3></a><a href="#Introduction"><h4>Introduction</h4></a><a href="#Getting Started"><h4>Getting Started</h4></a><a href="#Contributing"><h4>Contributing</h4></a><a href="#About Telescope"><h3>About Telescope</h3></a><a href="#Application Architecture"><h4>Application Architecture</h4></a><a href="#Another Web Framework?"><h4>Another Web Framework?</h4></a><a href="#Technical Details"><h4>Technical Details</h4></a><a href="#Tutorial"><h3>Tutorial</h3></a><a href="#Installation"><h4>Installation</h4></a><a href="#Building &amp; Running"><h4>Building &amp; Running</h4></a><a href="#Defining Data Types"><h4>Defining Data Types</h4></a><a href="#Database Operations"><h4>Database Operations</h4></a><a href="#Telescope&#39;s Server"><h4>Telescope&#39;s Server</h4></a><a href="#Reflex-DOM Frontend"><h4>Reflex-DOM Frontend</h4></a><a href="#Server Integration"><h4>Server Integration</h4></a><a href="#Custom Handlers"><h4>Custom Handlers</h4></a><a href="#Authentication"><h4>Authentication</h4></a><a href="#Authorization"><h4>Authorization</h4></a><a href="#Nested Data Types"><h4>Nested Data Types</h4></a><a href="#Migrations"><h4>Migrations</h4></a><a href="#reflex-vty"><h4>reflex-vty</h4></a><a href="#FAQ"><h3>FAQ</h3></a><a href="#Why the Name Telescope?"><h4>Why the Name Telescope?</h4></a></div><div class="github"><a href="https://github.com/jerbaroo/telescope"><img src="diagram/GitHub_Logo.png" /></a></div></div><div class="content"><div><div align="center">
 <h1><a name="Telescope">Telescope</a></h1>
 <p><a href="https://github.com/jerbaroo/telescope/actions?query=workflow%3ATest"><img src="https://img.shields.io/github/workflow/status/jerbaroo/telescope/Test" alt="Build Status" /></a>
 <a href="https://app.netlify.com/sites/telescope-hs/deploys"><img src="https://api.netlify.com/api/v1/badges/b42ff31b-1036-424b-8f24-419de5b62549/deploy-status" alt="Netlify Status" /></a>
@@ -193,8 +196,8 @@ for <a href="https://hackage.haskell.org/package/reflex-vty">reflex-vty</a> is p
 <span id="6"><a href="#6" tabindex="-1"></a>  } <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Generic</span>, <span class="dt">Show</span>)</span>
 <span id="7"><a href="#7" tabindex="-1"></a></span>
 <span id="8"><a href="#8" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">PrimaryKey</span> <span class="dt">Message</span> <span class="dt">Int</span> <span class="kw">where</span> primaryKey <span class="ot">=</span> time</span></code></pre></div>
-<p><strong>2.</strong> Populate your database with some data.</p>
-<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>T.set <span class="op">$</span> <span class="dt">Message</span> <span class="dv">1</span> <span class="st">&quot;main&quot;</span> <span class="st">&quot;John&quot;</span> <span class="st">&quot;Hello everyone&quot;</span></span></code></pre></div>
+<p><strong>2.</strong> Run the Telescope server in your <code>main</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>Server.run port <span class="fu">id</span></span></code></pre></div>
 <p><strong>3.</strong> Write your frontend with <a href="https://reflex-frp.org/">Reflex-DOM</a>!</p>
 <div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>main <span class="ot">=</span> mainWidget <span class="op">$</span> <span class="kw">do</span></span>
 <span id="2"><a href="#2" tabindex="-1"></a>  <span class="co">-- A text field to enter chat room name and username.</span></span>
@@ -221,17 +224,16 @@ for <a href="https://hackage.haskell.org/package/reflex-vty">reflex-vty</a> is p
 <span id="23"><a href="#23" tabindex="-1"></a>  <span class="co">-- Factor out text input construction.</span></span>
 <span id="24"><a href="#24" tabindex="-1"></a>  <span class="kw">where</span> textInputPlaceholder placeholder <span class="ot">=</span> textInput <span class="op">$</span> def</span>
 <span id="25"><a href="#25" tabindex="-1"></a>          <span class="op">&amp;</span> textInputConfig_attributes <span class="op">.~</span> <span class="fu">pure</span> (<span class="st">&quot;placeholder&quot;</span> <span class="op">=:</span> placeholder)</span></code></pre></div>
-<p><strong>4.</strong> Run the Telescope server in your <code>main</code>.</p>
-<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>Server.run port</span></code></pre></div>
-<p><strong>5.</strong> Build and run the application. Then open the app in two browser tabs,
-interact with one and watch the other react!</p>
+<p><strong>4.</strong> Build and run the application. Then open the app in two browser tabs,
+interact with the app in one tab and watch the other app react!</p>
 <p>A full tutorial is available <a href="https://telescope-hs.netlify.app/#Tutorial">here</a>.
-The tutorial includes a runnable example and introduces more complex features of
-the Telescope framework.</p>
+In the tutorial we will develop a more full-featured chat room that utilizes
+some additional features of the Telescope framework.</p>
 <h2><a name="Contributing">Contributing</a></h2>
-<p>Feedback, questions and contributions are very very welcome! The instructions
+<p>Feedback, questions and contributions are all very welcome! The instructions
 <a href="https://github.com/jerbaroo/telescope/blob/master/docs/DEVELOPMENT.md">here</a>
-will help get you started if you feel like hacking on this project.</p>
+should contain all the commands you need to get started hacking on this project.
+If you want to open an issue you can do that <a href="https://github.com/jerbaroo/telescope/issues/new">here</a>.</p>
 <h1><a name="About Telescope">About Telescope</a></h1>
 <h2><a name="Application Architecture">Application Architecture</a></h2>
 <p>The most important component of Telescope from an application developer&#39;s
@@ -310,6 +312,130 @@ storable representation. The following diagram shows this conversion.</p>
 <span id="7"><a href="#7" tabindex="-1"></a>                               <span class="op">|</span> <span class="dt">ID</span>     <span class="op">|</span> <span class="st">&quot;name&quot;</span> <span class="op">|</span> <span class="st">&quot;age&quot;</span> <span class="op">|</span></span>
 <span id="8"><a href="#8" tabindex="-1"></a>                               <span class="op">|</span> <span class="st">&quot;john&quot;</span> <span class="op">|</span> <span class="st">&quot;john&quot;</span> <span class="op">|</span> <span class="dv">70</span>    <span class="op">|</span></span></code></pre></div>
 <h1><a name="Tutorial">Tutorial</a></h1>
+<p>In this tutorial we will walk through the different features of Telescope. The
+first few features will be presented as if we were building a simple chat room
+web app. This is not a tutorial on Reflex however, if you are new to Reflex you
+may find some of the following links helpful:</p>
+<ul>
+<li><a href="https://github.com/reflex-frp/reflex-platform/blob/develop/README.md#tutorial">Reflex-DOM Calculator Tutorial</a></li>
+<li><a href="https://github.com/reflex-frp/reflex-platform/blob/develop/docs/project-development.rst">Reflex Project Development</a></li>
+<li><a href="https://github.com/reflex-frp/reflex/blob/develop/Quickref.md">Reflex Quick Reference</a></li>
+<li><a href="https://github.com/reflex-frp/reflex-dom/blob/develop/Quickref.md">Reflex-DOM Quick Reference</a></li>
+</ul>
+<h2><a name="Installation">Installation</a></h2>
+<p>First install <a href="https://nixos.org/download.html">Nix</a> the package manager, and
+install <a href="https://docs.cachix.org/">Cachix</a> to make use of our binary cache. Then
+clone this repo (with submodules) and change in to the <code>telescope</code> directory.
+You will also want to configure use of the Reflex-FRP cache, follow step 2
+<a href="https://github.com/obsidiansystems/obelisk#installing-obelisk">here</a>. Finally
+download pre-built binaries with Cachix, and perform an initial build:</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a><span class="ex">curl</span> -L https://nixos.org/nix/install <span class="kw">|</span> <span class="fu">sh</span></span>
+<span id="2"><a href="#2" tabindex="-1"></a><span class="ex">nix-env</span> -iA cachix -f https://cachix.org/api/v1/install</span>
+<span id="3"><a href="#3" tabindex="-1"></a><span class="fu">git</span> clone --recurse-submodules https://github.com/jerbaroo/telescope</span>
+<span id="4"><a href="#4" tabindex="-1"></a><span class="bu">cd</span> telescope</span>
+<span id="5"><a href="#5" tabindex="-1"></a><span class="ex">./scripts/cachix/use.sh</span> <span class="co"># Will take a long time the first time.</span></span></code></pre></div>
+<h2><a name="Building &amp; Running">Building &amp; Running</a></h2>
+<p>The Telescope repo provides example projects which you can build or browse the
+source code of. One of these is a /very/ simple chat room web application. To
+build and run the chat room application execute the commands below. These two
+commands will start a development server each, the first builds and runs your
+app&#39;s backend server, reloading everytime the source code changes. And the
+second builds and runs a server that serves your frontend, reloading everytime
+the source code changes. Visit <code>localhost:3003</code> to see the app in your browser.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a><span class="ex">./scripts/run/dev.sh</span> chatroom-backend</span>
+<span id="2"><a href="#2" tabindex="-1"></a><span class="ex">./scripts/run/dev.sh</span> chatroom-frontend</span></code></pre></div>
+<p>When you are ready to run the application in production you can run the commands
+below. These commands will build your frontend files (HTML and JavaScript), and
+build and run your backend server. Visit <code>localhost:3002</code> to see the app in your
+browser.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a><span class="ex">./scripts/build/prod.sh</span> chatroom-frontend</span>
+<span id="2"><a href="#2" tabindex="-1"></a><span class="ex">./scripts/build/prod.sh</span> chatroom-backend</span>
+<span id="3"><a href="#3" tabindex="-1"></a><span class="ex">./scripts/run/prod.sh</span> chatroom-backend</span></code></pre></div>
+<h2><a name="Defining Data Types">Defining Data Types</a></h2>
+<p>Telescope applications are primarily built in terms of data that is stored in a
+database. Therefore we need to define data types that model our application
+while keeping in mind that the data will be stored in a database. A simple
+method of storing our data is to store each chat room message as a row in a
+database along with any information associated with the message, such as: time
+the message was sent, who sent the message, and what chat room the message was
+sent in. The data type below captures these requirements. Each field of the data
+type will be stored in one column of a table <code>&quot;Message&quot;</code> in a database. The data
+type is defined in <code>telescope/apps/chatroom-common/src/ChatRoom/Common.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Message</span> <span class="ot">=</span> <span class="dt">Message</span></span>
+<span id="2"><a href="#2" tabindex="-1"></a>  {<span class="ot"> time     ::</span> <span class="dt">Int</span></span>
+<span id="3"><a href="#3" tabindex="-1"></a>  ,<span class="ot"> room     ::</span> <span class="dt">Text</span></span>
+<span id="4"><a href="#4" tabindex="-1"></a>  ,<span class="ot"> username ::</span> <span class="dt">Text</span></span>
+<span id="5"><a href="#5" tabindex="-1"></a>  ,<span class="ot"> message  ::</span> <span class="dt">Text</span></span>
+<span id="6"><a href="#6" tabindex="-1"></a>  } <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Generic</span>, <span class="dt">Show</span>)</span>
+<span id="7"><a href="#7" tabindex="-1"></a></span>
+<span id="8"><a href="#8" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">PrimaryKey</span> <span class="dt">Message</span> <span class="dt">Int</span> <span class="kw">where</span> primaryKey <span class="ot">=</span> time</span></code></pre></div>
+<h2><a name="Database Operations">Database Operations</a></h2>
+<p>During development you might want to insert some data into your database for
+testing. Or when running in production you might want to perform some database
+maintenance. Telescope provides a number of operations for interacting with your
+database, these operations are available both server-side and client-side. These
+operations are available in the <code>Telescope.Operations</code> module. You can find this
+backend code in <code>telescope/apps/chatroom-backend/app/Main.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="2"><a href="#2" tabindex="-1"></a>  <span class="kw">let</span> msg <span class="ot">=</span> <span class="dt">Message</span> <span class="dv">1</span> <span class="st">&quot;main&quot;</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;Hello everyone&quot;</span></span>
+<span id="3"><a href="#3" tabindex="-1"></a>  <span class="co">-- You might find the following pattern useful in development. Running this</span></span>
+<span id="4"><a href="#4" tabindex="-1"></a>  <span class="co">-- code before the server starts will remove all messages and insert one.</span></span>
+<span id="5"><a href="#5" tabindex="-1"></a>  runT <span class="op">$</span> T.rmTable <span class="op">@</span><span class="dt">Message</span> <span class="op">&gt;&gt;</span> T.set msg</span>
+<span id="6"><a href="#6" tabindex="-1"></a>  <span class="co">-- ...</span></span></code></pre></div>
+<h2><a name="Telescope">Telescope&#39;s Server</a></h2>
+<p>Telescope exports a server which understands data types that are an instance of
+the <code>Entity</code> typeclass, such as the <code>Message</code> data type defined above for our
+chat room example. When using Telescope operations client-side, the data types
+are decomposed into storable representation and sent to the server, which then
+completes the operation server-side. Running an instance of the Telescope server
+is super simple. You can find the server code for our chat room application in
+<code>telescope/apps/chatroom-backend/app/Main.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="2"><a href="#2" tabindex="-1"></a>  <span class="co">-- ...</span></span>
+<span id="3"><a href="#3" tabindex="-1"></a>  Server.run <span class="dv">3002</span> Server.developmentCors</span></code></pre></div>
+<h2><a name="Reflex-DOM Frontend">Reflex-DOM Frontend</a></h2>
+<p>To complete our chat room application, we just need a frontend. The Telescope
+interface is not specific to any frontend, however Telescope currently only
+provides integrations with Reflex-DOM. In our chat room frontend we will <code>view</code>
+messages live from the database, and anytime the user presses enter we will
+<code>set</code> their message into the database. As previously mentioned this is not a
+tutorial on Reflex-DOM, so we won&#39;t be discussing the whole frontend. You can
+find the frontend code in <code>telescope/apps/chatroom-frontend/app/Main.hs</code>.</p>
+<p>Notice the use of the functions <code>T.viewTableRx</code> and <code>T.setRx</code> in the code below.
+These Telescope operations will respectively, &quot;view&quot; an entire table live from
+the database, and set a stream of data into the database.</p>
+<div class="sourceCode"><pre class="sourceCode"><code class="sourceCode"><span id="1"><a href="#1" tabindex="-1"></a>main <span class="ot">=</span> mainWidget <span class="op">$</span> <span class="kw">do</span></span>
+<span id="2"><a href="#2" tabindex="-1"></a>  <span class="co">-- A text field to enter chat room name and username.</span></span>
+<span id="3"><a href="#3" tabindex="-1"></a>  (roomNameDyn, usernameDyn) <span class="ot">&lt;-</span> <span class="kw">do</span></span>
+<span id="4"><a href="#4" tabindex="-1"></a>    roomNameInput <span class="ot">&lt;-</span> textInputPlaceholder <span class="st">&quot;Chat Room&quot;</span></span>
+<span id="5"><a href="#5" tabindex="-1"></a>    usernameInput <span class="ot">&lt;-</span> textInputPlaceholder <span class="st">&quot;Username&quot;</span></span>
+<span id="6"><a href="#6" tabindex="-1"></a>    <span class="fu">pure</span> (roomNameInput <span class="op">^.</span> textInput_value, usernameInput <span class="op">^.</span> textInput_value)</span>
+<span id="7"><a href="#7" tabindex="-1"></a>  <span class="co">-- View messages live from the database.</span></span>
+<span id="8"><a href="#8" tabindex="-1"></a>  dbMessagesEvn <span class="ot">&lt;-</span> T.viewTableRx <span class="op">$</span> <span class="fu">const</span> (<span class="dt">Proxy</span> <span class="op">@</span><span class="dt">Message</span>) <span class="op">&lt;$&gt;</span> updated roomNameDyn</span>
+<span id="9"><a href="#9" tabindex="-1"></a>  <span class="co">-- Filter messages to the current chat room.</span></span>
+<span id="10"><a href="#10" tabindex="-1"></a>  roomMessagesDyn <span class="ot">&lt;-</span> holdDyn [] <span class="op">$</span> attachPromptlyDynWith</span>
+<span id="11"><a href="#11" tabindex="-1"></a>    (\rn ms <span class="ot">-&gt;</span> [m <span class="op">|</span> m <span class="ot">&lt;-</span> ms, room m <span class="op">==</span> rn]) roomNameDyn dbMessagesEvn</span>
+<span id="12"><a href="#12" tabindex="-1"></a>  <span class="co">-- Display messages for the current chat room.</span></span>
+<span id="13"><a href="#13" tabindex="-1"></a>  _ <span class="ot">&lt;-</span> el <span class="st">&quot;ul&quot;</span> <span class="op">$</span> simpleList roomMessagesDyn <span class="op">$</span> el <span class="st">&quot;li&quot;</span> <span class="op">.</span> dynText <span class="op">.</span> <span class="fu">fmap</span></span>
+<span id="14"><a href="#14" tabindex="-1"></a>    (\m <span class="ot">-&gt;</span> <span class="st">&quot;“&quot;</span> <span class="op">&lt;&gt;</span> username m <span class="op">&lt;&gt;</span> <span class="st">&quot;”: &quot;</span> <span class="op">&lt;&gt;</span> message m)</span>
+<span id="15"><a href="#15" tabindex="-1"></a>  <span class="co">-- A text field for entering messages, and button to send the message.</span></span>
+<span id="16"><a href="#16" tabindex="-1"></a>  messageTextDyn <span class="ot">&lt;-</span> (<span class="op">^.</span> textInput_value) <span class="op">&lt;$&gt;</span> textInputPlaceholder <span class="st">&quot;Enter Message&quot;</span></span>
+<span id="17"><a href="#17" tabindex="-1"></a>  timeEvn        <span class="ot">&lt;-</span> <span class="fu">fmap</span> (<span class="fu">fmap</span> <span class="fu">round</span>) <span class="op">.</span> tagTime <span class="op">=&lt;&lt;</span> button <span class="st">&quot;Send&quot;</span></span>
+<span id="18"><a href="#18" tabindex="-1"></a>  <span class="co">-- Construct a &#39;Message&#39; from user input, and send on button click.</span></span>
+<span id="19"><a href="#19" tabindex="-1"></a>  <span class="kw">let</span> messageToSendDyn <span class="ot">=</span> (\room username message time <span class="ot">-&gt;</span> <span class="dt">Message</span> {<span class="op">..</span>})</span>
+<span id="20"><a href="#20" tabindex="-1"></a>        <span class="op">&lt;$&gt;</span> roomNameDyn <span class="op">&lt;*&gt;</span> usernameDyn <span class="op">&lt;*&gt;</span> messageTextDyn</span>
+<span id="21"><a href="#21" tabindex="-1"></a>      messageToSendEvn <span class="ot">=</span> attachPromptlyDynWith (<span class="op">$</span>) messageToSendDyn timeEvn</span>
+<span id="22"><a href="#22" tabindex="-1"></a>  T.setRx messageToSendEvn</span>
+<span id="23"><a href="#23" tabindex="-1"></a>  <span class="co">-- Factor out text input construction.</span></span>
+<span id="24"><a href="#24" tabindex="-1"></a>  <span class="kw">where</span> textInputPlaceholder placeholder <span class="ot">=</span> textInput <span class="op">$</span> def</span>
+<span id="25"><a href="#25" tabindex="-1"></a>          <span class="op">&amp;</span> textInputConfig_attributes <span class="op">.~</span> <span class="fu">pure</span> (<span class="st">&quot;placeholder&quot;</span> <span class="op">=:</span> placeholder)</span></code></pre></div>
+<h2><a name="Server Integration">Server Integration</a></h2>
+<h2><a name="Custom Handlers">Custom Handlers</a></h2>
+<h2><a name="Authentication">Authentication</a></h2>
+<h2><a name="Authorization">Authorization</a></h2>
+<h2><a name="Nested Data Types">Nested Data Types</a></h2>
+<h2><a name="Migrations">Migrations</a></h2>
+<h2><a name="reflex-vty">reflex-vty</a></h2>
 <h1><a name="FAQ">FAQ</a></h1>
 <h2><a name="Why the Name Telescope?">Why the Name Telescope?</a></h2>
 <p>The <code>telescope</code> package provides an interface to read/write remote data i.e.
