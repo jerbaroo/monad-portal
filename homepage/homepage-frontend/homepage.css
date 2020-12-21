@@ -6,6 +6,10 @@ body {
   margin: 0;
 }
 
+code:not(.sourceCode) {
+  font-weight: bold;
+}
+
 .sidebar {
   background-color: #ffb4a2;
   display: flex;
@@ -41,8 +45,13 @@ pre.sourceCode {
   padding: 1em;
 }
 
-.content h1 { padding-top: 2em; }
-.content h2 { padding-top: 1em; }
+.content h1 {
+  padding-top: 2em;
+}
+
+.content h2 {
+  padding-top: 1em;
+}
 
 .content > div {
   max-width: min(700px, 100%);
