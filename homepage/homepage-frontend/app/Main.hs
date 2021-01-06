@@ -15,17 +15,15 @@ import           Reflex.Dom
 
 headers :: [(Int, Text)]
 headers      = read $(embedStringFile "headers.txt")
-highlightCss =      $(embedFile       "highlight.css")
 homepageCss  =      $(embedFile       "homepage.css" )
 markdownHtml =      $(embedStringFile "markdown.html")
-css          = Text.decodeUtf8 $ highlightCss <> homepageCss
 
 main :: IO ()
 main = do
   -- HTML <head> tag.
   headEl <- renderStatic $ el "head" $ do
     el "title"    $ text "Telescope"
-    el "style"    $ text css
+    el "style"    $ text $ Text.decodeUtf8 homepageCss
     elAttr "meta" (Map.fromList
       [("name", "viewport"), ("content", "width=device-width, initial-scale=1")])
       $ pure ()
@@ -37,7 +35,7 @@ main = do
           el ("h" <> Text.pack (show $ n + 2)) $ text t
       elClass "div" "github" $
         elAttr "a" ("href" =: "https://github.com/jerbaroo/telescope") $
-          elAttr "img" ("src" =: "diagram/GitHub_Logo.png") $ pure ()
+          elAttr "img" ("src" =: "GitHub_Logo.png") $ pure ()
     elClass "div" "content" $ el "div" $ elClass "div" "replace" $ pure ()
   -- Write to file.
   let headText = Text.decodeUtf8 $ snd headEl

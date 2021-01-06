@@ -80,5 +80,4 @@ main = do
   let (markdown, headers) = State.runState
         (Cheap.walkM anchorHeader $ Cheap.markdown Cheap.def markdownText) []
   writeFile "headers.txt"   $ show headers
-  writeFile "highlight.css" $ Sky.styleToCss Sky.pygments
   writeFile "markdown.html" $ Text.unpack $ markdownWithHighlighting markdown

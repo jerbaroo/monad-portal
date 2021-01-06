@@ -3,7 +3,7 @@
 # Telescope
 [![Build Status](https://img.shields.io/github/workflow/status/jerbaroo/telescope/Test)](https://github.com/jerbaroo/telescope/actions?query=workflow%3ATest)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b42ff31b-1036-424b-8f24-419de5b62549/deploy-status)](https://app.netlify.com/sites/telescope-hs/deploys)
-[![Documentation](https://img.shields.io/badge/-documentation-blue)](https://telescope-hs.netlify.app)
+[![Documentation](https://img.shields.io/badge/-documentation-88498f)](https://telescope-hs.netlify.app)
 [![GitHub Stars](https://img.shields.io/github/stars/jerbaroo/telescope?style=social)](https://github.com/jerbaroo/telescope)
 
 </div>

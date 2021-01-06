@@ -1,31 +1,45 @@
+@font-face {
+  font-family: "IBMPlexMono SemiBold";
+  src: url("IBMPlexMono-SemiBold.ttf");
+}
+
+@font-face {
+  font-family: "OpenSans";
+  src: url("OpenSans-Regular.ttf");
+}
+
+@font-face {
+  font-family: "OpenSans";
+  src: url("OpenSans-Bold.ttf");
+  font-weight: bold;
+}
+
 body {
-  color: #08090C;
+  color: #0b0b0b;
   display: flex;
-  font-family: sans-serif;
+  font-family: "OpenSans", sans-serif;
+  font-size: 18px;
   height: 100vh;
   margin: 0;
 }
 
-code:not(.sourceCode) {
-  font-weight: bold;
-}
-
 .sidebar {
-  background-color: #ffb4a2;
+  background-color: #88498f;
+  color: #fbfbfb;
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  font-family: monospace;
+  font-size: 14px;
   height: 100%;
-  line-height: 1;
+  line-height: 0.6;
   overflow-y: auto;
   padding-left: 1em;
   padding-right: 1em;
 }
 
 pre.sourceCode {
-  border: 1px solid #08090C;
-  border-radius: 5px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
   padding: 10px;
 }
 
@@ -36,21 +50,13 @@ pre.sourceCode {
 }
 
 .content {
-  background-color: #faf7f5;
+  background-color: #fbfbfb;
   display: flex;
   flex: 1;
   justify-content: center;
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-y: scroll;
   padding: 1em;
-}
-
-.content h1 {
-  padding-top: 2em;
-}
-
-.content h2 {
-  padding-top: 1em;
 }
 
 .content > div {
@@ -61,6 +67,17 @@ pre.sourceCode {
   max-width: min(700px, 100%);
 }
 
+.content p a,
+.content li a {
+  color: #2081c3;
+  text-decoration: none;
+}
+
+.content p a:hover,
+.content li a:hover {
+  text-decoration: underline;
+}
+
 .headers {
   flex: 1;
   padding-top: 1em;
@@ -68,6 +85,11 @@ pre.sourceCode {
 
 .headers h4 {
   padding-left: 1em;
+}
+
+.headers h3,
+.headers h4 {
+  font-weight: normal;
 }
 
 .headers a {
@@ -87,3 +109,16 @@ pre.sourceCode {
   max-width: 6em;
   padding-bottom: 1em;
 }
+
+code {
+  font-family: "IBMPlexMono SemiBold";
+  font-size: 14px;
+}
+
+code .co { color: #2081c3; }
+code .dt { color: #e26d5a; }
+code .fu { color: #0b0b0b; }
+code .kw { color: #519872; }
+code .ot { color: #0b0b0b; }
+code .op { color: #88498f; }
+code .st { color: #d87cac; }
