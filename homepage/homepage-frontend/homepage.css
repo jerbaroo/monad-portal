@@ -24,7 +24,7 @@ body {
 }
 
 .sidebar {
-  background-color: #88498f;
+  background-color: #5e5086;
   color: #fbfbfb;
   display: flex;
   flex: 0 1 auto;
@@ -39,8 +39,8 @@ body {
 
 pre.sourceCode {
   background-color: #f0f0f0;
-  border-radius: 3px;
-  overflow: scroll;
+  border-radius: 5px;
+  overflow: auto;
   padding: 10px;
 }
 
@@ -60,6 +60,10 @@ pre.sourceCode {
   padding: 1em;
 }
 
+.content > div > *:last-child {
+  margin-bottom: 1em;
+}
+
 .content > div {
   max-width: min(700px, 100%);
 }
@@ -70,7 +74,7 @@ pre.sourceCode {
 
 .content p a,
 .content li a {
-  color: #2081c3;
+  color: #005cc5;
   text-decoration: none;
 }
 
@@ -116,10 +120,10 @@ code {
   font-size: 14px;
 }
 
-code .co { color: #2081c3; }
-code .dt { color: #e26d5a; }
+code .co { color: #005cc5; }
+code .dt { color: #6f42c1; }
 code .fu { color: #0b0b0b; }
-code .kw { color: #519872; }
-code .ot { color: #0b0b0b; }
-code .op { color: #88498f; }
-code .st { color: #d87cac; }
+code .kw { color: #d73a49; }
+code .ot { color: #d73a49; }
+code .op { color: #d73a49; }
+code .st { color: #22863a; }

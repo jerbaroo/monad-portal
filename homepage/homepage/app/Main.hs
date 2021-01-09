@@ -60,12 +60,13 @@ markdownWithHighlighting =
   Text.Lazy.toStrict . Blaze.renderHtml . Blaze.toHtml . Cheap.walk addHighlighting
 
 -- | Make any header into an anchor link, and extract the header information.
-anchorHeader :: State.MonadState [(Int, Text)] m => Block -> m Block
+anchorHeader :: State.MonadState [(Int, Text, Text)] m => Block -> m Block
 anchorHeader (Header n inlines) = do
-  State.modify (++ [(n, headerText)])
+  let safeHeaderText = Text.replace "'" "" headerText
+  State.modify (++ [(n, headerText, safeHeaderText)])
   pure $ HtmlBlock $ mconcat
     [ "<h", Text.pack $ show n, ">"
-    , "<a name='", headerText, "'>", headerText, "</a>"
+    , "<a name='", safeHeaderText, "'>", headerText, "</a>"
     , "</h", Text.pack $ show n, ">"
     ]
   where headerText = headerText' $ Seq.viewl inlines

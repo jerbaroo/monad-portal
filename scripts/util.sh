@@ -18,6 +18,7 @@ GHCJS_PKGS=($(packages 'GHCJS'))
 # Two strings of Nix attributes, for compilation with GHC or GHCJS respectively.
 # > echo $NIX_GHC_ATTRS
 # -A telescope -A telescope-ds-file etc.
+NIX_GHC_ATTRS=''; NIX_GHCJS_ATTRS='';
 for PKG in "${GHC_PKGS[@]}";   do NIX_GHC_ATTRS="$NIX_GHC_ATTRS -A ghc.$PKG";       done
 for PKG in "${GHCJS_PKGS[@]}"; do NIX_GHCJS_ATTRS="$NIX_GHCJS_ATTRS -A ghcjs.$PKG"; done
 

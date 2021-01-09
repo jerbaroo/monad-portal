@@ -13,7 +13,7 @@ import qualified Data.Text.IO       as Text
 import qualified Data.Text.Encoding as Text
 import           Reflex.Dom
 
-headers :: [(Int, Text)]
+headers :: [(Int, Text, Text)]
 headers      = read $(embedStringFile "headers.txt")
 homepageCss  =      $(embedFile       "homepage.css" )
 markdownHtml =      $(embedStringFile "markdown.html")
@@ -30,8 +30,8 @@ main = do
   -- HTML <body> tag.
   bodyEl <- renderStatic $ void $ el "body" $ do
     elClass "div" "sidebar" $ do
-      elClass "div" "headers" $ flip mapM_ headers $ \(n, t) ->
-        elAttr "a" ("href" =: ("#" <> t)) $
+      elClass "div" "headers" $ flip mapM_ headers $ \(n, t, s) ->
+        elAttr "a" ("href" =: ("#" <> s)) $
           el ("h" <> Text.pack (show $ n + 2)) $ text t
       elClass "div" "github" $
         elAttr "a" ("href" =: "https://github.com/jerbaroo/telescope") $

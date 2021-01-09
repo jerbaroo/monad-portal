@@ -27,7 +27,7 @@ main = mainWidget $ do
   roomMessagesDyn <- holdDyn [] $ attachPromptlyDynWith
     (\rn ms -> [m | m <- ms, room m == rn]) roomNameDyn dbMessagesEvn
   -- Display messages for the current chat room.
-  _ <- el "ul" $ simpleList roomMessagesDyn $ el "li" . dynText . fmap
+  el "ul" $ simpleList roomMessagesDyn $ el "li" . dynText . fmap
     (\m -> "“" <> username m <> "”: " <> message m)
   -- A text field for entering messages, and button to send the message.
   messageTextDyn <- (^. textInput_value) <$> textInputPlaceholder "Enter Message"
@@ -37,10 +37,16 @@ main = mainWidget $ do
         <$> roomNameDyn <*> usernameDyn <*> messageTextDyn
       messageToSendEvn = attachPromptlyDynWith ($) messageToSendDyn timeEvn
   T.setRx messageToSendEvn
-  -- Factor out text input construction.
-  where textInputPlaceholder placeholder = textInput $ def
-          & textInputConfig_attributes .~ pure ("placeholder" =: placeholder)
+  -- Data from the additional server integrated with Telescope's server.
+  responseEvent <- performRequestAsync . fmap (const $
+    XhrRequest "GET" "http://localhost:3002/additional" def) =<< getPostBuild
+  dynText =<< (holdDyn "" $ mapMaybe id $ decodeXhrResponse <$> responseEvent)
 
+-- | Factor out text-input construction.
+textInputPlaceholder placeholder = textInput $ def
+  & textInputConfig_attributes .~ pure ("placeholder" =: placeholder)
+
+-- | Replace each event occurence with the current time.
 tagTime :: ( PerformEvent t m, MonadIO (Performable m), Reflex t )
   => Event t a -> m (Event t NominalDiffTime)
 tagTime e = performEvent . ffor e $ const $ liftIO getPOSIXTime
