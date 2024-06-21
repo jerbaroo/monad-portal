@@ -1,7 +1,12 @@
-{ system ? builtins.currentSystem, withHoogle ? false }:
-(import ./reflex-platform { inherit system; }).project ({ pkgs, ... }: {
+{ reflex-platform ? ((import <nixpkgs> {}).fetchFromGitHub {
+    owner = "reflex-frp";
+    repo = "reflex-platform";
+    rev = "6fbaf9b5dafd3e1afc538049654fb8ab8ce64965";
+    sha256 = "121rmnkx8nwiy96ipfyyv6vrgysv0zpr2br46y70zf4d0y1h1lz5";
+    })
+}:
+(import reflex-platform {}).project ({ pkgs, ... }:{
   useWarp = true;
-  inherit withHoogle;
   packages = {
     ## Telescope packages ##
     homepage                    = ./homepage/homepage;

@@ -5,10 +5,7 @@
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-{- | Conversion to table representation.
-
-See "Telescope.Storable.Types" for context.
--}
+-- | Conversion to table representation.
 module Telescope.Table.To where
 
 import qualified Data.Map                 as Map
@@ -18,12 +15,7 @@ import           Data.Typeable             ( Typeable, typeRep )
 import qualified Telescope.Storable.Types as Storable
 import qualified Telescope.Table.Types    as Table
 
---------------------------------------------------------------------------------
--- * Conversion to Primitive Values
---
--- $conversionToPrimitiveValues
-
--- | A data type that can be converted to a non-null storable primitive.
+-- | Types that can be converted to a 'PrimNotNull'.
 class ToPrimNotNull a where
   toPrimNotNull :: a -> Table.PrimNotNull
 
@@ -31,28 +23,26 @@ instance ToPrimNotNull Bool where toPrimNotNull = Table.PrimBool
 instance ToPrimNotNull Int  where toPrimNotNull = Table.PrimInt
 instance ToPrimNotNull Text where toPrimNotNull = Table.PrimText
 
--- | A data type that can be converted to a storable primitive.
+-- | Types that can be converted to a 'Prim'.
 class ToPrim a where
   toPrim :: a -> Table.Prim
 
-instance ToPrim Bool where toPrim = Table.PrimNotNull . toPrimNotNull
-instance ToPrim Int  where toPrim = Table.PrimNotNull . toPrimNotNull
-instance ToPrim Text where toPrim = Table.PrimNotNull . toPrimNotNull
+instance {-# OVERLAPPABLE #-} ToPrimNotNull a => ToPrim a where
+  toPrim = Table.PrimNotNull . toPrimNotNull
+
 instance ToPrim a => ToPrim (Maybe a) where
   toPrim Nothing  = Table.PrimNull
   toPrim (Just a) = toPrim a
 
---------------------------------------------------------------------------------
--- * Conversion to Table Keys
---
--- $conversionToTableKeys
+-- | A data type that has a 'TableKey'.
+class TableKey a where
+  tableKey :: Table.TableKey
 
--- | A 'TableKey' for a data type.
-tableKey :: forall a. Typeable a => Table.TableKey
-tableKey = Table.TableKey $ show $ typeRep $ Proxy @a
+instance Typeable a => TableKey a where
+  tableKey = Table.TableKey $ show $ typeRep $ Proxy @a
 
 -- | A data type that has a primary key.
-class (Eq k, ToRowKey k) => PrimaryKey a k | a -> k where
+class (ToRowKey k) => PrimaryKey a k | a -> k where
   primaryKey :: a -> k
 
 -- | A data type that can be converted to a key.
