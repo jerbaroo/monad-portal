@@ -1,11 +1,11 @@
-# MonadData 
+# MonadPortal 
 
 Consistent interface to data across server and client with minimal boilerplate.
 
-MonadData derives a generic representation of your data types via `Generics` and
-provides a set of tools to enable communication between your DB, web server and
-web client in terms of these generic values. The interface supports both regular
-and streaming clients.
+MonadPortal derives a generic representation of your data types via `Generics`
+and provides a set of tools to enable communication between your DB, web server
+and web client in terms of these generic values. The interface supports both
+regular and streaming clients.
 
 ``` haskell
 DB <-- generic data --> Server <-- generic data --> Client
@@ -13,43 +13,35 @@ DB <-- generic data --> Server <-- generic data --> Client
 
 ## Introduction
 
-`MonadData` is an interface to read/write data from/to an arbitrary data source.
-The structure of the data in the interface's methods is generic, allowing for
-both "regular" (single value per call) or streaming clients (e.g. Reflex).
+`MonadPortal` is an interface to read/write data from/to an arbitrary data
+source. The structure of the data in the interface's methods is generic allowing
+for both "regular" (single value per call) or streaming clients (e.g. Reflex).
 
 ``` haskell
--- | A monad that can communicate with a data source.
+-- | A monad that can communicate with an arbitrary data source.
 --
--- `f` is the shape of the data, for example `f` could be the Identity functor
--- or a value that can change over time (e.g. `Dynamic` from Reflex).
-class MonadData m f | m -> f where
+-- 'f' is the shape of the data, for example 'f' could be the Identity functor
+-- or a value that can change over time (e.g. 'Dynamic' from Reflex).
+class MonadPortal m f | m -> f where
   read :: ...
 ```
 
-To use `MonadData` with your data types, you just need a `PrimaryKey` instance:
+To use `MonadPortal` with your data types, you just to implement `PrimaryKey`:
 
 ``` haskell
 data Person { name :: Text, age  :: Int } deriving Generic
 
-instance Data Person Text where
-  primaryKey = "name"
+instance PrimaryKey Person Text where
+  primaryKey = name
   
 john <- read @Person "John"
 ```
 
-Once you have a client-side `MonadData` instance to communicate with your
-server, and a server-side `MonadData` instance to communicate with your DB, then
-effectively your server is merely acting as a proxy to your DB for your client!
-
-TODO diagram
-
-We provide a few helpers so you can avoid boilerplate:
-- a Servant server `Application`. Supply a `MonadData` instance so the server
-  knows how to communicate with your data source.
-- a `MonadData` instance for Reflex clients, which communicates with the
-  endpoints of the Servant server `Application` which we provide.
-- a `MonadData` instance which communicates with a PostgreSQL database, you can
-  plug this into the Servant server `Application` which we provide.
+You can plug any data source you like into a `MonadPortal`. We provide these
+helpers so hopefully you don't have to write a `MonadPortal` instance:
+- a `MonadPortal` instance for Reflex apps which interacts with a HTTP server.
+- a Servant HTTP server that serves data via a provided `MonadPortal` instance.
+- a `MonadPortal` instance that communicates with a PostgreSQL database.
 
 ## Getting Started
 
@@ -188,12 +180,12 @@ fromList
 
 ## Limitations
 
-What are MonadData's limitations?
-- MonadData does not provide a full-featured database query language.
+What are MonadPortal's limitations?
+- MonadPortal does not provide a full-featured database query language.
 - Automatic derivation of schemas only works for data types with:
   - a single constructor
   - all fields named
-- The server exported by MonadData does not currently support authorization
+- The server exported by MonadPortal does not currently support authorization
   checks. **High priority**.
 
 ## Developing
