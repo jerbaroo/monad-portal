@@ -87,7 +87,7 @@ mary = User "Mary" 51 $ Just john
 
 ### Intermediate Representation
 
-``` json
+``` haskell
 SDataType
     (
         ( TableKey "User"
@@ -137,7 +137,7 @@ SDataType
 
 ### Flattened Representation
 
-``` json
+``` haskell
 fromList
     [
         ( TableKey "User"
