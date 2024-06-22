@@ -180,11 +180,15 @@ fromList
 
 ## Limitations
 
-What are MonadPortal's limitations?
+MonadPortal's main limitations are:
 - MonadPortal does not provide a full-featured database query language.
 - Automatic derivation of schemas only works for data types with:
   - a single constructor
-  - all fields named
+  - named fields
+  - each field is either:
+    - a primitive type e.g. Bool
+    - a list of primitive types e.g. [Bool]
+    - another data type with derivable schema
 - The server exported by MonadPortal does not currently support authorization
   checks. **High priority**.
 
@@ -192,8 +196,10 @@ What are MonadPortal's limitations?
 
 To work on this repo start by setting up reflex-platform on your OS and reading
 the reflex-plaftorm project development guide, links to both above in the
-Getting Started section.
+Getting Started section. Then some of the following commands will be helpful:
 
 ``` bash
 ghcid -c 'cabal new-repl' telescope
+cabal new-repl
+cabal run telescope:dev
 ```
