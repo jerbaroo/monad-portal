@@ -57,7 +57,7 @@ reflex-platform project development guide:
 ## Generics
 
 Here we define a simple data type and show the generic representations we
-derive. Note that we first derive an intermediary generic representation, and
+derive. Note that we first derive an intermediate generic representation, and
 then convert that into a final "flattened" representation.
 
 ``` haskell
@@ -78,6 +78,9 @@ mary = User "Mary" 51 $ Just john
 ```
 
 ### Intermediate Representation
+
+In the codebase we refer to this intermediary representation as "storable"
+representation.
 
 ``` haskell
 SDataType
@@ -128,6 +131,9 @@ SDataType
 ```
 
 ### Flattened Representation
+
+In the codebase we refer to this flattened representation as "table"
+representation.
 
 ``` haskell
 fromList

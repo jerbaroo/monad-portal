@@ -1,0 +1,63 @@
+cabal-version:       2.4
+name:                monad-portal
+version:             0.1.0.0
+synopsis:            Consistent interface to data across server and client with minimal boilerplate.
+-- description:
+homepage:            https://github.com/jerbaroo/monad-portal
+-- bug-reports:
+license:             BSD-3-Clause
+license-file:        LICENSE
+author:              Jeremy Barisch-Rooney
+maintainer:          jerbaroo.work@pm.me
+-- copyright:
+category:            Data
+extra-source-files:  CHANGELOG.md
+
+library
+  exposed-modules:     Data.Portal
+                     , Data.Portal.Class
+                     , Data.Portal.Exception
+                     , Data.Portal.Operations
+                     , Data.Portal.Storable.From
+                     , Data.Portal.Storable.To
+                     , Data.Portal.Storable.Types
+                     , Data.Portal.Table.Class
+                     , Data.Portal.Table.From
+                     , Data.Portal.Table.To
+                     , Data.Portal.Table.Types
+  -- other-modules:
+  -- other-extensions:
+  build-depends:       aeson
+                     , base
+                     , comonad
+                     , containers
+                     , control-bool
+                     , extra
+                     , flat
+                     , generics-eot
+                     , text
+                     , witherable
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+executable dev
+  main-is:             Main.hs
+  -- other-modules:
+  -- other-extensions:
+  build-depends:       base
+                     , monad-portal
+                     , pretty-simple
+                     , text
+  hs-source-dirs:      dev
+  default-language:    Haskell2010
+
+test-suite monad-portal-test
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Test.hs
+  build-depends:       HUnit
+                     , base
+                     , containers
+                     , monad-portal
+                     , text

@@ -1,11 +1,2 @@
-# Files
-*.table
-headers.txt
-highlight.css
-homepage/**/*.md
-markdown.html
 result*
-
-# Directories
-/build/
 dist-newstyle/

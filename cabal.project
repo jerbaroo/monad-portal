@@ -1,19 +1,17 @@
 packages:
-  apps/chatroom-backend/
-  apps/chatroom-common/
-  apps/chatroom-frontend/
-  apps/testing-backend/
-  apps/testing-common/
-  apps/testing-frontend/
-  apps/todolist-backend/
-  apps/todolist-common/
-  apps/todolist-frontend/
-  homepage/homepage/
-  homepage/homepage-frontend/
-  telescope/
-  telescope-ds-file/
-  telescope-ds-reflex-dom/
-  telescope-ds-test/
-  telescope-server/
-  telescope-server-api/
-  telescope-server-api-types/
+  -- apps/chatroom-backend/
+  -- apps/chatroom-common/
+  -- apps/chatroom-frontend/
+  -- apps/testing-backend/
+  -- apps/testing-common/
+  -- apps/testing-frontend/
+  -- apps/todolist-backend/
+  -- apps/todolist-common/
+  -- apps/todolist-frontend/
+  monad-portal/
+  -- telescope-ds-file/
+  -- telescope-ds-reflex-dom/
+  -- telescope-ds-test/
+  -- telescope-server/
+  -- telescope-server-api/
+  -- telescope-server-api-types/
