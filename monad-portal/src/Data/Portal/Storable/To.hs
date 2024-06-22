@@ -1,24 +1,15 @@
-{-# LANGUAGE ConstraintKinds       #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE UndecidableInstances  #-}
-
 -- | Conversion to storable representation.
 module Data.Portal.Storable.To where
 
-import           Control.Exception         ( throw )
-import           Data.Typeable             ( Typeable )
-import           Data.Proxy                ( Proxy(Proxy) )
-import           Data.Text                 ( Text, pack )
-import qualified Generics.Eot             as Eot
-import qualified Data.Portal.Exception      as E
-import           Data.Portal.Storable.Types  ( SDataType(..), SFields(..),
-                                             SValue(..) )
-import qualified Data.Portal.Table.To       as Table
-import qualified Data.Portal.Table.Types    as Table
+import Control.Exception (throw)
+import Data.Typeable (Typeable)
+import Data.Proxy (Proxy(Proxy))
+import Data.Text (Text, pack)
+import Generics.Eot qualified as Eot
+import Data.Portal.Exception qualified as E
+import Data.Portal.Storable.Types (SDataType(..), SFields(..), SValue(..))
+import Data.Portal.Table.To qualified as Table
+import Data.Portal.Table.Types qualified as Table
 
 -- | A field's value that can be converted to storable representation.
 class ToSValue a where

@@ -1,27 +1,21 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TupleSections       #-}
-{-# LANGUAGE TypeApplications    #-}
-
 -- | Operations on a data source.
 module Data.Portal.Operations where
 
-import           Control.Bool             ( guard' )
-import           Control.Comonad          ( extract )
-import           Control.Monad            ( join, when )
-import           Data.Functor             ( (<&>) )
-import           Data.Proxy               ( Proxy(Proxy) )
-import qualified Data.Map                as Map
-import           Data.Witherable          ( Filterable )
-import qualified Data.Witherable         as Witherable
-import           Data.Portal.Class          ( Box, Entity, MonadPortal )
-import qualified Data.Portal.Class         as Class
-import qualified Data.Portal.Table.Class   as Table
-import qualified Data.Portal.Table.To      as Table
-import           Data.Portal.Table.To         ( HasTableKey )
-import qualified Data.Portal.Table.Types   as Table
-import           Data.Portal.Table.Types      ( RowKey )
+import Control.Bool ( guard' )
+import Control.Comonad ( extract )
+import Control.Monad ( join, when )
+import Data.Functor ( (<&>) )
+import Data.Proxy ( Proxy(Proxy) )
+import Data.Map qualified as Map
+import Data.Portal.Class ( Box, Entity, MonadPortal )
+import Data.Portal.Class qualified as Class
+import Data.Portal.Table.Class qualified as Table
+import Data.Portal.Table.To qualified as Table
+import Data.Portal.Table.To ( HasTableKey )
+import Data.Portal.Table.Types qualified as Table
+import Data.Portal.Table.Types ( RowKey )
+import Witherable ( Filterable )
+import Witherable qualified as Witherable
 
 -- View
 --

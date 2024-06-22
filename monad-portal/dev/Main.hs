@@ -1,17 +1,12 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Telescope (PrimaryKey(..))
-import Telescope.Storable.To
-import Telescope.Storable.Types
-import Telescope.Table.To
-import Telescope.Table.Types
+import Data.Portal (PrimaryKey(..))
+import Data.Portal.Storable.To
+import Data.Portal.Storable.Types
+import Data.Portal.Table.To
+import Data.Portal.Table.Types
 import Text.Pretty.Simple (pPrint)
 
 main :: IO ()

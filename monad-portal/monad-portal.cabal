@@ -39,6 +39,20 @@ library
                      , witherable
   hs-source-dirs:      src
   default-language:    Haskell2010
+  default-extensions: AllowAmbiguousTypes
+                    , BlockArguments
+                    , ConstraintKinds
+                    , DeriveAnyClass
+                    , DeriveGeneric
+                    , FlexibleInstances
+                    , FunctionalDependencies
+                    , ImportQualifiedPost
+                    , LambdaCase
+                    , MonoLocalBinds
+                    , ScopedTypeVariables
+                    , TupleSections
+                    , TypeApplications
+                    , UndecidableInstances
 
 executable dev
   main-is:             Main.hs
@@ -50,8 +64,11 @@ executable dev
                      , text
   hs-source-dirs:      dev
   default-language:    Haskell2010
+  default-extensions: DeriveGeneric
+                    , MultiParamTypeClasses
+                    , OverloadedStrings
 
-test-suite monad-portal-test
+test-suite test
   default-language:    Haskell2010
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
@@ -61,3 +78,7 @@ test-suite monad-portal-test
                      , containers
                      , monad-portal
                      , text
+  default-extensions: DeriveGeneric
+                    , ImportQualifiedPost
+                    , MultiParamTypeClasses
+                    , OverloadedStrings

@@ -1,13 +1,10 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 -- | Intermediate storable representation of a data type.
 module Data.Portal.Storable.Types where
 
-import           GHC.Generics           ( Generic )
-import           Data.Portal.Table.Types as Table
+import GHC.Generics ( Generic )
+import Data.Portal.Table.Types qualified as Table
 
 -- | Storable representation of a field's value.
--- TODO: rename to SFieldValue
 data SValue =
   -- | A fields's value that is a storable primitive.
     SValuePrim Table.Prim

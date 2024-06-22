@@ -1,22 +1,13 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE BlockArguments         #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE UndecidableInstances   #-}
-
 -- | Conversion to table representation.
 module Data.Portal.Table.To where
 
-import qualified Data.Map                 as Map
-import           Data.Proxy                ( Proxy(..) )
-import           Data.Foldable             ( foldl' )
-import           Data.Text                 ( Text )
-import           Data.Typeable             ( Typeable, typeRep )
-import           Data.Portal.Storable.Types  ( SDataType(..), SField, SFields(..)
-                                           , SValue(..) )
-import qualified Data.Portal.Table.Types    as Table
+import qualified Data.Map as Map
+import Data.Proxy ( Proxy(..) )
+import Data.Foldable ( foldl' )
+import Data.Text ( Text )
+import Data.Typeable ( Typeable, typeRep )
+import Data.Portal.Storable.Types ( SDataType(..), SField, SFields(..), SValue(..) )
+import Data.Portal.Table.Types qualified as Table
 
 -- | Types that can be converted to a 'PrimNotNull'.
 class ToPrimNotNull a where

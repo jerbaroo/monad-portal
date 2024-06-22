@@ -1,20 +1,15 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
+module Main (main) where
 
-module Main ( main ) where
-
-import           Data.Text                 ( Text )
-import qualified Data.Map                 as Map
-import           GHC.Generics              ( Generic )
-import           Telescope                 ( PrimaryKey(..) )
-import qualified Telescope.Convert        as Convert
-import qualified Telescope.Storable.To    as Storable
-import qualified Telescope.Storable.Types as Storable
-import qualified Telescope.Table.Types    as Table
-import qualified Test.HUnit               as HUnit
-import qualified System.Exit              as Exit
+import Data.Text (Text)
+import qualified Data.Map as Map
+import GHC.Generics (Generic)
+import Data.Portal (PrimaryKey(..))
+import Data.Portal.Table.Class qualified as Table
+import Data.Portal.Storable.To qualified as Storable
+import Data.Portal.Storable.Types qualified as Storable
+import Data.Portal.Table.Types qualified as Table
+import Test.HUnit qualified as HUnit
+import System.Exit qualified as Exit
 
 main :: IO ()
 main = do
@@ -48,8 +43,8 @@ testPrims = HUnit.TestCase $ do
   -- Conversion of primitives to storable representation.
   let john = Person { name = "John", age = 70, cycles = True }
       johnStorable = Storable.SDataType
-        (Table.TableKey "Person", Table.RowKey (Table.PrimText "John") [])
-        $ Storable.SFields
+        ( (Table.TableKey "Person", Table.RowKey (Table.PrimText "John") [])
+        , Storable.SFields
           [ ( Table.ColumnKey "name"
             , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimText "John")
             )
@@ -60,6 +55,7 @@ testPrims = HUnit.TestCase $ do
             , Storable.SValuePrim (Table.PrimNotNull $ Table.PrimBool True  )
             )
           ]
+        )
   HUnit.assertEqual "To storable representation of primitives failed"
     johnStorable $ Storable.toSDataType john
 
@@ -83,13 +79,13 @@ testPrims = HUnit.TestCase $ do
           )
         ]
   HUnit.assertEqual "To table representation of primitives failed"
-    johnTable $ Convert.aToRows john
+    johnTable $ Table.toRows john
 
   -- Reconstruction of primitives from table representation.
   let johnRow = johnTable Map.! Table.TableKey "Person" Map.!
         (Table.RowKey (Table.PrimText "John") [])
   HUnit.assertEqual "Primitives reconstruction from table representation failed"
-    john $ Convert.aFromRow johnRow
+    john $ Table.fromRows johnRow
 
 -- | Data type used to test 'Maybe' values.
 data May = May { be :: Maybe Int, foo :: Int } deriving (Eq, Generic, Show)
@@ -101,8 +97,8 @@ testMaybe = HUnit.TestCase $ do
   -- Conversion of 'Just' to storable representation.
   let just = May { be = Just 21, foo = 70 }
       justStorable = Storable.SDataType
-        (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
-        $ Storable.SFields
+        ( (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
+        , Storable.SFields
           [ ( Table.ColumnKey "be"
             , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 21
             )
@@ -110,14 +106,15 @@ testMaybe = HUnit.TestCase $ do
             , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70
             )
           ]
+        )
   HUnit.assertEqual "To storable representation of 'Just' failed"
     justStorable $ Storable.toSDataType just
 
   -- Conversion of 'Nothing' to storable representation.
   let nothing = May { be = Nothing, foo = 70 }
       nothingStorable = Storable.SDataType
-        (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
-        $ Storable.SFields
+        ( (Table.TableKey "May", Table.RowKey (Table.PrimInt 70) [])
+        , Storable.SFields
           [ ( Table.ColumnKey "be"
             , Storable.SValuePrim $ Table.PrimNull
             )
@@ -125,6 +122,7 @@ testMaybe = HUnit.TestCase $ do
             , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt 70
             )
           ]
+        )
   HUnit.assertEqual "To storable representation of 'Nothing' failed"
     nothingStorable $ Storable.toSDataType nothing
 
@@ -141,7 +139,7 @@ testMaybe = HUnit.TestCase $ do
           )
         ]
   HUnit.assertEqual "To table representation of 'Just' failed"
-    justTable $ Convert.aToRows just
+    justTable $ Table.toRows just
 
   -- Conversion of 'Nothing' to table representation.
   let nothingTable = Map.fromList
@@ -156,19 +154,19 @@ testMaybe = HUnit.TestCase $ do
           )
         ]
   HUnit.assertEqual "To table representation of 'Nothing' failed"
-    nothingTable $ Convert.aToRows nothing
+    nothingTable $ Table.toRows nothing
 
   -- Reconstruction of 'Just' from table representation.
   let justRow = justTable Map.! Table.TableKey "May" Map.!
         (Table.RowKey (Table.PrimInt 70) [])
   HUnit.assertEqual "'Just' reconstruction from table representation failed"
-    just $ Convert.aFromRow justRow
+    just $ Table.fromRows justRow
 
   -- Reconstruction of 'Nothing' from table representation.
   let nothingRow = nothingTable Map.! Table.TableKey "May" Map.!
         (Table.RowKey (Table.PrimInt 70) [])
   HUnit.assertEqual "'Nothing' reconstruction from table representation failed"
-    nothing $ Convert.aFromRow nothingRow
+    nothing $ Table.fromRows nothingRow
 
 -- | Data type used to test lists of primitives.
 data List = List { bar :: Int, car :: [Int]}
@@ -181,8 +179,8 @@ testList = HUnit.TestCase $ do
   -- Conversion of list to storable representation.
   let list = List 1 [2, 3]
       listStorable = Storable.SDataType
-        (Table.TableKey "List", Table.RowKey (Table.PrimInt 1) [])
-        $ Storable.SFields
+        ( (Table.TableKey "List", Table.RowKey (Table.PrimInt 1) [])
+        , Storable.SFields
           [ ( Table.ColumnKey "bar"
             , Storable.SValuePrim $ Table.PrimNotNull $ Table.PrimInt  1
             )
@@ -191,6 +189,7 @@ testList = HUnit.TestCase $ do
               Table.PrimNotNull $ Table.PrimText "[\"I2\",\"I3\"]"
             )
           ]
+        )
   HUnit.assertEqual "To storable representation of list failed"
     listStorable $ Storable.toSDataType list
 
@@ -211,10 +210,10 @@ testList = HUnit.TestCase $ do
           )
         ]
   HUnit.assertEqual "To table representation of list failed"
-    listTable $ Convert.aToRows list
+    listTable $ Table.toRows list
 
   -- Reconstruction of 'Nothing' from table representation.
   let listRow = listTable Map.! Table.TableKey "List" Map.!
         (Table.RowKey (Table.PrimInt 1) [])
   HUnit.assertEqual "List reconstruction from table representation failed"
-    list $ Convert.aFromRow listRow
+    list $ Table.fromRows listRow

@@ -1,19 +1,13 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE MonoLocalBinds       #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Reconstruct data types from storable representation via "Generics.Eot".
 module Data.Portal.Storable.From where
 
-import           Control.Exception         ( throw )
-import           Data.Text                 ( unpack )
-import qualified Generics.Eot             as Eot
-import qualified Data.Portal.Exception      as E
-import           Data.Portal.Storable.Types  ( SValue(..) )
-import qualified Data.Portal.Table.From     as Table
-import qualified Data.Portal.Table.Types    as Table
+import Control.Exception ( throw )
+import Data.Text ( unpack )
+import Generics.Eot qualified as Eot
+import Data.Portal.Exception qualified as E
+import Data.Portal.Storable.Types ( SValue(..) )
+import Data.Portal.Table.From qualified as Table
+import Data.Portal.Table.Types qualified as Table
 
 --------------------------------------------------------------------------------
 -- * FromSValue

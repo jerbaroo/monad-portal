@@ -1,17 +1,14 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
-
 -- | Table representation.
 module Data.Portal.Table.Types where
 
-import           Control.Exception    ( throw )
-import           Data.Aeson           ( FromJSON, ToJSON )
-import           Data.Map             ( Map )
-import           Data.Set             ( Set )
-import           Data.Text            ( Text )
-import           Flat                 ( Flat )
-import           GHC.Generics         ( Generic )
-import qualified Data.Portal.Exception as E
+import Control.Exception ( throw )
+import Data.Aeson ( FromJSON, ToJSON )
+import Data.Map ( Map )
+import Data.Set ( Set )
+import Data.Text ( Text )
+import Flat ( Flat )
+import GHC.Generics ( Generic )
+import Data.Portal.Exception qualified as E
 
 -- | A non-null storable primitive.
 data PrimNotNull =

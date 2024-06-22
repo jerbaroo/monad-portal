@@ -1,13 +1,11 @@
-{-# LANGUAGE MonoLocalBinds #-}
-
 -- | Conversion from table representation.
 module Data.Portal.Table.From where
 
-import           Control.Exception         ( throw )
-import           Data.Text                as Text
-import qualified Data.Portal.Exception      as E
-import qualified Data.Portal.Storable.Types as Storable
-import qualified Data.Portal.Table.Types    as Table
+import Control.Exception ( throw )
+import Data.Text as Text
+import Data.Portal.Exception qualified as E
+import Data.Portal.Storable.Types qualified as Storable
+import Data.Portal.Table.Types qualified as Table
 
 -- | 'SValue's reconstructed from a row.
 --

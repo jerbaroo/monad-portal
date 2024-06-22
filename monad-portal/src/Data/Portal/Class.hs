@@ -1,22 +1,15 @@
-{-# LANGUAGE ConstraintKinds        #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE LambdaCase             #-}
-{-# LANGUAGE MonoLocalBinds         #-}
-{-# LANGUAGE UndecidableInstances   #-}
-
 module Data.Portal.Class where
 
-import           Control.Comonad          ( Comonad )
-import           Control.Exception        ( throw )
-import           Data.Functor.Identity    ( Identity(Identity) )
-import qualified Data.Map                as Map
-import           Data.Set                 ( Set )
-import qualified Data.Set                as Set
-import qualified Data.Portal.Exception     as Exc
-import           Data.Portal.Storable.From  ( FromSValues )
-import           Data.Portal.Storable.To    ( ToSDataType )
-import qualified Data.Portal.Table.Types   as Table
+import Control.Comonad ( Comonad )
+import Control.Exception ( throw )
+import Data.Functor.Identity ( Identity(Identity) )
+import Data.Map qualified as Map
+import Data.Set ( Set )
+import Data.Set qualified as Set
+import Data.Portal.Exception qualified as Exc
+import Data.Portal.Storable.From ( FromSValues )
+import Data.Portal.Storable.To ( ToSDataType )
+import Data.Portal.Table.Types qualified as Table
 
 -- | Storable types (can be serialized and deserialized).
 -- TODO move to Data.Portal.Storable.Class

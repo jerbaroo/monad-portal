@@ -1,4 +1,3 @@
-{-| Errors in Telescope execution. -}
 module Data.Portal.Exception where
 
 import Control.Exception ( Exception )
