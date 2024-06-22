@@ -199,6 +199,7 @@ the reflex-plaftorm project development guide, links to both above in the
 Getting Started section. Then some of the following commands will be helpful:
 
 ``` bash
+nix-shell -A shells.ghc
 ghcid -c 'cabal new-repl' telescope
 cabal new-repl
 cabal run telescope:dev
