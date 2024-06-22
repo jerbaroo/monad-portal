@@ -1,27 +1,26 @@
-{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DeriveGeneric #-}
 
-{- | Intermediate storable representation of a data type.
-
-See "Telescope.Convert" for context. Intended for internal use only.
--}
+-- | Intermediate storable representation of a data type.
 module Telescope.Storable.Types where
 
 import           GHC.Generics           ( Generic )
 import           Telescope.Table.Types as Table
 
-
--- | A storable representation of a field's value.
+-- | Storable representation of a field's value.
+-- TODO: rename to SFieldValue
 data SValue =
   -- | A fields's value that is a storable primitive.
     SValuePrim Table.Prim
   -- | A field's value that is zero or more storable data types.
-  | SValueDataTypes [SDataType]
+  | SValueDataType SDataType
   deriving (Eq, Generic, Show)
 
--- | A storable representation of ALL fields of a data type.
-newtype SFields = SFields [(Table.ColumnKey, SValue)]
+type SField = (Table.ColumnKey, SValue)
+
+-- | Storable representation of ALL fields of a data type.
+newtype SFields = SFields [SField]
   deriving (Eq, Generic, Show)
 
 -- | A storable representation of a data type (type and fields).
-data SDataType = SDataType Table.Ref SFields
+newtype SDataType = SDataType (Table.Ref, SFields)
   deriving (Eq, Generic, Show)

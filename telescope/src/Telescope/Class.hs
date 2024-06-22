@@ -19,10 +19,10 @@ import           Telescope.Storable.From  ( FromSValues )
 import           Telescope.Storable.To    ( ToSDataType )
 import qualified Telescope.Table.Types   as Table
 
--- | A storable data type (can be serialized and deserialized via Generics).
+-- | Storable types (can be serialized and deserialized).
 type Entity a k = (ToSDataType a k, FromSValues a)
 
--- | 'Table.Row'-based operations for interacting with a data source.
+-- | Table representation-based operations for interacting with a data source.
 --
 -- Instances of this typeclass are the engines behind 'Telescope.Operations'.
 --
@@ -41,7 +41,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
     rowsF <- viewRows $
       (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> refF
     updateMaybe (toMaybeRow <$> rowsF) $ watchRow refF
-    where toMaybeRow :: Table.Tables -> Maybe Table.Row
+    where toMaybeRow :: Table.Rows -> Maybe Table.Row
           toMaybeRow tables =
             case Map.elems tables of
               []      -> Nothing
@@ -54,14 +54,14 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
                   "viewRow: too many tables returned by 'viewRows'"
 
   -- | View multiple rows in a data source.
-  viewRows :: f Table.Rows -> m (f (Table.Tables))
+  viewRows :: f Table.RowKeys -> m (f (Table.Rows))
 
   -- | View one table in a data source.
   viewTable :: f Table.TableKey -> m (f Table.Table)
   viewTable tableKeyF = do
     tablesF <- viewTables $ Set.singleton <$> tableKeyF
     updateMaybe (toTable <$> tablesF) $ watchTable tableKeyF
-    where toTable :: Table.Tables -> Table.Table
+    where toTable :: Table.Rows -> Table.Table
           toTable tables =
             case Map.elems tables of
               []      -> Map.empty
@@ -70,7 +70,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
                 "viewTable: too many tables returned by 'viewTables'"
 
   -- | View multiple tables in a data source.
-  viewTables :: f (Set Table.TableKey) -> m (f Table.Tables)
+  viewTables :: f (Set Table.TableKey) -> m (f Table.Rows)
 
   -- | Set one row in a data source.
   setRow :: f (Table.TableKey, Table.RowKey, Table.Row) -> m ()
@@ -78,14 +78,14 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
     setRows $ (\(tk, rk, r) -> Map.singleton tk $ Map.singleton rk r) <$> refF
 
   -- | Set multiple rows in a data source.
-  setRows :: f Table.Tables -> m ()
+  setRows :: f Table.Rows -> m ()
 
   -- | Set one table in a data source.
   setTable :: f (Table.TableKey, Table.Table) -> m ()
   setTable keyAndTableF = setTables $ uncurry Map.singleton <$> keyAndTableF
 
   -- | Set multiple tables in a data source.
-  setTables :: f Table.Tables -> m ()
+  setTables :: f Table.Rows -> m ()
 
   -- | Remove one row from a data source.
   rmRow :: f Table.Ref -> m ()
@@ -93,7 +93,7 @@ class (Functor f, Monad m) => Telescope m f | m -> f where
     rmRows $ (\(tk, rk) -> Map.singleton tk $ Set.singleton rk) <$> refF
 
   -- | Remove multiple rows from a data source.
-  rmRows :: f Table.Rows -> m ()
+  rmRows :: f Table.RowKeys -> m ()
 
   -- | Remove one table from a data source.
   rmTable :: f Table.TableKey -> m ()
@@ -146,19 +146,19 @@ instance Box Identity where
 
 -- | A poor performing default implementation of 'viewRows' using 'Applicative'.
 viewRowsCheap :: (Applicative f, Telescope m f)
-  => f Table.Rows -> m (f (Table.Tables))
+  => f Table.RowKeys -> m (f (Table.Rows))
 viewRowsCheap rowKeysMapF = do
   tablesF <- viewTables $ Set.fromList . Map.keys <$> rowKeysMapF
   pure $ Map.intersectionWith Map.restrictKeys <$> tablesF <*> rowKeysMapF
 
 -- | A poor performing default implementation of 'setRows' using 'Applicative'.
-setRowsCheap :: (Applicative f, Telescope m f) => f Table.Tables -> m ()
+setRowsCheap :: (Applicative f, Telescope m f) => f Table.Rows -> m ()
 setRowsCheap newRowsMapF = do
   tablesF <- viewTables $ Set.fromList . Map.keys <$> newRowsMapF
   setTables $ Map.unionWith Map.union <$> newRowsMapF <*> tablesF
 
 -- | A poor performing default implementation of 'rmRows' using 'Applicative'.
-rmRowsCheap :: (Applicative f, Telescope m f) => f Table.Rows -> m ()
+rmRowsCheap :: (Applicative f, Telescope m f) => f Table.RowKeys -> m ()
 rmRowsCheap rowKeysMapF = do
     tablesF <- viewTables $ Set.fromList . Map.keys <$> rowKeysMapF
     setTables $ Map.intersectionWith Map.withoutKeys <$> tablesF <*> rowKeysMapF

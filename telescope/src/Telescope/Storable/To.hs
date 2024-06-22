@@ -6,10 +6,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-{- | Conversion of data types to storable representation via "Generics.Eot".
-
-See "Telescope.Convert" for context. Intended for internal use only.
--}
+-- | Conversion to storable representation.
 module Telescope.Storable.To where
 
 import           Control.Exception         ( throw )
@@ -23,56 +20,27 @@ import           Telescope.Storable.Types  ( SDataType(..), SFields(..),
 import qualified Telescope.Table.To       as Table
 import qualified Telescope.Table.Types    as Table
 
---------------------------------------------------------------------------------
--- * ToSValue
---
--- $toSValue
---
--- Conversion of a field's value to storable representation.
-
 -- | A field's value that can be converted to storable representation.
 class ToSValue a where
   toSValue :: a -> SValue
 
-instance                   ToSValue Bool      where toSValue = SValuePrim . Table.toPrim
-instance                   ToSValue Int       where toSValue = SValuePrim . Table.toPrim
-instance                   ToSValue Text      where toSValue = SValuePrim . Table.toPrim
-instance Table.ToPrim a => ToSValue (Maybe a) where toSValue = SValuePrim . Table.toPrim
+instance ToSValue Bool where toSValue = SValuePrim . Table.toPrim
+instance ToSValue Int  where toSValue = SValuePrim . Table.toPrim
+instance ToSValue Text where toSValue = SValuePrim . Table.toPrim
 
--- | A field's value that is a list of primitives.
+instance ToSValue a => ToSValue (Maybe a) where
+  toSValue Nothing = SValuePrim Table.PrimNull
+  toSValue (Just a) = toSValue a
+
+-- | A list of storable primitives is stored as 'Table.PrimText'.
 instance Table.ToPrim a => ToSValue [a] where
   toSValue t = SValuePrim $ Table.PrimNotNull $
-    Table.PrimText $ pack $ show $ fmap (Table.primShow . Table.toPrim) $ t
+    Table.PrimText $ pack $ show $ (Table.primShow . Table.toPrim) <$> t
 
--- | A field's value that is one or more storable data types.
-instance {-# OVERLAPPABLE #-} ToSDataTypes a => ToSValue a where
-  toSValue = SValueDataTypes . toSDataTypes
+instance {-# OVERLAPPABLE #-} ToSDataType a k => ToSValue a where
+  toSValue = SValueDataType . toSDataType
 
--- | A field's value that can be converted to zero or more storable data types.
---
--- Ideally we would not need this type class. This type class is only used in
--- an instance of the 'ToSValue' type class above. Preferably that instance
--- would be written directly, instead of going through this type class. Alas I
--- have not figured out how to accomplish that because of overlapping instances.
-class ToSDataTypes a where
-  toSDataTypes :: a -> [SDataType]
-
--- | A fields's value that can be converted to one storable data type.
-instance ToSDataType a k => ToSDataTypes a where
-  toSDataTypes a = [toSDataType a]
-
--- | A fields's value that can be converted to multiple storable data types.
-instance {-# OVERLAPPABLE #-} ToSDataType a k => ToSDataTypes [a] where
-  toSDataTypes = map toSDataType
-
---------------------------------------------------------------------------------
--- * ToSValues
---
--- $toSValues
---
--- Conversion of all a data type's field's values to storable representation.
-
--- | A data type with all field's values convertable to storable representation.
+-- | Types where ALL field's values can be converted to storable representation.
 class ToSValues a where
   toSValues :: a -> [SValue]
 
@@ -108,13 +76,6 @@ instance EotSValues () where
 instance EotSValues Eot.Void where
   eotSValues = Eot.absurd
 
---------------------------------------------------------------------------------
--- * ToSFields
---
--- $toSFields
---
--- Conversion of all a data type's fields to storable representation.
-
 -- | A data type with all field's convertable to storable representation.
 class ToSFields a where
   toSFields :: a -> SFields
@@ -129,7 +90,7 @@ instance (Eot.HasEot a, EotSValues (Eot.Eot a)) => ToSFields a where
 -- | The names of all a data type's fields.
 fieldNames :: forall a. Eot.HasEot a => a -> [String]
 fieldNames _ = do
-  case Eot.constructors $ Eot.datatype $ (Proxy @a) of
+  case Eot.constructors $ Eot.datatype $ Proxy @a of
     []  -> throw E.NoConstructorsException
     [c] -> case Eot.fields c of
       Eot.Selectors   fns -> fns
@@ -137,16 +98,9 @@ fieldNames _ = do
       Eot.NoFields        -> throw E.NoFieldsException
     _ -> throw E.MultipleConstructorsException
 
---------------------------------------------------------------------------------
--- * ToSDataType
---
--- $toSDataType
---
--- Conversion of a data type to storable representation.
+-- | Types that can be converted to storable representation.
+type ToSDataType a k = (Typeable a, Table.HasRowKey a, ToSFields a)
 
--- | A data type that can be converted to storable representation.
-type ToSDataType a k = (Typeable a, Table.PrimaryKey a k, ToSFields a)
-
--- | Convert a data type to storable representation.
+-- | Convert to storable representation.
 toSDataType :: forall a k. ToSDataType a k => a -> SDataType
-toSDataType a = SDataType (Table.tableKey @a, Table.rowKey a) (toSFields a)
+toSDataType a = SDataType ((Table.tableKey @a, Table.rowKey a), (toSFields a))

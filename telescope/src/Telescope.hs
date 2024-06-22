@@ -1,8 +1,6 @@
-{-|
-Module      : Telescope
-Description : User-facing module that re-exports useful functionality.
+{-| Library users should import this module.
 
-Suggested imports:
+Suggested usage:
 >  import           Telescope  ( PrimaryKey(..) )
 >  import qualified Telescope as T
 -}

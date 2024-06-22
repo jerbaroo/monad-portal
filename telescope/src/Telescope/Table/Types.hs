@@ -13,14 +13,15 @@ import           Flat                 ( Flat )
 import           GHC.Generics         ( Generic )
 import qualified Telescope.Exception as E
 
--- | A non-null storable primitive. One cell in a table.
+-- | A non-null storable primitive.
 data PrimNotNull =
     PrimBool Bool
-  | PrimInt  Int
+  | PrimInt  Int -- TODO Int64
+  | PrimRef  Ref
   | PrimText Text
   deriving (Eq, Ord, Read, Show, Generic, Flat)
 
--- | A storable primitive, or not. One cell in a table.
+-- | A storable primitive, or null.
 data Prim = PrimNotNull PrimNotNull | PrimNull
   deriving (Eq, Ord, Read, Show, Generic, Flat)
 
@@ -41,38 +42,41 @@ newtype TableKey = TableKey Key
 data RowKey = RowKey PrimNotNull [PrimNotNull]
   deriving (Eq, Ord, Read, Show, Generic, Flat)
 
+-- | Unique identifier for a database cell.
+type Ref = (TableKey, RowKey)
+
 -- | Unique identifier for a database column.
 newtype ColumnKey = ColumnKey Key
   deriving (Eq, Ord, Read, Show, Generic, Flat)
-
--- | Unique identifier for a database cell.
-type Ref = (TableKey, RowKey)
 
 -- | A row consists of a serialized value per column.
 type Row = [(ColumnKey, Prim)]
 
 -- | A table consists of a number of rows, each with a key.
--- TODO: consider alterate to 'Row' to avoid duplicates of 'ColumnKey'.
 type Table = Map RowKey Row
 
--- | Database tables. Each table indexed by 'TableKey'.
-type Tables = Map TableKey Table
+-- | Database rows. May span multiple tables.
+type Rows = Map TableKey Table
 
--- | Database rows. Possibly spanning multiple tables.
-type Rows = Map TableKey (Set RowKey)
+-- | Indices to database rows. May span multiple tables.
+type RowKeys = Map TableKey (Set RowKey)
 
--- | More efficient conversion to human-readable 'String' than 'show'.
+-- | More efficient conversion of 'Prim' to 'String' than 'show'.
 primShow :: Prim -> String
-primShow (PrimNotNull (PrimBool b)) = "B" ++ show b
-primShow (PrimNotNull (PrimInt  i)) = "I" ++ show i
-primShow (PrimNotNull (PrimText t)) = "T" ++ show t
-primShow PrimNull                   = "N"
+primShow (PrimNotNull (PrimBool True )) = "T"
+primShow (PrimNotNull (PrimBool False)) = "F"
+primShow (PrimNotNull (PrimInt  i    )) = "I" <> show i
+primShow (PrimNotNull (PrimText t    )) = "S" <> show t
+primShow (PrimNotNull (PrimRef r     )) = "R" <> show r
+primShow PrimNull                       = "N"
 
--- | More efficient conversion from human-readable 'String' than 'read'.
+-- | More efficient conversion of 'Prim' from 'String' than 'read'.
 primRead :: String -> Prim
-primRead ('B':s) = PrimNotNull $ PrimBool $ read s
+primRead "T"     = PrimNotNull $ PrimBool True
+primRead "F"     = PrimNotNull $ PrimBool False
 primRead ('I':s) = PrimNotNull $ PrimInt  $ read s
-primRead ('T':s) = PrimNotNull $ PrimText $ read s
+primRead ('R':s) = PrimNotNull $ PrimRef $ read s
+primRead ('S':s) = PrimNotNull $ PrimText $ read s
 primRead "N"     = PrimNull
 primRead s       = throw $ E.DeserializeException $
-  "Unknown string in 'primRead': " ++ show s
+  "Unknown string in 'primRead': " <> show s

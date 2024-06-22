@@ -1,4 +1,5 @@
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE MonoLocalBinds      #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-| Convert data types to and from table representation.
 
@@ -37,9 +38,9 @@ In pseudo-table representation:
 | "Michael" | PNull          |
 
 Some terminology:
-  - @"Person"@ is the type.
-  - @"fname"@ is a field's name.
-  - @"John"@ is a field's value.
+  - '"Person"' is the type.
+  - '"fname"' is a field's name.
+  - '"John"' is a field's value.
 -}
 module Telescope.Convert where
 
@@ -50,9 +51,9 @@ import qualified Telescope.Table.From    as Table
 import qualified Telescope.Table.Types   as Table
 
 -- | Convert a data type to table representation.
-aToRows :: Storable.ToSDataType a k => a -> Table.Tables
+aToRows :: Storable.ToSDataType a k => a -> Table.Rows
 aToRows = Table.sToRows . Storable.toSDataType
 
 -- | A data type reconstructed from table representation.
-aFromRow :: Storable.FromSValues a => Table.Row -> a
+aFromRow :: forall a. Storable.FromSValues a => Table.Row -> a
 aFromRow = Storable.fromSValues . Table.rowToSValues
