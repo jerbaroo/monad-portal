@@ -78,7 +78,8 @@ test-suite test
                      , containers
                      , monad-portal
                      , text
-  default-extensions: DeriveGeneric
+  default-extensions: BlockArguments
+                    , DeriveGeneric
                     , ImportQualifiedPost
                     , MultiParamTypeClasses
                     , OverloadedStrings

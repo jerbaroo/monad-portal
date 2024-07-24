@@ -2,20 +2,21 @@
 module Data.Portal.Table.To where
 
 import qualified Data.Map as Map
-import Data.Proxy ( Proxy(..) )
-import Data.Foldable ( foldl' )
-import Data.Text ( Text )
-import Data.Typeable ( Typeable, typeRep )
-import Data.Portal.Storable.Types ( SDataType(..), SField, SFields(..), SValue(..) )
+import Data.Proxy (Proxy(..))
+import Data.Foldable (foldl')
+import Data.Int (Int64)
+import Data.Text (Text)
+import Data.Typeable (Typeable, typeRep)
+import Data.Portal.Storable.Types (SDataType(..), SField, SFields(..), SValue(..))
 import Data.Portal.Table.Types qualified as Table
 
 -- | Types that can be converted to a 'PrimNotNull'.
 class ToPrimNotNull a where
   toPrimNotNull :: a -> Table.PrimNotNull
 
-instance ToPrimNotNull Bool where toPrimNotNull = Table.PrimBool
-instance ToPrimNotNull Int  where toPrimNotNull = Table.PrimInt
-instance ToPrimNotNull Text where toPrimNotNull = Table.PrimText
+instance ToPrimNotNull Bool  where toPrimNotNull = Table.PrimBool
+instance ToPrimNotNull Int64 where toPrimNotNull = Table.PrimInt
+instance ToPrimNotNull Text  where toPrimNotNull = Table.PrimText
 
 -- | Types that can be converted to a 'Prim'.
 class ToPrim a where

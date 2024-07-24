@@ -18,9 +18,10 @@ main = do
     , testMaybe
     , testList
     ]
-  if   HUnit.errors results + HUnit.failures results == 0
-  then Exit.exitWith   Exit.ExitSuccess
-  else Exit.exitWith $ Exit.ExitFailure 1
+  Exit.exitWith
+    if   HUnit.errors results + HUnit.failures results == 0
+    then Exit.ExitSuccess
+    else Exit.ExitFailure 1
 
 -- | Data type used to test primitive values.
 data Person = Person { name :: Text, age :: Int, cycles :: Bool }
